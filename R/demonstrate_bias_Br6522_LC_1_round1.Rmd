@@ -11,7 +11,7 @@ library(ggspavis)
 library(WeberDivechaLCdata)
 library(nnSVG)
 
-#kinnary - need R 4.2 on jhpce
+#need R 4.2 on jhpce
 
 #download LC data
 spe <- WeberDivechaLCdata_Visium()
