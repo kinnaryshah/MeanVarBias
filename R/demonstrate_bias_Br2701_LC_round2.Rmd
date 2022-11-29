@@ -1,0 +1,99 @@
+---
+title: "demonstrate_bias_Br2701_LC_round2"
+output: html_document
+date: '2022-11-29'
+---
+
+```{r lc}
+
+library(SpatialExperiment)
+library(ggspavis)
+library(WeberDivechaLCdata)
+library(nnSVG)
+
+#need R 4.2 on jhpce
+
+#download LC data
+spe <- WeberDivechaLCdata_Visium()
+#subset one sample
+spe_Br2701_LC_round2 <- spe[, spe$sample_id == "Br2701_LC_round2"]
+
+#plotSpots(spe_Br2701_LC_round2)
+
+spe_Br2701_LC_round2 <- filter_genes(spe_Br2701_LC_round2) ##https://github.com/lmweber/nnSVG/issues/7 keep getting error that c++ error: dpotrf failed 
+
+# set seed for reproducibility
+set.seed(123)
+#run nnSVG
+spe_Br2701_LC_round2 <- nnSVG(spe_Br2701_LC_round2)
+
+# show results
+rowData(spe_Br2701_LC_round2)
+
+# Save an object to a file
+saveRDS(spe_Br2701_LC_round2, file = "spe_Br2701_LC_round2_nnSVG.rds")
+
+
+```
+
+```{r plotting}
+
+library(SpatialExperiment)
+library(here)
+library(dplyr)
+library(tidyr)
+library(readr)
+library(ggplot2)
+library(ggrepel)
+library(viridis)
+
+# Restore the object
+res_list <- list(
+  humanDLPFC_nnSVG = rowData(readRDS(file = "spe_Br2701_LC_round2_nnSVG.rds")))
+
+# add method names to all columns except gene IDs and gene names
+colnames(res_list[["humanDLPFC_nnSVG"]])[-(1:2)] <- paste0(colnames(res_list[["humanDLPFC_nnSVG"]]), "_nnSVG")[-(1:2)]
+
+df_nnSVG <- 
+  as.data.frame(res_list$humanDLPFC_nnSVG)
+
+df_effect <- 
+  as.data.frame(df_nnSVG) %>% 
+  mutate(l_nnSVG = 1 / phi_nnSVG) %>% 
+  filter(rank_nnSVG <= 1000)
+
+
+# variance vs. mean
+ggplot(df_effect, 
+       aes(x = mean_nnSVG, y = var_nnSVG, color = LR_stat_nnSVG)) + 
+  geom_point(size = 0.75) + 
+  scale_color_viridis(trans = "log10") + 
+  labs(x = "mean logcounts", 
+       y = "variance", 
+       color = "LR statistic") + 
+  ggtitle("nnSVG: human LC") + 
+  theme_bw()
+
+# spatial variance vs. mean
+ggplot(df_effect, 
+       aes(x = mean_nnSVG, y = sigma.sq_nnSVG, color = LR_stat_nnSVG)) + 
+  geom_point(size = 0.75) + 
+  scale_color_viridis(trans = "log10") + 
+  labs(x = "mean logcounts", 
+       y = "spatial variance (sigma^2)", 
+       color = "LR statistic") + 
+  ggtitle("nnSVG: human LC") + 
+  theme_bw()
+# proportion spatial variance vs. mean
+ggplot(df_effect, 
+       aes(x = mean_nnSVG, y = prop_sv_nnSVG, color = LR_stat_nnSVG)) + 
+  geom_point(size = 0.75) + 
+  scale_color_viridis(trans = "log10") + 
+  labs(x = "mean logcounts", 
+       y = "proportion spatial variance", 
+       color = "LR statistic") + 
+  ggtitle("nnSVG: human LC") + 
+  theme_bw()
+
+```
+
