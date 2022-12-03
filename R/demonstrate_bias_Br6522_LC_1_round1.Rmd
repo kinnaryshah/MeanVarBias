@@ -17,23 +17,21 @@ library(nnSVG)
 spe <- WeberDivechaLCdata_Visium()
 #subset one sample
 spe_Br6522_LC_1_round1 <- spe[, spe$sample_id == "Br6522_LC_1_round1"]
-#get annotated LC region only
-spe_Br6522_LC_1_round1_annot <- spe_Br6522_LC_1_round1[, spe_Br6522_LC_1_round1$annot_region == TRUE]
 
-plotSpots(spe_Br6522_LC_1_round1_annot)
+#plotSpots(spe_Br6522_LC_1_round1_annot)
 
-spe_Br6522_LC_1_round1_annot <- filter_genes(spe_Br6522_LC_1_round1_annot) ##https://github.com/lmweber/nnSVG/issues/7 keep getting error that c++ error: dpotrf failed 
+spe_Br6522_LC_1_round1 <- filter_genes(spe_Br6522_LC_1_round1) ##https://github.com/lmweber/nnSVG/issues/7 keep getting error that c++ error: dpotrf failed 
 
 # set seed for reproducibility
 set.seed(123)
 #run nnSVG
-spe_Br6522_LC_1_round1_annot <- nnSVG(spe_Br6522_LC_1_round1_annot)
+spe_Br6522_LC_1_round1 <- nnSVG(spe_Br6522_LC_1_round1)
 
 # show results
-rowData(spe_Br6522_LC_1_round1_annot)
+rowData(spe_Br6522_LC_1_round1)
 
 # Save an object to a file
-saveRDS(spe_Br6522_LC_1_round1_annot, file = "spe_Br6522_LC_1_round1_annot_nnSVG.rds")
+saveRDS(spe_Br6522_LC_1_round1, file = "spe_Br6522_LC_1_round1_nnSVG.rds")
 
 
 ```
@@ -51,7 +49,7 @@ library(viridis)
 
 # Restore the object
 res_list <- list(
-  humanDLPFC_nnSVG = rowData(readRDS(file = "spe_Br6522_LC_1_round1_annot_nnSVG.rds")))
+  humanDLPFC_nnSVG = rowData(readRDS(file = "spe_Br6522_LC_1_round1_nnSVG.rds")))
 
 # add method names to all columns except gene IDs and gene names
 colnames(res_list[["humanDLPFC_nnSVG"]])[-(1:2)] <- paste0(colnames(res_list[["humanDLPFC_nnSVG"]]), "_nnSVG")[-(1:2)]
