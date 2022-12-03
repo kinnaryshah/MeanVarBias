@@ -44,7 +44,7 @@ spe_Br6522_LC_1_round1 <- nnSVG(spe_Br6522_LC_1_round1)
 rowData(spe_Br6522_LC_1_round1)
 
 # Save an object to a file
-saveRDS(spe_Br6522_LC_1_round1, file = "spe_Br6522_LC_1_round1_nnSVG.rds")
+saveRDS(spe_Br6522_LC_1_round1, file = "spe_Br6522_LC_1_round1_lowexpr_filter_nnSVG.rds")
 
 
 ```
@@ -62,7 +62,7 @@ library(viridis)
 
 # Restore the object
 res_list <- list(
-  humanDLPFC_nnSVG = rowData(readRDS(file = "spe_Br6522_LC_1_round1_nnSVG.rds")))
+  humanDLPFC_nnSVG = rowData(readRDS(file = "mean_var_project/spe_Br6522_LC_1_round1_lowexpr_filter_nnSVG.rds")))
 
 # add method names to all columns except gene IDs and gene names
 colnames(res_list[["humanDLPFC_nnSVG"]])[-(1:2)] <- paste0(colnames(res_list[["humanDLPFC_nnSVG"]]), "_nnSVG")[-(1:2)]
@@ -97,6 +97,7 @@ ggplot(df_effect,
        color = "LR statistic") + 
   ggtitle("nnSVG: human LC") + 
   theme_bw()
+
 # proportion spatial variance vs. mean
 ggplot(df_effect, 
        aes(x = mean_nnSVG, y = prop_sv_nnSVG, color = LR_stat_nnSVG)) + 
