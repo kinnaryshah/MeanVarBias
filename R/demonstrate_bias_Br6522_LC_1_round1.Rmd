@@ -111,3 +111,67 @@ ggplot(df_effect,
 
 ```
 
+```{r plotting2}
+
+library(SpatialExperiment)
+library(here)
+library(dplyr)
+library(tidyr)
+library(readr)
+library(ggplot2)
+library(ggrepel)
+library(viridis)
+
+
+spe <- readRDS(file = "mean_var_project/spe_Br6522_LC_1_round1_lowexpr_filter_nnSVG.rds")
+
+# of spots these genes have more than 0 counts/ # of total in-tissue spots -- how to add this to meta data, follow mitochondria example
+total_spots <- dim(spe)[2]
+sparsity_metric <- rowSums(counts(spe) != 0) / total_spots
+rowData(spe)$sparsity_metric <- sparsity_metric
+
+spe_df <- rowData(spe)
+
+df_nnSVG <- 
+  as.data.frame(spe_df)
+
+df_effect <- 
+  as.data.frame(df_nnSVG) %>% 
+  mutate(l = 1 / phi) %>% 
+  filter(rank <= 1000)
+
+# variance vs. mean
+ggplot(df_effect, 
+       aes(x = mean, y = var, color = sparsity_metric)) + 
+  geom_point(size = 0.75) + 
+  scale_color_viridis(trans = "log10") + 
+  labs(x = "mean logcounts", 
+       y = "variance", 
+       color = "sparsity metric") + 
+  ggtitle("nnSVG: human LC") + 
+  theme_bw()
+
+# spatial variance vs. mean
+ggplot(df_effect, 
+       aes(x = mean, y = sigma.sq, color = sparsity_metric)) + 
+  geom_point(size = 0.75) + 
+  scale_color_viridis(trans = "log10") + 
+  labs(x = "mean logcounts", 
+       y = "spatial variance (sigma^2)", 
+       color = "sparsity metric") + 
+  ggtitle("nnSVG: human LC") + 
+  theme_bw()
+
+# proportion spatial variance vs. mean
+ggplot(df_effect, 
+       aes(x = mean, y = prop_sv, color = sparsity_metric)) + 
+  geom_point(size = 0.75) + 
+  scale_color_viridis(trans = "log10") + 
+  labs(x = "mean logcounts", 
+       y = "proportion spatial variance", 
+       color = "sparsity metric") + 
+  ggtitle("nnSVG: human LC") + 
+  theme_bw()
+
+```
+
