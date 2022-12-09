@@ -89,6 +89,17 @@ ggplot(df_effect,
   theme_bw()
 
 
+# nonspatial variance vs. mean
+ggplot(df_effect, 
+       aes(x = mean_nnSVG, y = tau.sq_nnSVG, color = LR_stat_nnSVG)) + 
+  geom_point(size = 0.75) + 
+  scale_color_viridis(trans = "log10") + 
+  labs(x = "mean logcounts", 
+       y = "nonspatial variance (tau^2)", 
+       color = "LR statistic") + 
+  ggtitle("nnSVG: human DLPFC") + 
+  theme_bw()
+
 # proportion spatial variance vs. mean
 ggplot(df_effect, 
        aes(x = mean_nnSVG, y = prop_sv_nnSVG, color = LR_stat_nnSVG)) + 
