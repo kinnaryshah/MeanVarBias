@@ -20,7 +20,20 @@ spe_Br2701_LC_round2 <- spe[, spe$sample_id == "Br2701_LC_round2"]
 
 #plotSpots(spe_Br2701_LC_round2)
 
-spe_Br2701_LC_round2 <- filter_genes(spe_Br2701_LC_round2) ##https://github.com/lmweber/nnSVG/issues/7 keep getting error that c++ error: dpotrf failed 
+#https://github.com/lmweber/locus-c/blob/main/code/analyses/06_LC_gene_filtering.R
+# filter out genes with extremely low expression
+# using simple threshold on total UMI counts summed across all spots
+n_umis <- 80
+ix_low_genes <- rowSums(counts(spe_Br2701_LC_round2)) < n_umis
+table(ix_low_genes)
+
+spe_Br2701_LC_round2 <- spe_Br2701_LC_round2[!ix_low_genes, ]
+dim(spe_Br2701_LC_round2)
+
+# new zeros may have been created after spot-level QC and filtering low-expressed genes
+# no zeros in this table
+ix_zero_genes <- rowSums(counts(spe_Br2701_LC_round2)) == 0
+table(ix_zero_genes)
 
 # set seed for reproducibility
 set.seed(123)
@@ -31,7 +44,7 @@ spe_Br2701_LC_round2 <- nnSVG(spe_Br2701_LC_round2)
 rowData(spe_Br2701_LC_round2)
 
 # Save an object to a file
-saveRDS(spe_Br2701_LC_round2, file = "spe_Br2701_LC_round2_nnSVG.rds")
+saveRDS(spe_Br2701_LC_round2, file = "spe_Br2701_LC_round2_lowexpr_filter_nnSVG.rds")
 
 
 ```
@@ -49,7 +62,7 @@ library(viridis)
 
 # Restore the object
 res_list <- list(
-  humanDLPFC_nnSVG = rowData(readRDS(file = "mean_var_project/spe_Br2701_LC_round2_nnSVG.rds")))
+  humanDLPFC_nnSVG = rowData(readRDS(file = "mean_var_project/spe_Br2701_LC_round2_lowexpr_filter_nnSVG.rds")))
 
 # add method names to all columns except gene IDs and gene names
 colnames(res_list[["humanDLPFC_nnSVG"]])[-(1:2)] <- paste0(colnames(res_list[["humanDLPFC_nnSVG"]]), "_nnSVG")[-(1:2)]
