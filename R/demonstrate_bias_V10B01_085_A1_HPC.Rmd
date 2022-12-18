@@ -1,0 +1,49 @@
+---
+title: "demonstrate_bias_V10B01_085_A1_HPC"
+output: html_document
+date: '2022-12-18'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r cars}
+
+library(SpatialExperiment)
+library(ggspavis)
+library(nnSVG)
+library(scran)
+
+#load in spe object
+#load(file = "/dcs04/lieber/lcolladotor/spatialHPC_LIBD4035/spatial_hpc/processed-data/02_build_spe/spe_transform.Rdata")
+
+#sort(unique(spe$sample_id)) 4 capture areas for 8 donors
+
+#subset to one sample
+#spe_V10B01_085_A1 <- spe[, spe$sample_id == "V10B01-085_A1"]
+#saveRDS(spe_V10B01_085_A1, file = "spe_V10B01_085_A1_HPC.rds")
+
+spe_V10B01_085_A1 <- readRDS(file = "spe_V10B01_085_A1_HPC.rds")
+
+#nnSVG requires logcounts assay name
+spe_V10B01_085_A1 <- logNormCounts(spe_V10B01_085_A1)
+assayNames(spe_V10B01_085_A1)
+
+#filter out low expressed genes
+#for now using filter_genes() to get 5348/36588 genes, manual umi filter gives 13162/36588 genes
+spe_V10B01_085_A1 <- filter_genes(spe_V10B01_085_A1)
+
+# set seed for reproducibility
+set.seed(123)
+#run nnSVG
+spe_V10B01_085_A1 <- nnSVG(spe_V10B01_085_A1)
+
+# show results
+rowData(spe_V10B01_085_A1)
+
+# Save an object to a file
+saveRDS(spe_V10B01_085_A1, file = "spe_V10B01_085_A1_HPC_nnSVG.rds")
+
+```
+
