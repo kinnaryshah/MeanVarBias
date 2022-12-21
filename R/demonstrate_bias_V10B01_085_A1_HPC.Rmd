@@ -47,3 +47,74 @@ saveRDS(spe_V10B01_085_A1, file = "spe_V10B01_085_A1_HPC_nnSVG.rds")
 
 ```
 
+change color for this sample to new color scheme that can be used in figure 1 so yellows are not washed out
+
+```{r plotting}
+
+library(SpatialExperiment)
+library(here)
+library(dplyr)
+library(tidyr)
+library(readr)
+library(ggplot2)
+library(ggrepel)
+library(viridis)
+
+
+spe <- readRDS(file = "mean_var_project/spe_V10B01_085_A1_HPC_nnSVG.rds")
+
+spe_df <- rowData(spe)
+
+df_nnSVG <- 
+  as.data.frame(spe_df)
+
+df_effect <- 
+  as.data.frame(df_nnSVG) %>% 
+  mutate(l = 1 / phi) %>% 
+  filter(rank <= 1000)
+
+# variance vs. mean
+ggplot(df_effect, 
+       aes(x = mean, y = var, color = LR_stat)) + 
+  geom_point(size = 0.75) + 
+  scale_color_viridis(trans = "log10") + 
+  labs(x = "mean logcounts", 
+       y = "variance", 
+       color = "LR statistic") + 
+  ggtitle("nnSVG: human HPC") + 
+  theme_bw()
+
+# spatial variance vs. mean
+ggplot(df_effect, 
+       aes(x = mean, y = sigma.sq, color = LR_stat)) + 
+  geom_point(size = 0.75) + 
+  scale_color_viridis(trans = "log10") + 
+  labs(x = "mean logcounts", 
+       y = "spatial variance (sigma^2)", 
+       color = "LR statistic") + 
+  ggtitle("nnSVG: human HPC") + 
+  theme_bw()
+
+# nonspatial variance vs. mean
+ggplot(df_effect, 
+       aes(x = mean, y = tau.sq, color = LR_stat)) + 
+  geom_point(size = 0.75) + 
+  scale_color_viridis(trans = "log10") + 
+  labs(x = "mean logcounts", 
+       y = "nonspatial variance (tau^2)", 
+       color = "LR statistic") + 
+  ggtitle("nnSVG: human HPC") + 
+  theme_bw()
+
+# proportion spatial variance vs. mean
+ggplot(df_effect, 
+       aes(x = mean, y = prop_sv, color = LR_stat)) + 
+  geom_point(size = 0.75) + 
+  scale_color_viridis(trans = "log10") + 
+  labs(x = "mean logcounts", 
+       y = "proportion spatial variance", 
+       color = "LR statistic") + 
+  ggtitle("nnSVG: human HPC") + 
+  theme_bw()
+
+```
