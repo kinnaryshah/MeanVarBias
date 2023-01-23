@@ -1,0 +1,50 @@
+---
+title: "demonstrate_bias_151507_DLPFC_layers"
+output: html_document
+date: '2023-01-23'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+
+library(spatialLIBD)
+library(nnSVG)
+
+#https://github.com/LieberInstitute/spatialLIBD
+spe <- fetch_data(type = "spe")
+spe_151507 <- spe[, spe$sample_id == "151507"]
+
+#5 spots have NA layer label
+#sum(is.na(unfactor(colData(spe_151507)$spatialLIBD))) 
+
+spe_151507 <- spe_151507[, !is.na(unfactor(colData(spe_151507)$spatialLIBD))]
+
+#repeat same process for all layers
+layer_list <- c("L1", "L2", "L3", "L4", "L5", "L6", "WM")
+n_umis <- 80
+
+for (layer in layer_list) {
+  spe_layer <- spe_151507[, colData(spe_151507)$spatialLIBD == layer]
+
+  # filter out genes with extremely low expression
+  # using simple threshold on total UMI counts summed across all spots
+  ix_low_genes <- rowSums(counts(spe_layer)) < n_umis
+  spe_layer <- spe_layer[!ix_low_genes, ]
+  
+  # set seed for reproducibility
+  set.seed(123)
+  
+  #run nnSVG
+  spe_layer <- nnSVG(spe_layer)
+  # show results
+  rowData(spe_layer)
+  
+  # Save an object to a file
+  file_name <- paste("spe_151507_", layer, "_DLPFC_nnSVG.rds", sep = "")
+  saveRDS(spe_layer, file = file_name)
+}
+
+```
