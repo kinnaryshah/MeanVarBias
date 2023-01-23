@@ -47,7 +47,6 @@ saveRDS(spe_V11L05_335_C1, file = "spe_V11L05_335_C1_HPC_nnSVG.rds")
 
 ```
 
-change color for this sample to new color scheme that can be used in figure 1 so yellows are not washed out
 
 ```{r plotting}
 
@@ -61,7 +60,7 @@ library(ggrepel)
 library(viridis)
 
 
-spe <- readRDS(file = "mean_var_project/spe_V10B01_085_A1_HPC_nnSVG.rds")
+spe <- readRDS(file = "mean_var_project/spe_V11L05_335_C1_HPC_nnSVG.rds")
 
 spe_df <- rowData(spe)
 
@@ -78,6 +77,7 @@ ggplot(df_effect,
        aes(x = mean, y = var, color = LR_stat)) + 
   geom_point(size = 0.75) + 
   scale_color_viridis(trans = "log10") + 
+  scale_color_gradient(low = "red", high = "blue") +
   labs(x = "mean logcounts", 
        y = "variance", 
        color = "LR statistic") + 
@@ -89,17 +89,25 @@ ggplot(df_effect,
        aes(x = mean, y = sigma.sq, color = LR_stat)) + 
   geom_point(size = 0.75) + 
   scale_color_viridis(trans = "log10") + 
+  scale_color_gradient(low = "red", high = "blue") +
   labs(x = "mean logcounts", 
        y = "spatial variance (sigma^2)", 
        color = "LR statistic") + 
   ggtitle("nnSVG: human HPC") + 
+  ylim(0,1.5) +                      #note that this line of code removes 3 outliers
   theme_bw()
+
+#outlier_index <- rowData(spe)$sigma.sq > 1.5
+#indices <- which(outlier_index == TRUE)
+#row.names(rowData(spe))[indices]
+#"ENSG00000244734" "ENSG00000188536" "ENSG00000206172"
 
 # nonspatial variance vs. mean
 ggplot(df_effect, 
        aes(x = mean, y = tau.sq, color = LR_stat)) + 
   geom_point(size = 0.75) + 
   scale_color_viridis(trans = "log10") + 
+  scale_color_gradient(low = "red", high = "blue") +
   labs(x = "mean logcounts", 
        y = "nonspatial variance (tau^2)", 
        color = "LR statistic") + 
@@ -111,6 +119,7 @@ ggplot(df_effect,
        aes(x = mean, y = prop_sv, color = LR_stat)) + 
   geom_point(size = 0.75) + 
   scale_color_viridis(trans = "log10") + 
+  scale_color_gradient(low = "red", high = "blue") +
   labs(x = "mean logcounts", 
        y = "proportion spatial variance", 
        color = "LR statistic") + 
