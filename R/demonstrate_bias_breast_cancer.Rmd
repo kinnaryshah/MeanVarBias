@@ -1,0 +1,63 @@
+---
+title: "demonstrate_bias_breast_cancer"
+output: html_document
+date: '2023-01-25'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+
+#downloaded from https://www.10xgenomics.com/resources/datasets/human-breast-cancer-visium-fresh-frozen-whole-transcriptome-1-standard
+#wget https://cf.10xgenomics.com/samples/spatial-exp/1.3.0/Visium_Human_Breast_Cancer/Visium_Human_Breast_Cancer_raw_feature_bc_matrix.tar.gz
+
+library(SpatialExperiment)
+library(ggspavis)
+library(nnSVG)
+library(scran)
+
+(spe <- read10xVisium("/users/kshah/mean_var_project/breast_cancer_data/outs",
+  type = "sparse",   # use sparse (not HDF5) format
+  data = "raw",     
+  images = "lowres", # specify which image(s) to include
+  load = TRUE))      # specify whether or not to load image(s)
+
+#plotSpots(spe)
+
+#removes 94 spots not in tissue
+spe <- spe[, colData(spe)$in_tissue == 1]
+
+#filter low expressed genes
+n_umis <- 80
+ix_low_genes <- rowSums(counts(spe)) < n_umis
+table(ix_low_genes)
+spe <- spe[!ix_low_genes, ]
+dim(spe)
+
+#nnSVG needs logcounts
+spe <- logNormCounts(spe)
+
+# set seed for reproducibility
+set.seed(123)
+#run nnSVG
+spe <- nnSVG(spe)
+
+# show results
+rowData(spe)
+
+# Save an object to a file
+saveRDS(spe, file = "spe_breast_cancer_nnSVG.rds")
+
+```
+
+
+```{r}
+
+
+```
+
+
+
+
