@@ -62,76 +62,89 @@ library(ggrepel)
 library(viridis)
 library(ggpubr)
 
-layer <- "WM"
+layer_list <- c("L1", "L2", "L3", "L4", "L5", "L6", "WM")
+plot_list <- list()
+i=1
 
-file_name <- paste("mean_var_project/spe_151507_", layer, "_DLPFC_nnSVG.rds", sep = "")
-spe <- readRDS(file = file_name)
+for (layer in layer_list) {
+  
+  file_name <- paste("mean_var_project/spe_151507_", layer, "_DLPFC_nnSVG.rds", sep = "")
+  spe <- readRDS(file = file_name)
+  
+  spe_df <- rowData(spe)
+  
+  df_nnSVG <- 
+    as.data.frame(spe_df)
+  
+  df_effect <- 
+    as.data.frame(df_nnSVG) %>% 
+    mutate(l = 1 / phi) %>% 
+    filter(rank <= 1000)
+  
+  # variance vs. mean
+  var <- ggplot(df_effect, 
+         aes(x = mean, y = var, color = LR_stat)) + 
+    geom_point(size = 2) + 
+    scale_color_viridis(trans = "log10") +
+    scale_color_gradient(low = "blue", high = "red") +
+    labs(x = "mean logcounts", 
+         y = "variance", 
+         color = "LR statistic") + 
+    theme_bw() + 
+    theme(legend.position="none", axis.title.x=element_blank(), axis.title.y=element_blank())
+  plot_list[[i]] <- var
+  i <- i+1
+    
+  # spatial variance vs. mean
+  spat_var <- ggplot(df_effect, 
+         aes(x = mean, y = sigma.sq, color = LR_stat)) + 
+    geom_point(size = 2) + 
+    scale_color_viridis(trans = "log10") + 
+    scale_color_gradient(low = "blue", high = "red") +
+    labs(x = "mean logcounts", 
+         y = "spatial variance (sigma^2)", 
+         color = "LR statistic") + 
+    theme_bw() + 
+    theme(legend.position="none", axis.title.x=element_blank(), axis.title.y=element_blank())
+  plot_list[[i]] <- spat_var
+  i <- i+1
+  
+  # nonspatial variance vs. mean
+  nonspat_var <- ggplot(df_effect, 
+         aes(x = mean, y = tau.sq, color = LR_stat)) + 
+    geom_point(size = 2) + 
+    scale_color_viridis(trans = "log10") + 
+    scale_color_gradient(low = "blue", high = "red") +
+    labs(x = "mean logcounts", 
+         y = "nonspatial variance (tau^2)", 
+         color = "LR statistic") + 
+    theme_bw() + 
+    theme(legend.position="none", axis.title.x=element_blank(), axis.title.y=element_blank())
+  plot_list[[i]] <- nonspat_var
+  i <- i+1
+  
+  # proportion spatial variance vs. mean
+  prop <- ggplot(df_effect, 
+         aes(x = mean, y = prop_sv, color = LR_stat)) + 
+    geom_point(size = 2) + 
+    scale_color_viridis(trans = "log10") + 
+    scale_color_gradient(low = "blue", high = "red") +
+    labs(x = "mean logcounts", 
+         y = "proportion spatial variance", 
+         color = "LR statistic") + 
+    theme_bw() +
+    theme(axis.title.x=element_blank(), axis.title.y=element_blank())
 
-spe_df <- rowData(spe)
+  plot_list[[i]] <- prop
+  i <- i+1
+}
 
-df_nnSVG <- 
-  as.data.frame(spe_df)
+figure <- ggarrange(plotlist = plot_list,
+          ncol = 4, nrow = 7)
 
-df_effect <- 
-  as.data.frame(df_nnSVG) %>% 
-  mutate(l = 1 / phi) %>% 
-  filter(rank <= 1000)
-
-# variance vs. mean
-var <- ggplot(df_effect, 
-       aes(x = mean, y = var, color = LR_stat)) + 
-  geom_point(size = 0.75) + 
-  scale_color_viridis(trans = "log10") +
-  scale_color_gradient(low = "blue", high = "red") +
-  labs(x = "mean logcounts", 
-       y = "variance", 
-       color = "LR statistic") + 
-  ggtitle("nnSVG: human DLPFC") + 
-  theme_bw()
-
-# spatial variance vs. mean
-spat_var <- ggplot(df_effect, 
-       aes(x = mean, y = sigma.sq, color = LR_stat)) + 
-  geom_point(size = 0.75) + 
-  scale_color_viridis(trans = "log10") + 
-  scale_color_gradient(low = "blue", high = "red") +
-  labs(x = "mean logcounts", 
-       y = "spatial variance (sigma^2)", 
-       color = "LR statistic") + 
-  ggtitle("nnSVG: human DLPFC") + 
-  theme_bw()
-
-# nonspatial variance vs. mean
-nonspat_var <- ggplot(df_effect, 
-       aes(x = mean, y = tau.sq, color = LR_stat)) + 
-  geom_point(size = 0.75) + 
-  scale_color_viridis(trans = "log10") + 
-  scale_color_gradient(low = "blue", high = "red") +
-  labs(x = "mean logcounts", 
-       y = "nonspatial variance (tau^2)", 
-       color = "LR statistic") + 
-  ggtitle("nnSVG: human DLPFC") + 
-  theme_bw()
-
-# proportion spatial variance vs. mean
-prop <- ggplot(df_effect, 
-       aes(x = mean, y = prop_sv, color = LR_stat)) + 
-  geom_point(size = 0.75) + 
-  scale_color_viridis(trans = "log10") + 
-  scale_color_gradient(low = "blue", high = "red") +
-  labs(x = "mean logcounts", 
-       y = "proportion spatial variance", 
-       color = "LR statistic") + 
-  ggtitle("nnSVG: human DLPFC") + 
-  theme_bw()
-
-figure <- ggarrange(var, spat_var, nonspat_var, prop,
-          labels = c("A", "B", "C", "D"),
-          ncol = 2, nrow = 2,
-          common.legend = TRUE, legend = "right")
-
-title_text <- paste("DLPFC 151507 ", layer, sep = "")
+title_text <- "DLPFC 151507 nnSVG Stratified by Layers"
 annotate_figure(figure, 
-                top = text_grob(title_text, color = "black", face = "bold", size = 14))
+                #top = text_grob(title_text, color = "black", face = "bold", size = 14)
+                top = "Column 1 Title     Column 2 Title    Column 3 Title     Column 4 Title")
 ```
 
