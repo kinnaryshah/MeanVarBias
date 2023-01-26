@@ -53,8 +53,86 @@ saveRDS(spe, file = "spe_breast_cancer_nnSVG.rds")
 ```
 
 
-```{r}
+```{r plotting}
 
+library(SpatialExperiment)
+library(here)
+library(dplyr)
+library(tidyr)
+library(readr)
+library(ggplot2)
+library(ggrepel)
+library(viridis)
+library(ggpubr)
+
+spe <- readRDS(file = "mean_var_project/spe_breast_cancer_nnSVG.rds")
+
+spe_df <- rowData(spe)
+
+df_nnSVG <- 
+  as.data.frame(spe_df)
+
+df_effect <- 
+  as.data.frame(df_nnSVG) %>% 
+  mutate(l = 1 / phi) %>% 
+  filter(rank <= 1000)
+
+# variance vs. mean
+var <- ggplot(df_effect, 
+       aes(x = mean, y = var, color = LR_stat)) + 
+  geom_point(size = 2) + 
+  scale_color_viridis(trans = "log10") +
+  scale_color_gradient(low = "blue", high = "red") +
+  labs(x = "mean logcounts", 
+       y = "variance", 
+       color = "LR statistic") + 
+  ggtitle("nnSVG: human breast") + 
+  theme_bw()
+
+# spatial variance vs. mean
+spat_var <- ggplot(df_effect, 
+       aes(x = mean, y = sigma.sq, color = LR_stat)) + 
+  geom_point(size = 2) + 
+  scale_color_viridis(trans = "log10") + 
+  scale_color_gradient(low = "blue", high = "red") +
+  labs(x = "mean logcounts", 
+       y = "spatial variance (sigma^2)", 
+       color = "LR statistic") + 
+  ggtitle("nnSVG: human HPC") + 
+  theme_bw()
+
+# nonspatial variance vs. mean
+nonspat_var <- ggplot(df_effect, 
+       aes(x = mean, y = tau.sq, color = LR_stat)) + 
+  geom_point(size = 2) + 
+  scale_color_viridis(trans = "log10") + 
+  scale_color_gradient(low = "blue", high = "red") +
+  labs(x = "mean logcounts", 
+       y = "nonspatial variance (tau^2)", 
+       color = "LR statistic") + 
+  ggtitle("nnSVG: human HPC") + 
+  theme_bw()
+
+# proportion spatial variance vs. mean
+prop <- ggplot(df_effect, 
+       aes(x = mean, y = prop_sv, color = LR_stat)) + 
+  geom_point(size = 2) + 
+  scale_color_viridis(trans = "log10") + 
+  scale_color_gradient(low = "blue", high = "red") +
+  labs(x = "mean logcounts", 
+       y = "proportion spatial variance", 
+       color = "LR statistic") + 
+  ggtitle("nnSVG: human HPC") + 
+  theme_bw()
+
+figure <- ggarrange(var, spat_var, nonspat_var, prop,
+          labels = c("A", "B", "C", "D"),
+          ncol = 2, nrow = 2,
+          common.legend = TRUE, legend = "right")
+
+title_text <- "human breast"
+annotate_figure(figure, 
+                top = text_grob(title_text, color = "black", face = "bold", size = 14))
 
 ```
 
