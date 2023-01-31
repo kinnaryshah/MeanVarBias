@@ -269,3 +269,45 @@ annotate_figure(figure,
                 #top = text_grob(title_text, color = "black", face = "bold", size = 14)
                 top = "Column 1 Title     Column 2 Title    Column 3 Title     Column 4 Title")
 ```
+
+```{r}
+
+library(SpatialExperiment)
+library(here)
+library(dplyr)
+library(tidyr)
+library(readr)
+library(ggplot2)
+library(ggrepel)
+library(viridis)
+library(ggpubr)
+library(purrr)
+
+df_fxn <- function(layer) {
+  
+  file_name <- paste("mean_var_project/spe_151507_", layer, "_DLPFC_nnSVG.rds", sep = "")
+  spe <- readRDS(file = file_name)
+  
+  spe_df <- rowData(spe)
+  
+  df_nnSVG <- 
+    as.data.frame(spe_df)
+  
+  df_effect <- 
+    as.data.frame(df_nnSVG) %>% 
+    mutate(l = 1 / phi) %>% 
+    filter(rank <= 1000)
+  
+  #add col of layer name
+  df_effect$layer_val <- rep(layer,1000)
+  return(df_effect)
+}
+
+layer_list <- c("L1", "L2", "L3", "L4", "L5", "L6", "WM")
+#create dfs of all layers
+layer_df <- map(.x=layer_list, .f=~df_fxn(.x))
+#convert to df and rbind, will facet on layer column which was added in df_fxn
+all_layers_df <- Reduce(rbind,layer_df)
+
+
+```
