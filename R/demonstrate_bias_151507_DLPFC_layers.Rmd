@@ -309,5 +309,17 @@ layer_df <- map(.x=layer_list, .f=~df_fxn(.x))
 #convert to df and rbind, will facet on layer column which was added in df_fxn
 all_layers_df <- Reduce(rbind,layer_df)
 
-
+library(lemon)
+# variance vs. mean
+ggplot(all_layers_df, 
+       aes(x = mean, y = var, color = LR_stat)) + 
+  geom_point(size = 2) + 
+  facet_rep_wrap(~layer_val, nrow=1, ncol=7, scales="free") +
+  scale_color_viridis(trans = "log10") +
+  scale_color_gradient(low = "blue", high = "red") +
+  labs(x = "mean logcounts", 
+       y = "variance", 
+       color = "LR statistic") + 
+  theme_bw()
+  #theme(legend.position="none", axis.title.x=element_blank(), axis.title.y=element_blank())
 ```
