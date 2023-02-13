@@ -52,7 +52,7 @@ library(viridis)
 
 # Restore the object
 res_list <- list(
-  humanDLPFC_nnSVG = rowData(readRDS(file = "spe_151507_DLPFC_nnSVG.rds")))
+  humanDLPFC_nnSVG = rowData(readRDS(file = "mean_var_project/spe_151507_DLPFC_nnSVG.rds")))
 
 # add method names to all columns except gene IDs and gene names
 colnames(res_list[["humanDLPFC_nnSVG"]])[-(1:2)] <- paste0(colnames(res_list[["humanDLPFC_nnSVG"]]), "_nnSVG")[-(1:2)]
