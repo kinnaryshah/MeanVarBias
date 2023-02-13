@@ -298,6 +298,8 @@ df_fxn <- function(layer) {
     mutate(l = 1 / phi) %>% 
     filter(rank <= 1000)
   
+  df_effect$LR_stat_scaled <- df_effect$LR_stat / max(df_effect$LR_stat)
+
   #add col of layer name
   df_effect$layer_val <- rep(layer,1000)
   return(df_effect)
@@ -312,14 +314,14 @@ all_layers_df <- Reduce(rbind,layer_df)
 library(lemon)
 # variance vs. mean
 ggplot(all_layers_df, 
-       aes(x = mean, y = var, color = LR_stat)) + 
+       aes(x = mean, y = var, color = LR_stat_scaled)) + 
   geom_point(size = 2) + 
   facet_rep_wrap(~layer_val, nrow=1, ncol=7, scales="free") +
   scale_color_viridis(trans = "log10") +
   scale_color_gradient(low = "blue", high = "red") +
   labs(x = "mean logcounts", 
        y = "variance", 
-       color = "LR statistic") + 
+       color = "LR statistic - scaled by max") + 
   theme_bw()
   #theme(legend.position="none", axis.title.x=element_blank(), axis.title.y=element_blank())
 ```
