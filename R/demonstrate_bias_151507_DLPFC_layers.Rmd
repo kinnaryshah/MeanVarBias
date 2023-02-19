@@ -298,6 +298,7 @@ df_fxn <- function(layer) {
     mutate(l = 1 / phi) %>% 
     filter(rank <= 1000)
   
+  df_effect$log_LR_stat <- log(df_effect$LR_stat + 1)
   df_effect$LR_stat_scaled <- df_effect$LR_stat / max(df_effect$LR_stat)
 
   #add col of layer name
@@ -313,54 +314,54 @@ all_layers_df <- Reduce(rbind,layer_df)
 
 # variance vs. mean
 var <- ggplot(all_layers_df, 
-       aes(x = mean, y = var, color = LR_stat_scaled)) + 
+       aes(x = mean, y = var, color = log_LR_stat)) + 
   geom_point(size = 2) + 
   facet_grid(layer_val~., switch = "y") +
   scale_color_viridis(trans = "log10") +
   scale_color_gradient(low = "blue", high = "red") +
   labs(x = "mean logcounts", 
        y = "", 
-       color = "LR stat scaled by max",
+       color = "log LR stat",
        title = "variance") + 
   theme_bw() + 
   theme(strip.text.y.left = element_text(angle = 0))
 
 # spatial variance vs. mean
 spat_var <- ggplot(all_layers_df, 
-       aes(x = mean, y = sigma.sq, color = LR_stat_scaled)) + 
+       aes(x = mean, y = sigma.sq, color = log_LR_stat)) + 
   geom_point(size = 2) + 
   facet_grid(layer_val~., switch = "y") +
   scale_color_viridis(trans = "log10") +
   scale_color_gradient(low = "blue", high = "red") +
   labs(x = "mean logcounts", 
        y = "", 
-       color = "LR stat scaled by max",
+       color = "log LR stat",
        title = expression(paste("spatial variance ", sigma^{2}))) + 
   theme_bw() + 
   theme(strip.background = element_blank(), strip.text.y = element_blank())
 
 nonspat_var <- ggplot(all_layers_df, 
-       aes(x = mean, y = tau.sq, color = LR_stat_scaled)) + 
+       aes(x = mean, y = tau.sq, color = log_LR_stat)) + 
   geom_point(size = 2) + 
   facet_grid(layer_val~., switch = "y") +
   scale_color_viridis(trans = "log10") +
   scale_color_gradient(low = "blue", high = "red") +
   labs(x = "mean logcounts", 
        y = "", 
-       color = "LR stat scaled by max",
+       color = "log LR stat",
        title = expression(paste("nonspatial variance ", tau^{2}))) + 
   theme_bw() + 
   theme(strip.background = element_blank(), strip.text.y = element_blank())
 
 prop <- ggplot(all_layers_df, 
-       aes(x = mean, y = prop_sv, color = LR_stat_scaled)) + 
+       aes(x = mean, y = prop_sv, color = log_LR_stat)) + 
   geom_point(size = 2) + 
   facet_grid(layer_val~., switch = "y") +
   scale_color_viridis(trans = "log10") +
   scale_color_gradient(low = "blue", high = "red") +
   labs(x = "mean logcounts", 
        y = "", 
-       color = "LR stat scaled by max",
+       color = "log LR stat",
        title = "proportion spatial variance") + 
   theme_bw() + 
   theme(strip.background = element_blank(), strip.text.y = element_blank())
