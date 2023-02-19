@@ -316,7 +316,7 @@ library(lemon)
 ggplot(all_layers_df, 
        aes(x = mean, y = var, color = LR_stat_scaled)) + 
   geom_point(size = 2) + 
-  facet_rep_wrap(~layer_val, nrow=1, ncol=7, scales="free") +
+  facet_grid(layer_val~.) +
   scale_color_viridis(trans = "log10") +
   scale_color_gradient(low = "blue", high = "red") +
   labs(x = "mean logcounts", 
