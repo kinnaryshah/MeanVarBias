@@ -361,7 +361,7 @@ prop <- ggplot(all_layers_df,
   labs(x = "mean logcounts", 
        y = "", 
        color = "LR stat scaled by max",
-       title = "proportion spatial variance") + 
+       title = expression(paste("prop. spatial variance ", sigma^{2}/(sigma^{2}+tau^{2})))) + 
   theme_bw() + 
   theme(strip.background = element_blank(), strip.text.y = element_blank())
 
