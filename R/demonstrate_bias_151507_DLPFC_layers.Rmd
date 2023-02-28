@@ -370,4 +370,39 @@ library(patchwork)
 wrap_plots(var, spat_var, nonspat_var, prop, guides="collect",
            ncol=4, nrow=1)
 
+#code to check if red points are mitochondrial genes
+##VARIANCE
+for (layer_num in c(1,2,3,7)) {
+  indices <- layer_df[[layer_num]]$var > 2.1
+  print(layer_df[[layer_num]]$gene_name[indices])
+}
+
+for (layer_num in c(4,6)) {
+  indices <- layer_df[[layer_num]]$var > 1.5
+  print(layer_df[[layer_num]]$gene_name[indices])
+}
+
+for (layer_num in c(5)) {
+  indices <- layer_df[[layer_num]]$var > 1.25
+  print(layer_df[[layer_num]]$gene_name[indices])
+}
+
+##SPATIAL VARIANCE
+for (layer_num in c(1,3,7)) {
+  indices <- layer_df[[layer_num]]$sigma.sq > 2
+  print(layer_df[[layer_num]]$gene_name[indices])
+}
+
+for (layer_num in c(2,4)) {
+  indices <- layer_df[[layer_num]]$sigma.sq > 1
+  print(layer_df[[layer_num]]$gene_name[indices])
+}
+
+for (layer_num in c(6)) {
+  indices <- layer_df[[layer_num]]$sigma.sq > 1.25
+  print(layer_df[[layer_num]]$gene_name[indices])
+}
+
+indices <- layer_df[[5]]$sigma.sq > 0.5 & layer_df[[5]]$mean > 3
+print(layer_df[[5]]$gene_name[indices])
 ```
