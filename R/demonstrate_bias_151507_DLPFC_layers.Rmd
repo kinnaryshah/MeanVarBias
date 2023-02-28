@@ -315,6 +315,7 @@ all_layers_df <- Reduce(rbind,layer_df)
 var <- ggplot(all_layers_df, 
        aes(x = mean, y = var, color = LR_stat_scaled)) + 
   geom_point(size = 2) + 
+  geom_smooth(method="loess", color="black", size=0.5) +
   facet_grid(layer_val~., switch = "y") +
   scale_color_viridis(trans = "log10") +
   scale_color_gradient(low = "blue", high = "red") +
