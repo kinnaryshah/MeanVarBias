@@ -38,13 +38,12 @@ df_fxn <- function(file_name, dataset) {
   
   df_effect$LR_stat_scaled <- df_effect$LR_stat / max(df_effect$LR_stat)
 
+  #keep only last 17 columns (nnSVG output) bc breast cancer dataset has different cols
+  df_effect <- df_effect[,(ncol(df_effect)-17):ncol(df_effect)]
+  
   #add col of dataset name
   df_effect$layer_val <- rep(dataset,1000)
   return(df_effect)
-}
-
-df_fxn <- function(file_name, dataset){
-  print(paste(file_name, dataset))
 }
 
 file_list <- c("mean_var_project/spe_V10B01_085_A1_HPC_nnSVG.rds",
@@ -52,7 +51,7 @@ file_list <- c("mean_var_project/spe_V10B01_085_A1_HPC_nnSVG.rds",
                "mean_var_project/spe_151507_DLPFC_nnSVG.rds",
                "mean_var_project/spe_Br2701_LC_round2_lowexpr_filter_nnSVG.rds")
 dataset_list <- c("HPC", "breast","DLPFC","LC")
-file_df <- map(.x=file_list, .y=dataset_list, .f=~df_fxn(.x,.y))
+file_df <- map2(.x=file_list, .y=dataset_list, .f=~df_fxn(.x,.y))
 all_files_df <- Reduce(rbind,file_df)
 
 # variance vs. mean
