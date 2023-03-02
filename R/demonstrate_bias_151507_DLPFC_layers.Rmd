@@ -274,14 +274,45 @@ annotate_figure(figure,
 
 library(spatialLIBD)
 library(genefilter)
+library(tidyverse)
+library(ggplot2)
+library(glmGamPoi)
 
 spe <- fetch_data(type = "spe")
+n_umis <- 80
 spe_151507 <- spe[, spe$sample_id == "151507"]
 spe_151507 <- spe_151507[, !is.na(unfactor(colData(spe_151507)$spatialLIBD))]
 
-n_umis <- 80
+nb_model <- function(layer){
+  
+  spe_layer <- spe_151507[, colData(spe_151507)$spatialLIBD == layer]
+  ix_low_genes <- rowSums(counts(spe_layer)) < n_umis
+  spe_layer <- spe_layer[!ix_low_genes, ]
 
-spe_layer <- spe_151507[, colData(spe_151507)$spatialLIBD == "L1"]
+  #https://github.com/stephaniehicks/quantify-snrna/blob/master/mouse_cortex/code/distribution-plots.R
+  mean_emp = rowMeans(counts(spe_layer))
+  var_emp = genefilter::rowVars(counts(spe_layer))
+
+  # Negative binomial
+  # Estimate overall size/dispersion parameter
+  model = lm(var_emp ~ 1*mean_emp + I(mean_emp^2) + 0, tibble(mean_emp, var_emp))
+  phi = 1/coef(model)["I(mean_emp^2)"]
+
+  fit_nb =  glmGamPoi::glm_gp(counts(spe_layer), design = ~ 1, size_factors = FALSE, 
+                          overdispersion = TRUE, on_disk = FALSE)
+
+  mean_var_tb = tibble(mean_emp = mean_emp,
+                       var_emp = var_emp,
+                       nbinomial = mean_emp + mean_emp^2 * fit_nb$overdispersions) %>% 
+    tidyr::pivot_longer(cols = -mean_emp, names_to = "model", values_to = "var_value")
+  
+  #add col of layer name
+  mean_var_tb$layer_val <- rep(layer,nrow(mean_var_tb))
+  
+  return(mean_var_tb)
+}
+
+spe_layer <- spe_151507[, colData(spe_151507)$spatialLIBD == "L2"]
 ix_low_genes <- rowSums(counts(spe_layer)) < n_umis
 spe_layer <- spe_layer[!ix_low_genes, ]
 
@@ -304,14 +335,22 @@ mean_var_tb = tibble(mean_emp = mean_emp,
                      nbinomial = mean_emp + mean_emp^2 * fit_nb$overdispersions) %>% 
   tidyr::pivot_longer(cols = -mean_emp, names_to = "model", values_to = "var_value")
 
-p = mean_var_tb %>%
+
+layer_list <- c("L1", "L2", "L3", "L4", "L5", "L6", "WM")
+#create dfs of all layers
+layer_df <- map(.x=layer_list, .f=~nb_model(.x))
+#convert to df and rbind, will facet on layer column which was added in df_fxn
+all_layers_df <- Reduce(rbind,layer_df)
+
+p = all_layers_df %>%
   filter(model %in% c("var_emp")) %>%
   ggplot(aes(x = mean_emp, y = var_value)) + 
   geom_point(alpha = 0.3) + 
-  geom_line(data = mean_var_tb %>% filter(model %in% c("nbinomial")),
+  geom_line(data = all_layers_df %>% filter(model %in% c("nbinomial")),
             aes(x = mean_emp, y = var_value, color = model)) +
+  facet_grid(layer_val~., switch = "y") +
   scale_x_log10() + scale_y_log10() +
-  labs(title = "title",
+  labs(title = "DLPFC 151507 by Layers",
        x = "Log of mean expression",
        y = "Log of variance") +
   theme_bw()
