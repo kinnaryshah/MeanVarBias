@@ -57,11 +57,11 @@ file_df <- map2(.x=file_list, .y=dataset_list, .f=~df_fxn(.x,.y))
 all_files_df <- Reduce(rbind,file_df)
 
 # variance vs. mean
-var <- ggplot(all_layers_df, 
+var <- ggplot(all_files_df, 
        aes(x = mean, y = var, color = LR_stat_scaled)) + 
   geom_point(size = 2) + 
   geom_smooth(method="loess", color="black", size=0.5) +
-  facet_grid(layer_val~., switch = "y") +
+  facet_grid(dataset_val~., switch = "y") +
   scale_color_viridis(trans = "log10") +
   scale_color_gradient(low = "blue", high = "red") +
   labs(x = "mean logcounts", 
@@ -72,10 +72,10 @@ var <- ggplot(all_layers_df,
   theme(strip.text.y.left = element_text(angle = 0))
 
 # spatial variance vs. mean
-spat_var <- ggplot(all_layers_df, 
+spat_var <- ggplot(all_files_df, 
        aes(x = mean, y = sigma.sq, color = LR_stat_scaled)) + 
   geom_point(size = 2) + 
-  facet_grid(layer_val~., switch = "y") +
+  facet_grid(dataset_val~., switch = "y") +
   scale_color_viridis(trans = "log10") +
   scale_color_gradient(low = "blue", high = "red") +
   labs(x = "mean logcounts", 
@@ -85,10 +85,10 @@ spat_var <- ggplot(all_layers_df,
   theme_bw() + 
   theme(strip.background = element_blank(), strip.text.y = element_blank())
 
-nonspat_var <- ggplot(all_layers_df, 
+nonspat_var <- ggplot(all_files_df, 
        aes(x = mean, y = tau.sq, color = LR_stat_scaled)) + 
   geom_point(size = 2) + 
-  facet_grid(layer_val~., switch = "y") +
+  facet_grid(dataset_val~., switch = "y") +
   scale_color_viridis(trans = "log10") +
   scale_color_gradient(low = "blue", high = "red") +
   labs(x = "mean logcounts", 
@@ -98,10 +98,10 @@ nonspat_var <- ggplot(all_layers_df,
   theme_bw() + 
   theme(strip.background = element_blank(), strip.text.y = element_blank())
 
-prop <- ggplot(all_layers_df, 
+prop <- ggplot(all_files_df, 
        aes(x = mean, y = prop_sv, color = LR_stat_scaled)) + 
   geom_point(size = 2) + 
-  facet_grid(layer_val~., switch = "y") +
+  facet_grid(dataset_val~., switch = "y") +
   scale_color_viridis(trans = "log10") +
   scale_color_gradient(low = "blue", high = "red") +
   labs(x = "mean logcounts", 
