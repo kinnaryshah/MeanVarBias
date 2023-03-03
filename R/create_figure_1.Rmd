@@ -38,11 +38,13 @@ df_fxn <- function(file_name, dataset) {
   
   df_effect$LR_stat_scaled <- df_effect$LR_stat / max(df_effect$LR_stat)
 
-  #keep only last 17 columns (nnSVG output) bc breast cancer dataset has different cols
-  df_effect <- df_effect[,(ncol(df_effect)-17):ncol(df_effect)]
-  
   #add col of dataset name
-  df_effect$layer_val <- rep(dataset,1000)
+  df_effect$dataset_val <- rep(dataset,1000)
+  
+  #keep only necessary columns (nnSVG output) bc breast cancer dataset has different cols
+  df_effect <- df_effect %>%
+    select(mean,var,LR_stat,LR_stat_scaled,dataset_val,sigma.sq,tau.sq,prop_sv)
+  
   return(df_effect)
 }
 
