@@ -12,44 +12,21 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r }
 
 library(ggplot2)
+library(spatialLIBD)
 
-set.seed(1)
+spe <- fetch_data(type = "spe")
+spe_151507 <- spe[, spe$sample_id == "151507"]
+spe_151507 <- spe_151507[, !is.na(unfactor(colData(spe_151507)$spatialLIBD))]
 
-# Sim Parameters ----------------------------------------------------------
-n <- 100 # Number of Cells
-G <- 1000 # Number of Genes
-
-
-# Data Generation ---------------------------------------------------------
-
-X <- matrix(data = 1, nrow = n, ncol = 1)  # Intercept for each gene
-# Coefficient Matrix
-beta <- seq(0,14, length.out = G) # Gene-specific log mean expression
-
-# *Case Control Design  ---------------------------------------------------
-# Design Matrix
-# X <- data.frame(
-#   X1 = 1, # Intercept
-#   X2 = rep(c(-1,1), each = n/2) # Case/Control Status
-# ) |> as.matrix()
-
-# Coefficient Matrix
-# beta <- matrix(
-#   data = c(
-#     seq(0, 14, length.out = G),     # Gene-specific Intercept (X1) Coefficient
-#     rnorm(G, 0, 0.25)*rep(c(-1,1), times = G/2) # Gene-specific Case/control (X2) Coefficient
-#   ),
-#   nrow = G, ncol = 2
-# )
-
-lambda <- as.matrix(X)%*% t(beta) # Linear Predictors
-stopifnot(dim(lambda)==c(n,G))
-
+n_umis <- 80
+ix_low_genes <- rowSums(counts(spe_151507)) < n_umis
+spe_151507 <- spe_151507[!ix_low_genes, ]
+  
 # Count Matrix, each row is a sample, and each column is a gene
-r <- matrix(
-  rpois(n = n*G, exp(lambda)),
-  nrow = n, ncol = G
-)
+r <- as.matrix(counts(spe_151507))
+
+n <- dim(spe_151507)[1] # Number of Cells
+G <- dim(spe_151507)[2] # Number of Genes
 
 # Sample-specific Library Size
 R <- rowSums(r)
@@ -82,6 +59,7 @@ data.frame(
 
 # Calc Weight -------------------------------------------------------------
 
+X <- matrix(data = 1, nrow = n, ncol = 1)  # Intercept for each gene
 
 # *Linear Models ----------------------------------------------------------
 lm_fit <- lm(y~X-1) # Multivariate Linear Regression
@@ -137,7 +115,7 @@ stopifnot(dim(mu_hat)==dim(tmp_R_mat))
 lambda_hat <- mu_hat + log2(tmp_R_mat+1) - log2(10^6)
 
 # NOTE: It is possible that lambda is out of range of r_tilda
-# which will produce NA predicted values due to extrpolation
+# which will produce NA predicted values due to extrapolation
 tmp_pred_sqrt_sg <- predict(
   loess_fit, 
   newdata = data.frame(
