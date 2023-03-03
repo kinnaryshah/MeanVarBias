@@ -1,0 +1,236 @@
+---
+title: "calculate_weights"
+output: html_document
+date: '2023-03-03'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r }
+
+library(ggplot2)
+
+set.seed(1)
+
+# Sim Parameters ----------------------------------------------------------
+n <- 100 # Number of Cells
+G <- 1000 # Number of Genes
+
+
+# Data Generation ---------------------------------------------------------
+
+X <- matrix(data = 1, nrow = n, ncol = 1)  # Intercept for each gene
+# Coefficient Matrix
+beta <- seq(0,14, length.out = G) # Gene-specific log mean expression
+
+# *Case Control Design  ---------------------------------------------------
+# Design Matrix
+# X <- data.frame(
+#   X1 = 1, # Intercept
+#   X2 = rep(c(-1,1), each = n/2) # Case/Control Status
+# ) |> as.matrix()
+
+# Coefficient Matrix
+# beta <- matrix(
+#   data = c(
+#     seq(0, 14, length.out = G),     # Gene-specific Intercept (X1) Coefficient
+#     rnorm(G, 0, 0.25)*rep(c(-1,1), times = G/2) # Gene-specific Case/control (X2) Coefficient
+#   ),
+#   nrow = G, ncol = 2
+# )
+
+lambda <- as.matrix(X)%*% t(beta) # Linear Predictors
+stopifnot(dim(lambda)==c(n,G))
+
+# Count Matrix, each row is a sample, and each column is a gene
+r <- matrix(
+  rpois(n = n*G, exp(lambda)),
+  nrow = n, ncol = G
+)
+
+# Sample-specific Library Size
+R <- rowSums(r)
+stopifnot(length(R)==n)
+
+# Temporary Matrix, replicate library size for each row
+tmp_R_mat <- matrix(
+  rep(R, each = G),
+  byrow = TRUE, nrow = n, ncol = G
+)
+
+# logCPM
+y <- log2(r+0.5) - log2(tmp_R_mat+1) + log2(10^6)
+
+
+# Viz Mean-variance -------------------------------------------------------
+data.frame(
+  y = apply(y, MARGIN = 2, sd) |>
+    sqrt(),   # Square root of the standard deviation of logCPM (y_i)  
+  x = log(r+0.5, base = 2) |> 
+    colMeans() # log2(r_i + 0.5)
+) |> 
+  ggplot() +
+  geom_point(aes(x = x, y = y)) +
+  labs(
+    x = "log2(count size + 0.5)",
+    y = "Sqrt(standard deviation)"
+  )
+
+
+# Calc Weight -------------------------------------------------------------
+
+
+# *Linear Models ----------------------------------------------------------
+lm_fit <- lm(y~X-1) # Multivariate Linear Regression
+
+beta_hat <- coef(lm_fit)
+stopifnot(dim(beta_hat)==c(ncol(X),G))
+
+
+# *Voom Variance Modelling -------------------------------------------------
+
+mu_hat <- predict(lm_fit)
+# Equivalently
+# mu_hat2 <- X %*% beta_hat
+stopifnot(dim(mu_hat) == c(n, G))
+
+s_g <- lm_fit$residuals |> 
+  apply(MARGIN = 2,  # Column wise
+        FUN = sd)
+stopifnot(length(s_g) == G)
+
+y_bar <- colMeans(mu_hat)
+stopifnot(length(y_bar) == G)
+
+# Geometric Mean
+R_tilda <- exp(mean(log(R)))
+# The reason of calculating log is to avoid integer overflow
+
+# Log2 Counts
+# Note: slight notation abuse. Prev r denotes read counts
+r_tilda <- y_bar + log2(R_tilda) - log2(10^6)
+stopifnot(length(r_tilda)==G)
+
+# *Plot Relationship -----------------------------------------------------
+
+
+data.frame(
+  y = sqrt(s_g),
+  x = r_tilda
+) |> 
+  ggplot() +
+  geom_point(aes(x = x, y = y)) +
+  geom_smooth(aes(x = x, y = y)) +
+  labs(
+    x = "log2(count size)",
+    y = "Sqrt(s_g)"
+  )
+
+
+# *LOWESS -----------------------------------------------------------------
+loess_fit <- loess(sqrt(s_g)~r_tilda)
+
+stopifnot(dim(mu_hat)==dim(tmp_R_mat))
+lambda_hat <- mu_hat + log2(tmp_R_mat+1) - log2(10^6)
+
+# NOTE: It is possible that lambda is out of range of r_tilda
+# which will produce NA predicted values due to extrpolation
+tmp_pred_sqrt_sg <- predict(
+  loess_fit, 
+  newdata = data.frame(
+    r_tilda = c(lambda_hat)
+  )
+) |> 
+  matrix(
+    nrow = n, ncol = G
+  )
+
+w <- tmp_pred_sqrt_sg^(-4) 
+
+
+```
+
+```{r}
+
+library(tidyverse)
+library(ggplot2)
+set.seed(1)
+
+# Sim Parameters ----------------------------------------------------------
+n <- 100 # Number of Cells
+
+
+# Create Raw Data ---------------------------------------------------------
+
+
+# Design Matrix
+# for simplicity, we use only intercept without other covariates
+X <- data.frame(
+  intercept = rep(1, n),
+  X1 = runif(n = n, min = 0, max = 100),
+  X2 = runif(n = n, min = 0, max = 1000) # Non effective covariates
+) 
+
+# Create Mean and Variance, where mean = var
+# Minicing a continuous Poisson
+# And to intentionally create a heteroscedestic data set
+# mu = 0.5 + 2*X1
+mean_vec <- var_vec <- (as.matrix(X) %*% c(0.5, 2, 0))
+
+# Create Outcome
+y <- rnorm(n = n, mean = mean_vec, sd = sqrt(var_vec))
+
+
+# Ignore Homoscedastic Assumption -------------------------------------------
+raw_fit <- lm(y ~ .-1, X)
+summary(raw_fit)
+# hist(raw_fit$residuals)
+plot(raw_fit$residuals, raw_fit$fitted.values)
+# mean(raw_fit$residuals)
+# var(raw_fit$residuals)
+
+
+
+# Weighted LM addressing Heteroscedastic ------------------------------------
+
+# * Approach 1 - Scaling the data -----------------------------------------
+# Assume that weight is known, which is inverse of the sqrt
+w_sd_vec <- 1/sqrt(var_vec)
+
+wtd_X <- w_sd_vec*X
+wtd_Y <- w_sd_vec*y
+
+wtd_fit <- lm(wtd_Y ~ .-1, wtd_X)
+summary(wtd_fit)
+hist(wtd_fit$residuals)
+plot(wtd_fit$residuals, wtd_fit$fitted.values)
+mean(wtd_fit$residuals)
+var(wtd_fit$residuals)
+
+
+# Assume that weight is known, which is inverse of the sqrt
+w_var_vec <- 1/var_vec
+
+# * Approach 2 - Use weight argument if exist -----------------------------
+wtd_fit_lm_var <- lm(y ~ .-1, X, weights = w_var_vec)
+summary(wtd_fit_lm_var)
+# NOTE: It is wrong to investigate the non-weighted residual as is
+# hist(wtd_fit_lm_var$residuals)
+# mean(wtd_fit_lm_var$residuals)
+# var(wtd_fit_lm_var$residuals)
+# You want to investigate weighted results
+mean(weighted.residuals(wtd_fit_lm_var))
+var(weighted.residuals(wtd_fit_lm_var))
+ggplot() + 
+  geom_histogram(
+    aes(wtd_fit_lm_var$residuals,
+        weight = wtd_fit_lm_var$weights)
+    )
+
+```
+
+
+
