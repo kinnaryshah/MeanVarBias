@@ -322,12 +322,13 @@ p = all_layers_df %>%
   geom_point(alpha = 0.3) + 
   geom_line(data = all_layers_df %>% filter(model %in% c("poisson","nbinomial")),
             aes(x = mean_emp, y = var_value, color = model)) +
-  facet_grid(layer_val~., switch = "y") +
+  facet_wrap(layer_val~., switch = "y") +
   scale_x_log10() + scale_y_log10() +
   labs(title = "DLPFC 151507 by Layers",
        x = "Log of mean expression",
        y = "Log of variance") +
-  theme_bw()
+  theme_bw() +
+  theme(strip.text.y.left = element_text(angle = 0))
 
 ```
 
