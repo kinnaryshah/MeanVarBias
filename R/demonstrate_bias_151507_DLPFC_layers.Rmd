@@ -300,6 +300,7 @@ nb_model <- function(layer){
 
   mean_var_tb = tibble(mean_emp = mean_emp,
                        var_emp = var_emp,
+                       poisson = rowMeans(counts(spe_layer)),
                        nbinomial = mean_emp + mean_emp^2 * 1/phi) %>% 
     tidyr::pivot_longer(cols = -mean_emp, names_to = "model", values_to = "var_value")
   
@@ -319,7 +320,7 @@ p = all_layers_df %>%
   filter(model %in% c("var_emp")) %>%
   ggplot(aes(x = mean_emp, y = var_value)) + 
   geom_point(alpha = 0.3) + 
-  geom_line(data = all_layers_df %>% filter(model %in% c("nbinomial")),
+  geom_line(data = all_layers_df %>% filter(model %in% c("poisson","nbinomial")),
             aes(x = mean_emp, y = var_value, color = model)) +
   facet_grid(layer_val~., switch = "y") +
   scale_x_log10() + scale_y_log10() +
