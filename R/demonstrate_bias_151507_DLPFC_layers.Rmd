@@ -298,12 +298,9 @@ nb_model <- function(layer){
   model = lm(var_emp ~ 1*mean_emp + I(mean_emp^2) + 0, tibble(mean_emp, var_emp))
   phi = 1/coef(model)["I(mean_emp^2)"]
 
-  fit_nb =  glmGamPoi::glm_gp(counts(spe_layer), design = ~ 1, size_factors = FALSE, 
-                          overdispersion = TRUE, on_disk = FALSE)
-
   mean_var_tb = tibble(mean_emp = mean_emp,
                        var_emp = var_emp,
-                       nbinomial = mean_emp + mean_emp^2 * fit_nb$overdispersions) %>% 
+                       nbinomial = mean_emp + mean_emp^2 * 1/phi) %>% 
     tidyr::pivot_longer(cols = -mean_emp, names_to = "model", values_to = "var_value")
   
   #add col of layer name
@@ -311,30 +308,6 @@ nb_model <- function(layer){
   
   return(mean_var_tb)
 }
-
-spe_layer <- spe_151507[, colData(spe_151507)$spatialLIBD == "L2"]
-ix_low_genes <- rowSums(counts(spe_layer)) < n_umis
-spe_layer <- spe_layer[!ix_low_genes, ]
-
-#https://github.com/stephaniehicks/quantify-snrna/blob/master/mouse_cortex/code/distribution-plots.R
-mean_emp = rowMeans(counts(spe_layer))
-var_emp = genefilter::rowVars(counts(spe_layer))
-
-# Negative binomial
-# Estimate overall size/dispersion parameter
-model = lm(var_emp ~ 1*mean_emp + I(mean_emp^2) + 0, tibble(mean_emp, var_emp))
-phi = 1/coef(model)["I(mean_emp^2)"]
-
-# Estimate size/dispersion parameter for every gene
-library(glmGamPoi)
-fit_nb =  glmGamPoi::glm_gp(counts(spe_layer), design = ~ 1, size_factors = FALSE, 
-                         overdispersion = TRUE, on_disk = FALSE)
-
-mean_var_tb = tibble(mean_emp = mean_emp,
-                     var_emp = var_emp,
-                     nbinomial = mean_emp + mean_emp^2 * fit_nb$overdispersions) %>% 
-  tidyr::pivot_longer(cols = -mean_emp, names_to = "model", values_to = "var_value")
-
 
 layer_list <- c("L1", "L2", "L3", "L4", "L5", "L6", "WM")
 #create dfs of all layers
