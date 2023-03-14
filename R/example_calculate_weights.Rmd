@@ -128,6 +128,12 @@ tmp_pred_sqrt_sg <- predict(
 
 w <- tmp_pred_sqrt_sg^(-4) 
 
+#remove genes/samples with NA, for now
+#sum(is.na(w))/(10628*4221)  0.828 NA in w
+#w1 <- w[complete.cases(w), ] removes all genes
+#w2 <- w[, which(colMeans(!is.na(w)) > 0)] removes all samples
+
+#multiply logcounts matrix by weight
 
 ```
 
