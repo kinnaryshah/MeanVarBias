@@ -283,15 +283,36 @@ n_umis <- 80
 spe_151507 <- spe[, spe$sample_id == "151507"]
 spe_151507 <- spe_151507[, !is.na(unfactor(colData(spe_151507)$spatialLIBD))]
 
+# Downsample counts matrix
+# Source: https://github.com/willtownes/scrna2019/blob/028363f04139a58b19143f3058ca8fa4a3533b63/util/functions.R
+Down_Sample_Matrix<-function(expr_mat,min_lib_size=NULL){
+  min_sz<-min(colSums(expr_mat))
+  if(is.null(min_lib_size)){
+    min_lib_size<-min_sz
+  } else {
+    stopifnot(min_lib_size<=min_sz)
+  }
+  down_sample<-function(x){
+    prob <- min_lib_size/sum(x)
+    unlist(lapply(x,function(y){rbinom(1, y, prob)}))
+  }
+  apply(expr_mat, 2, down_sample)
+}
+
 nb_model <- function(layer){
-  
+
   spe_layer <- spe_151507[, colData(spe_151507)$spatialLIBD == layer]
   ix_low_genes <- rowSums(counts(spe_layer)) < n_umis
   spe_layer <- spe_layer[!ix_low_genes, ]
 
+  # Downsample cell counts
+  counts_sub_scaled = Down_Sample_Matrix(ceiling(counts(spe_layer)))
+  counts_sub_scaled = counts_sub_scaled[rowSums(counts_sub_scaled) != 0, ]
+  summary(colSums(counts_sub_scaled))
+
   #https://github.com/stephaniehicks/quantify-snrna/blob/master/mouse_cortex/code/distribution-plots.R
-  mean_emp = rowMeans(counts(spe_layer))
-  var_emp = genefilter::rowVars(counts(spe_layer))
+  mean_emp = rowMeans(counts_sub_scaled)
+  var_emp = genefilter::rowVars(counts_sub_scaled)
 
   # Negative binomial
   # Estimate overall size/dispersion parameter
@@ -300,7 +321,7 @@ nb_model <- function(layer){
 
   mean_var_tb = tibble(mean_emp = mean_emp,
                        var_emp = var_emp,
-                       poisson = rowMeans(counts(spe_layer)),
+                       poisson = rowMeans(counts_sub_scaled),
                        nbinomial = mean_emp + mean_emp^2 * 1/phi) %>% 
     tidyr::pivot_longer(cols = -mean_emp, names_to = "model", values_to = "var_value")
   
