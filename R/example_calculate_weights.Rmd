@@ -13,15 +13,14 @@ knitr::opts_chunk$set(echo = TRUE)
 
 library(ggplot2)
 library(spatialLIBD)
+library(nnSVG)
 
 spe <- fetch_data(type = "spe")
 spe_151507 <- spe[, spe$sample_id == "151507"]
 spe_151507 <- spe_151507[, !is.na(unfactor(colData(spe_151507)$spatialLIBD))]
 
-n_umis <- 80
-ix_low_genes <- rowSums(counts(spe_151507)) < n_umis
-spe_151507 <- spe_151507[!ix_low_genes, ]
-  
+spe_151507 <- filter_genes(spe_151507)
+
 # Count Matrix, each row is a sample, and each column is a gene
 r <- as.matrix(counts(spe_151507))
 
@@ -129,7 +128,7 @@ tmp_pred_sqrt_sg <- predict(
 w <- tmp_pred_sqrt_sg^(-4) 
 
 #remove genes/samples with NA, for now
-#sum(is.na(w))/(10628*4221)  0.828 NA in w
+#sum(is.na(w))/(dim(w)[1]*dim(w)[2])  0.828 NA in w when using umi, 0.389 NA in w when using filter genes
 #w1 <- w[complete.cases(w), ] removes all genes
 #w2 <- w[, which(colMeans(!is.na(w)) > 0)] removes all samples
 
