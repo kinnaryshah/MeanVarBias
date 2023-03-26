@@ -19,8 +19,10 @@ spe <- fetch_data(type = "spe")
 spe_151507 <- spe[, spe$sample_id == "151507"]
 spe_151507 <- spe_151507[, !is.na(unfactor(colData(spe_151507)$spatialLIBD))]
 
-spe_151507 <- filter_genes(spe_151507)
-
+n_umis <- 80
+ix_low_genes <- rowSums(counts(spe_151507)) < n_umis
+spe_151507 <- spe_151507[!ix_low_genes, ]
+ 
 # Count Matrix, each row is a sample, and each column is a gene
 r <- as.matrix(counts(spe_151507))
 
@@ -112,6 +114,11 @@ loess_fit <- loess(sqrt(s_g)~r_tilda)
 
 stopifnot(dim(mu_hat)==dim(tmp_R_mat))
 lambda_hat <- mu_hat + log2(tmp_R_mat+1) - log2(10^6)
+
+#gives percentage of lambda_hat values out of range
+sum(lambda_hat < range(r_tilda)[1] | lambda_hat > range(r_tilda)[2]) / (dim(spe_151507)[1]*dim(spe_151507)[2]) 
+sum(lambda_hat < range(r_tilda)[1]) / (dim(spe_151507)[1]*dim(spe_151507)[2])
+sum(lambda_hat > range(r_tilda)[2]) / (dim(spe_151507)[1]*dim(spe_151507)[2])
 
 # NOTE: It is possible that lambda is out of range of r_tilda
 # which will produce NA predicted values due to extrapolation
