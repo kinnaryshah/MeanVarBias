@@ -183,9 +183,9 @@ nn_brisc <- BRISC_neighbor(coords, n.neighbors = 10, n_omp = 1,
   
 # run BRISC using parallelization
 ix <- seq_len(nrow(y))
-out_brisc <- bplapply(ix, function(i) {
+#out_brisc <- bplapply(ix, function(i) {
   # fit model (intercept-only model if x is NULL)
-  y_i <- y[i, ]
+  y_i <- y[1, ]
   suppressWarnings({
     runtime <- system.time({
       out_i <- BRISC_estimation(coords = coords, y = y_i, x = NULL, 
@@ -200,7 +200,9 @@ out_brisc <- bplapply(ix, function(i) {
     runtime = runtime[["elapsed"]]
   )
   res_i
-})
+  
+  pred_i <- BRISC_prediction(out_i, coords = coords, X.0 = NULL, verbose = F)
+#})
 
 saveRDS(out_brisc, file = "mean_var_project/DLPFC_151507_BRISC_estimation.rds")
 
