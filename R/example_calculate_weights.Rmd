@@ -183,9 +183,10 @@ nn_brisc <- BRISC_neighbor(coords, n.neighbors = 10, n_omp = 1,
   
 # run BRISC using parallelization
 ix <- seq_len(nrow(y))
-#out_brisc <- bplapply(ix, function(i) {
+ix <- c(1,2,3)
+out_brisc <- bplapply(ix, function(i) {
   # fit model (intercept-only model if x is NULL)
-  y_i <- y[1, ]
+  y_i <- y[i, ]
   suppressWarnings({
     runtime <- system.time({
       out_i <- BRISC_estimation(coords = coords, y = y_i, x = NULL, 
@@ -194,22 +195,17 @@ ix <- seq_len(nrow(y))
                                 verbose = F)
     })
   })
-  res_i <- c(
-    out_i$Theta, 
-    loglik = out_i$log_likelihood, 
-    runtime = runtime[["elapsed"]]
-  )
-  res_i
   
   pred_i <- BRISC_prediction(out_i, coords = coords, X.0 = NULL, verbose = F)
-#})
-
-saveRDS(out_brisc, file = "mean_var_project/DLPFC_151507_BRISC_estimation.rds")
+  residual_i <- y_i - pred_i$prediction
+  
+  return(list(pred_i$prediction, residual_i))
+}, BPPARAM = MulticoreParam(workers = 1)) #change to 10 on JHPCE
 
 # collapse output list into matrix
 mat_brisc <- do.call("rbind", out_brisc)
 
-# run BRISC prediction function - testing/training?
+saveRDS(mat_brisc, file = "mean_var_project/DLPFC_151507_BRISC_estimation.rds")
 
 ```
 
