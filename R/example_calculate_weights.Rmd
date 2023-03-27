@@ -205,7 +205,7 @@ out_brisc <- bplapply(ix, function(i) {
 # collapse output list into matrix
 mat_brisc <- do.call("rbind", out_brisc)
 
-saveRDS(mat_brisc, file = "mean_var_project/DLPFC_151507_BRISC_estimation.rds")
+saveRDS(mat_brisc, file = "DLPFC_151507_BRISC_estimation.rds")
 
 ```
 
