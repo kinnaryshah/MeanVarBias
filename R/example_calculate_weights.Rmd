@@ -209,4 +209,32 @@ saveRDS(mat_brisc, file = "DLPFC_151507_BRISC_estimation.rds")
 
 ```
 
+```{r}
+library(spatialLIBD)
+library(nnSVG)
+
+spe <- fetch_data(type = "spe")
+spe_151507 <- spe[, spe$sample_id == "151507"]
+spe_151507 <- spe_151507[, !is.na(unfactor(colData(spe_151507)$spatialLIBD))]
+
+n_umis <- 80
+ix_low_genes <- rowSums(counts(spe_151507)) < n_umis
+spe_151507_umi_filter <- spe_151507[!ix_low_genes, ]
+dim(spe_151507_umi_filter)
+is_mito <- grepl("(^MT-)|(^mt-)", rowData(spe_151507_umi_filter)$gene_name)
+count(is_mito) #umi filter does not remove any mito genes
+
+is_mito <- grepl("(^MT-)|(^mt-)", rowData(spe_151507)$gene_name)
+count(is_mito)
+spe_151507_filter_genes <- filter_genes(spe_151507)
+dim(spe_151507_filter_genes)
+filter_genes_ncounts = 3
+filter_genes_pcspots = 0.5
+nspots <- ceiling(filter_genes_pcspots / 100 * ncol(spe_151507))
+ix_remove <- rowSums(counts(spe_151507) >= filter_genes_ncounts) < nspots
+count(ix_remove)
+
+#all genes from filter_genes in umi filter
+length(intersect(rowData(spe_151507_umi_filter)$gene_name, rowData(spe_151507_filter_genes)$gene_name))
+```
 
