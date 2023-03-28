@@ -14,6 +14,8 @@ knitr::opts_chunk$set(echo = TRUE)
 library(ggplot2)
 library(spatialLIBD)
 library(nnSVG)
+library(BRISC)
+library(BiocParallel)
 
 spe <- fetch_data(type = "spe")
 spe_151507 <- spe[, spe$sample_id == "151507"]
@@ -42,39 +44,69 @@ y <- log2(r+0.5) - log2(tmp_R_mat+1) + log2(10^6)
 
 
 # Viz Mean-variance -------------------------------------------------------
-data.frame(
-  y = apply(y, MARGIN = 2, sd) |>
-    sqrt(),   # Square root of the standard deviation of logCPM (y_i)  
-  x = log(r+0.5, base = 2) |> 
-    colMeans() # log2(r_i + 0.5)
-) |> 
-  ggplot() +
-  geom_point(aes(x = x, y = y)) +
-  labs(
-    x = "log2(count size + 0.5)",
-    y = "Sqrt(standard deviation)"
-  )
+# data.frame(
+#   y = apply(y, MARGIN = 2, sd) |>
+#     sqrt(),   # Square root of the standard deviation of logCPM (y_i)  
+#   x = log(r+0.5, base = 2) |> 
+#     colMeans() # log2(r_i + 0.5)
+# ) |> 
+#   ggplot() +
+#   geom_point(aes(x = x, y = y)) +
+#   labs(
+#     x = "log2(count size + 0.5)",
+#     y = "Sqrt(standard deviation)"
+#   )
 
 
 # Calc Weight -------------------------------------------------------------
 
-X <- matrix(data = 1, nrow = n, ncol = 1)  # Intercept for each gene
+# *BRISC ----------------------------------------------------------
 
-# *Linear Models ----------------------------------------------------------
-lm_fit <- lm(y~X-1) # Multivariate Linear Regression
+coords <- spatialCoords(spe_151507)
 
-beta_hat <- coef(lm_fit)
-stopifnot(dim(beta_hat)==c(ncol(X),G))
+# scale coordinates proportionally
+range_all <- max(apply(coords, 2, function(col) diff(range(col))))
+coords <- apply(coords, 2, function(col) (col - min(col)) / range_all)
 
+# calculate ordering of coordinates
+order_brisc <- BRISC_order(coords, order = "AMMD", verbose = F)
+
+# calculate nearest neighbors
+nn_brisc <- BRISC_neighbor(coords, n.neighbors = 10, n_omp = 1, 
+                           search.type = "tree", ordering = order_brisc, 
+                           verbose = F)
+
+  
+# run BRISC using parallelization
+ix <- seq_len(nrow(y))
+#ix <- c(1,2,3)
+out_brisc <- bplapply(ix, function(i) {
+  # fit model (intercept-only model if x is NULL)
+  y_i <- y[i, ]
+  suppressWarnings({
+    runtime <- system.time({
+      out_i <- BRISC_estimation(coords = coords, y = y_i, x = NULL, 
+                                cov.model = "exponential", 
+                                ordering = order_brisc, neighbor = nn_brisc, 
+                                verbose = F)
+    })
+  })
+  
+  pred_i <- BRISC_prediction(out_i, coords = coords, X.0 = NULL, verbose = F)
+  residual_i <- y_i - pred_i$prediction
+  
+  return(list(pred_i$prediction, residual_i))
+}, BPPARAM = MulticoreParam(workers = 1)) #change to 10 on JHPCE
+
+# collapse output list into matrix
+mat_brisc <- do.call("rbind", out_brisc)
 
 # *Voom Variance Modelling -------------------------------------------------
 
-mu_hat <- predict(lm_fit)
-# Equivalently
-# mu_hat2 <- X %*% beta_hat
+mu_hat <- t(as.data.frame((mat_brisc[,1])))
 stopifnot(dim(mu_hat) == c(n, G))
 
-s_g <- lm_fit$residuals |> 
+s_g <- t(as.data.frame((mat_brisc[,2]))) |> 
   apply(MARGIN = 2,  # Column wise
         FUN = sd)
 stopifnot(length(s_g) == G)
@@ -94,17 +126,17 @@ stopifnot(length(r_tilda)==G)
 # *Plot Relationship -----------------------------------------------------
 
 
-data.frame(
-  y = sqrt(s_g),
-  x = r_tilda
-) |> 
-  ggplot() +
-  geom_point(aes(x = x, y = y)) +
-  geom_smooth(aes(x = x, y = y)) +
-  labs(
-    x = "log2(count size)",
-    y = "Sqrt(s_g)"
-  )
+# data.frame(
+#   y = sqrt(s_g),
+#   x = r_tilda
+# ) |> 
+#   ggplot() +
+#   geom_point(aes(x = x, y = y)) +
+#   geom_smooth(aes(x = x, y = y)) +
+#   labs(
+#     x = "log2(count size)",
+#     y = "Sqrt(s_g)"
+#   )
 
 
 # *LOWESS -----------------------------------------------------------------
@@ -131,6 +163,10 @@ tmp_pred_sqrt_sg <- predict(
   )
 
 w <- tmp_pred_sqrt_sg^(-4) 
+
+saveRDS(w, file = "DLPFC_151507_BRISC_estimation.rds")
+
+w <- readRDS(file = "mean_var_project/DLPFC_151507_BRISC_estimation.rds")
 
 #remove genes/samples with NA, for now
 #sum(is.na(w))/(dim(w)[1]*dim(w)[2])  0.828 NA in w when using umi, 0.389 NA in w when using filter genes
@@ -181,7 +217,7 @@ nn_brisc <- BRISC_neighbor(coords, n.neighbors = 10, n_omp = 1,
   
 # run BRISC using parallelization
 ix <- seq_len(nrow(y))
-ix <- c(1,2,3)
+#ix <- c(1,2,3)
 out_brisc <- bplapply(ix, function(i) {
   # fit model (intercept-only model if x is NULL)
   y_i <- y[i, ]
