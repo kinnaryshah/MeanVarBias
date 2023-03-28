@@ -19,9 +19,7 @@ spe <- fetch_data(type = "spe")
 spe_151507 <- spe[, spe$sample_id == "151507"]
 spe_151507 <- spe_151507[, !is.na(unfactor(colData(spe_151507)$spatialLIBD))]
 
-n_umis <- 80
-ix_low_genes <- rowSums(counts(spe_151507)) < n_umis
-spe_151507 <- spe_151507[!ix_low_genes, ]
+spe_151507 <- filter_genes(spe_151507)
  
 # Count Matrix, each row is a sample, and each column is a gene
 r <- as.matrix(counts(spe_151507))
