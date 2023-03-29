@@ -78,11 +78,12 @@ nn_brisc <- BRISC_neighbor(coords, n.neighbors = 10, n_omp = 1,
 
   
 # run BRISC using parallelization
-ix <- seq_len(nrow(y))
+# run BRISC by column of y so BRISC is run per gene
+ix <- seq_len(ncol(y))
 #ix <- c(1,2,3)
 out_brisc <- bplapply(ix, function(i) {
   # fit model (intercept-only model if x is NULL)
-  y_i <- y[i, ]
+  y_i <- y[ ,i]
   suppressWarnings({
     runtime <- system.time({
       out_i <- BRISC_estimation(coords = coords, y = y_i, x = NULL, 
@@ -103,10 +104,10 @@ mat_brisc <- do.call("rbind", out_brisc)
 
 # *Voom Variance Modelling -------------------------------------------------
 
-mu_hat <- t(as.data.frame((mat_brisc[,1])))
+mu_hat <- as.data.frame((mat_brisc[,1]))
 stopifnot(dim(mu_hat) == c(n, G))
 
-s_g <- t(as.data.frame((mat_brisc[,2]))) |> 
+s_g <- as.data.frame((mat_brisc[,2])) |> 
   apply(MARGIN = 2,  # Column wise
         FUN = sd)
 stopifnot(length(s_g) == G)
