@@ -23,11 +23,11 @@ spe_151507 <- spe_151507[, !is.na(unfactor(colData(spe_151507)$spatialLIBD))]
 
 spe_151507 <- filter_genes(spe_151507)
  
-# Count Matrix, each row is a sample, and each column is a gene
-r <- as.matrix(counts(spe_151507))
+# Count Matrix, transpose so each row is a spot, and each column is a gene
+r <- t(as.matrix(counts(spe_151507)))
 
-n <- dim(spe_151507)[1] # Number of Cells
-G <- dim(spe_151507)[2] # Number of Genes
+n <- dim(spe_151507)[2] # Number of Cells
+G <- dim(spe_151507)[1] # Number of Genes
 
 # Sample-specific Library Size
 R <- rowSums(r)
