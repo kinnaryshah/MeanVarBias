@@ -103,10 +103,10 @@ mat_brisc <- do.call("rbind", out_brisc)
 
 # *Voom Variance Modelling -------------------------------------------------
 
-mu_hat <- as.data.frame((mat_brisc[,1]))
+mu_hat <- unname(as.matrix(as.data.frame(mat_brisc[,1])))
 stopifnot(dim(mu_hat) == c(n, G))
 
-s_g <- as.data.frame((mat_brisc[,2])) |> 
+s_g <- unname(as.data.frame(mat_brisc[,2])) |> 
   apply(MARGIN = 2,  # Column wise
         FUN = sd)
 stopifnot(length(s_g) == G)
