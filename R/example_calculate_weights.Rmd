@@ -185,6 +185,8 @@ spe <- fetch_data(type = "spe")
 spe_151507 <- spe[, spe$sample_id == "151507"]
 spe_151507 <- spe_151507[, !is.na(unfactor(colData(spe_151507)$spatialLIBD))]
 
+hist(log(rowSums(counts(spe_151507))+1),main='DLPFC 151507 counts per gene')
+
 n_umis <- 80
 ix_low_genes <- rowSums(counts(spe_151507)) < n_umis
 spe_151507_umi_filter <- spe_151507[!ix_low_genes, ]
