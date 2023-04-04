@@ -154,19 +154,17 @@ sum(lambda_hat > range(r_tilda)[2]) / (dim(spe_151507)[1]*dim(spe_151507)[2])
 # which will produce NA predicted values due to extrapolation
 tmp_pred_sqrt_sg <- predict(
   spline_fit, 
-  newdata = data.frame(
-    r_tilda = c(lambda_hat)
-  )
-) |> 
+  x = c(lambda_hat)
+)$y |> 
   matrix(
     nrow = n, ncol = G
   )
 
 w <- tmp_pred_sqrt_sg^(-4) 
 
-saveRDS(w, file = "DLPFC_151507_BRISC_estimation.rds")
+saveRDS(w, file = "DLPFC_151507_BRISC_estimation_spline.rds")
 
-w <- readRDS(file = "mean_var_project/DLPFC_151507_BRISC_estimation.rds")
+w <- readRDS(file = "mean_var_project/DLPFC_151507_BRISC_estimation_spline.rds")
 
 #remove genes/samples with NA, for now
 #sum(is.na(w))/(dim(w)[1]*dim(w)[2])  0.828 NA in w when using umi, 0.389 NA in w when using filter genes
