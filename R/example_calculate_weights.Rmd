@@ -96,7 +96,7 @@ out_brisc <- bplapply(ix, function(i) {
   residual_i <- y_i - pred_i$prediction
   
   return(list(pred_i$prediction, residual_i))
-}, BPPARAM = MulticoreParam(workers = 1)) #change to 10 on JHPCE
+}, BPPARAM = MulticoreParam(workers = 1)) #change to 20 on JHPCE
 
 # collapse output list into matrix
 mat_brisc <- do.call("rbind", out_brisc)
