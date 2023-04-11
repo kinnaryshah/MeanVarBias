@@ -138,7 +138,20 @@ stopifnot(length(r_tilda)==G)
 #     y = "Sqrt(s_g)"
 #   )
 
-
+library(ggformula)
+p1 <- data.frame(
+  y = sqrt(s_g),
+  x = r_tilda
+) |> 
+  ggplot() +
+  geom_point(aes(x = x, y = y)) +
+  geom_smooth(aes(x = x, y = y), method = "loess") +
+  stat_spline(aes(x = x, y = y))
+  labs(
+    x = "log2(count size)",
+    y = "Sqrt(s_g)"
+  )
+  
 # *PREDICT MODEL -----------------------------------------------------------------
 stopifnot(dim(mu_hat)==dim(tmp_R_mat))
 lambda_hat <- mu_hat + log2(tmp_R_mat+1) - log2(10^6)
