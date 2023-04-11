@@ -225,25 +225,44 @@ length(intersect(rowData(spe_151507_umi_filter)$gene_name, rowData(spe_151507_fi
 
 library(spatialLIBD)
 library(nnSVG)
+library(BiocParallel)
 
 spe <- fetch_data(type = "spe")
 spe_151507 <- spe[, spe$sample_id == "151507"]
 spe_151507 <- spe_151507[, !is.na(unfactor(colData(spe_151507)$spatialLIBD))]
 spe_151507 <- filter_genes(spe_151507)
 
+# Count Matrix, transpose so each row is a spot, and each column is a gene
+y <- t(as.matrix(counts(spe_151507)))
 n = dim(spe_151507)[2]
-y = 
-X = data.frame(intercept = rep(1, n))
-raw_fit <- lm(y ~ .-1, X)
-summary(raw_fit)
-plot(raw_fit$residuals, raw_fit$fitted.values)
 
-w <- readRDS(file = "DLPFC_151507_BRISC_estimation_spline.rds")
-wtd_X <- w*X
-wtd_Y <- w*y
-wtd_fit <- lm(wtd_Y ~ .-1, wtd_X)
-summary(wtd_fit)
-plot(wtd_fit$residuals, wtd_fit$fitted.values)
+w <- readRDS(file = "mean_var_project/DLPFC_151507_BRISC_estimation_spline.rds")
 
+#ix <- seq_len(ncol(y))
+ix <- c(1,2,3)
+out_brisc <- bplapply(ix, function(i) {
+
+  y_i = y[,i]
+  X = data.frame(intercept = rep(1, n))
+  #intercept only model
+  raw_fit <- lm(y_i ~ .-1, X)
+  print(summary(raw_fit))
+  
+  w_i <- w[ ,1]
+  wtd_X <- w_i*X
+  wtd_y_i <- w_i*y_i
+  wtd_fit <- lm(wtd_y_i ~ .-1, wtd_X)
+  print(summary(wtd_fit))
+  
+  #alternatively, use weighted least squares by squaring w_i
+  wtd_fit_lm_var <- lm(y_i ~ .-1, X, weights = w_i^2)
+  print(summary(wtd_fit_lm_var))
+  
+  #return both fits to compare
+}, BPPARAM = MulticoreParam(workers = 1)) #change to 20 on JHPCE
+
+
+#Note: this can fit all models at once instead of in loop
+raw_fit <- lm(y ~ .-1, X) 
 
 ```
