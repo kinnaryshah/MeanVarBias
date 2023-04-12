@@ -1,0 +1,46 @@
+---
+title: "example_use_weights"
+output: html_document
+date: "2023-04-12"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(nnSVG)
+library(spatialLIBD)
+library(scran)
+
+spe <- fetch_data(type = "spe")
+spe_151507 <- spe[, spe$sample_id == "151507"]
+spe_151507 <- spe_151507[, !is.na(unfactor(colData(spe_151507)$spatialLIBD))]
+spe_151507 <- filter_genes(spe_151507)
+spe_151507 <- logNormCounts(spe_151507)
+
+#multiply by weights after log transf.
+w <- readRDS(file = "mean_var_project/DLPFC_151507_BRISC_estimation_spline.rds")
+
+weighted_counts <- t(w)*logcounts(spe_151507)
+assays(spe_151507) <- assays(spe_151507)[1]
+assay(spe_151507, "logcounts") <- weighted_counts # assign a new entry to assays slot, nnSVG will use "logcounts"
+
+# set seed for reproducibility
+set.seed(123)
+#run nnSVG, element-wise multiplication
+spe_151507 <- nnSVG(spe_151507)
+
+# show results
+rowData(spe_151507)
+
+# Save an object to a file
+saveRDS(spe_151507, file = "spe_151507_DLPFC_weighted_nnSVG.rds")
+
+```
+
+```{r}
+
+```
+

@@ -146,7 +146,7 @@ p1 <- data.frame(
   ggplot() +
   geom_point(aes(x = x, y = y)) +
   geom_smooth(aes(x = x, y = y), method = "loess") +
-  stat_spline(aes(x = x, y = y)) +
+  stat_spline(aes(x = x, y = y), nknots=4) +
   labs(
     x = "log2(count size)",
     y = "Sqrt(s_g)"
