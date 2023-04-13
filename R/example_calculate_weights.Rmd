@@ -221,4 +221,19 @@ count(ix_remove)
 length(intersect(rowData(spe_151507_umi_filter)$gene_name, rowData(spe_151507_filter_genes)$gene_name))
 ```
 
+```{r}
+library(spatialLIBD)
+library(nnSVG)
 
+objs_list <- readRDS(file = "mean_var_project/objs.rds") #contains r_tilda & s_g from running weight algorithm
+indices <- as.data.frame(objs_list[2]) < 0.36
+low_s_g_indices <- as.vector(indices)
+
+spe <- fetch_data(type = "spe")
+spe_151507 <- spe[, spe$sample_id == "151507"]
+spe_151507 <- spe_151507[, !is.na(unfactor(colData(spe_151507)$spatialLIBD))]
+spe_151507 <- filter_genes(spe_151507)
+
+rowData(spe_151507)$gene_name[indices]
+
+```
