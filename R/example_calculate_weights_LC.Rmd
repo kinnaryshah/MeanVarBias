@@ -1,0 +1,195 @@
+---
+title: "calculate_weights_LC"
+output: html_document
+date: '2023-04-14'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r }
+
+library(ggplot2)
+library(SpatialExperiment)
+library(nnSVG)
+library(BRISC)
+library(BiocParallel)
+library(WeberDivechaLCdata)
+library(nnSVG)
+
+#need R 4.2 on jhpce
+
+#download LC data
+spe <- WeberDivechaLCdata_Visium()
+#subset one sample
+spe_Br2701_LC_round2 <- spe[, spe$sample_id == "Br2701_LC_round2"]
+
+n_umis <- 80
+ix_low_genes <- rowSums(counts(spe_Br2701_LC_round2)) < n_umis
+spe_Br2701_LC_round2 <- spe_Br2701_LC_round2[!ix_low_genes, ]
+
+
+# Count Matrix, transpose so each row is a spot, and each column is a gene
+r <- t(as.matrix(counts(spe_Br2701_LC_round2)))
+
+n <- dim(spe_Br2701_LC_round2)[2] # Number of Cells
+G <- dim(spe_Br2701_LC_round2)[1] # Number of Genes
+
+# Sample-specific Library Size
+R <- rowSums(r)
+stopifnot(length(R)==n)
+
+# Temporary Matrix, replicate library size for each row
+tmp_R_mat <- matrix(
+  rep(R, each = G),
+  byrow = TRUE, nrow = n, ncol = G
+)
+
+# logCPM
+y <- log2(r+0.5) - log2(tmp_R_mat+1) + log2(10^6)
+
+
+# Viz Mean-variance -------------------------------------------------------
+# data.frame(
+#   y = apply(y, MARGIN = 2, sd) |>
+#     sqrt(),   # Square root of the standard deviation of logCPM (y_i)  
+#   x = log(r+0.5, base = 2) |> 
+#     colMeans() # log2(r_i + 0.5)
+# ) |> 
+#   ggplot() +
+#   geom_point(aes(x = x, y = y)) +
+#   labs(
+#     x = "log2(count size + 0.5)",
+#     y = "Sqrt(standard deviation)"
+#   )
+
+
+# Calc Weight -------------------------------------------------------------
+
+# *BRISC ----------------------------------------------------------
+
+coords <- spatialCoords(spe_Br2701_LC_round2)
+
+# scale coordinates proportionally
+range_all <- max(apply(coords, 2, function(col) diff(range(col))))
+coords <- apply(coords, 2, function(col) (col - min(col)) / range_all)
+
+# calculate ordering of coordinates
+order_brisc <- BRISC_order(coords, order = "AMMD", verbose = F)
+
+# calculate nearest neighbors
+nn_brisc <- BRISC_neighbor(coords, n.neighbors = 10, n_omp = 1, 
+                           search.type = "tree", ordering = order_brisc, 
+                           verbose = F)
+
+  
+# run BRISC using parallelization
+# run BRISC by column of y so BRISC is run per gene
+ix <- seq_len(ncol(y))
+out_brisc <- bplapply(ix, function(i) {
+  # fit model (intercept-only model if x is NULL)
+  y_i <- y[ ,i]
+  suppressWarnings({
+    runtime <- system.time({
+      out_i <- BRISC_estimation(coords = coords, y = y_i, x = NULL, 
+                                cov.model = "exponential", 
+                                ordering = order_brisc, neighbor = nn_brisc, 
+                                verbose = F)
+    })
+  })
+  
+  pred_i <- BRISC_prediction(out_i, coords = coords, X.0 = NULL, verbose = F)
+  residual_i <- y_i - pred_i$prediction
+  
+  return(list(pred_i$prediction, residual_i))
+}, BPPARAM = MulticoreParam(workers = 1)) #change to 20 on JHPCE
+
+# collapse output list into matrix
+mat_brisc <- do.call("rbind", out_brisc)
+
+# *Voom Variance Modelling -------------------------------------------------
+
+mu_hat <- unname(as.matrix(as.data.frame(mat_brisc[,1])))
+stopifnot(dim(mu_hat) == c(n, G))
+
+s_g <- unname(as.data.frame(mat_brisc[,2])) |> 
+  apply(MARGIN = 2,  # Column wise
+        FUN = sd)
+stopifnot(length(s_g) == G)
+
+y_bar <- colMeans(mu_hat)
+stopifnot(length(y_bar) == G)
+
+# Geometric Mean
+R_tilda <- exp(mean(log(R)))
+# The reason of calculating log is to avoid integer overflow
+
+# Log2 Counts
+# Note: slight notation abuse. Prev r denotes read counts
+r_tilda <- y_bar + log2(R_tilda) - log2(10^6)
+stopifnot(length(r_tilda)==G)
+
+# *Plot Relationship -----------------------------------------------------
+
+
+# data.frame(
+#   y = sqrt(s_g),
+#   x = r_tilda
+# ) |> 
+#   ggplot() +
+#   geom_point(aes(x = x, y = y)) +
+#   geom_smooth(aes(x = x, y = y)) +
+#   labs(
+#     x = "log2(count size)",
+#     y = "Sqrt(s_g)"
+#   )
+
+library(ggformula)
+p1 <- data.frame(
+  y = sqrt(s_g),
+  x = r_tilda
+) |> 
+  ggplot() +
+  geom_point(aes(x = x, y = y)) +
+  geom_smooth(aes(x = x, y = y), method = "loess") +
+  stat_spline(aes(x = x, y = y), nknots=4) +
+  labs(
+    x = "log2(count size)",
+    y = "Sqrt(s_g)"
+  )
+  
+# *PREDICT MODEL -----------------------------------------------------------------
+stopifnot(dim(mu_hat)==dim(tmp_R_mat))
+lambda_hat <- mu_hat + log2(tmp_R_mat+1) - log2(10^6)
+
+#gives percentage of lambda_hat values out of range
+sum(lambda_hat < range(r_tilda)[1] | lambda_hat > range(r_tilda)[2]) / (dim(spe_Br2701_LC_round2)[1]*dim(spe_Br2701_LC_round2)[2]) 
+sum(lambda_hat < range(r_tilda)[1]) / (dim(spe_Br2701_LC_round2)[1]*dim(spe_Br2701_LC_round2)[2])
+sum(lambda_hat > range(r_tilda)[2]) / (dim(spe_Br2701_LC_round2)[1]*dim(spe_Br2701_LC_round2)[2])
+
+spline_fit <- smooth.spline(y=sqrt(s_g), x=r_tilda)
+
+# NOTE: It is possible that lambda is out of range of r_tilda
+# which will produce NA predicted values due to extrapolation
+tmp_pred_sqrt_sg <- predict(
+  spline_fit, 
+  x = c(lambda_hat)
+ )$y |> 
+  matrix(
+    nrow = n, ncol = G
+  )
+
+w <- tmp_pred_sqrt_sg^(-4) 
+
+saveRDS(w, file = "LC_Br2701_LC_round2_BRISC_estimation_spline.rds")
+
+#w <- readRDS(file = "mean_var_project/LC_Br2701_LC_round2_BRISC_estimation_spline.rds")
+
+#remove genes/samples with NA, for now
+#sum(is.na(w))/(dim(w)[1]*dim(w)[2])  0.828 NA in w when using umi, 0.389 NA in w when using filter genes
+#w1 <- w[complete.cases(w), ] removes all genes
+#w2 <- w[, which(colMeans(!is.na(w)) > 0)] removes all samples
+
+
+```
