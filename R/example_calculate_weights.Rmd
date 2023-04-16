@@ -225,15 +225,34 @@ length(intersect(rowData(spe_151507_umi_filter)$gene_name, rowData(spe_151507_fi
 library(spatialLIBD)
 library(nnSVG)
 
-objs_list <- readRDS(file = "mean_var_project/objs.rds") #contains r_tilda & s_g from running weight algorithm
-indices <- as.data.frame(objs_list[2]) < 0.36
-low_s_g_indices <- as.vector(indices)
-
 spe <- fetch_data(type = "spe")
 spe_151507 <- spe[, spe$sample_id == "151507"]
 spe_151507 <- spe_151507[, !is.na(unfactor(colData(spe_151507)$spatialLIBD))]
 spe_151507 <- filter_genes(spe_151507)
 
-rowData(spe_151507)$gene_name[indices]
+objs_list <- readRDS(file = "mean_var_project/objs.rds") #contains r_tilda & s_g from running weight algorithm
+indices <- as.data.frame(objs_list[2]) < 0.01
+low_s_g_indices <- as.vector(indices)
+
+ix = which(low_s_g_indices)[3]
+ix_name = rowData(spe_151507)$gene_name[ix]
+
+df <- as.data.frame(cbind(spatialCoords(spe_151507), expr = counts(spe_151507)[ix, ]))
+
+ggplot(df, aes(x = pxl_col_in_fullres, y = pxl_row_in_fullres, 
+               color = expr)) + 
+  geom_point(size = 0.8) + 
+  coord_fixed() + 
+  scale_y_reverse() + 
+  scale_color_gradient(low = "gray90", high = "blue", 
+                       trans = "sqrt", breaks = range(df$expr), 
+                       name = "counts") + 
+  ggtitle(ix_name) + 
+  theme_bw() + 
+  theme(plot.title = element_text(face = "italic"), 
+        panel.grid = element_blank(), 
+        axis.title = element_blank(), 
+        axis.text = element_blank(), 
+        axis.ticks = element_blank())
 
 ```
