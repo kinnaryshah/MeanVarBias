@@ -231,10 +231,10 @@ spe_151507 <- spe_151507[, !is.na(unfactor(colData(spe_151507)$spatialLIBD))]
 spe_151507 <- filter_genes(spe_151507)
 
 objs_list <- readRDS(file = "mean_var_project/objs.rds") #contains r_tilda & s_g from running weight algorithm
-indices <- as.data.frame(objs_list[2]) < 0.01
-low_s_g_indices <- as.vector(indices)
+indices <- as.data.frame(objs_list[2]) > 1
+high_s_g_indices <- as.vector(indices)
 
-ix = which(low_s_g_indices)[3]
+ix = which(high_s_g_indices)[1]
 ix_name = rowData(spe_151507)$gene_name[ix]
 
 df <- as.data.frame(cbind(spatialCoords(spe_151507), expr = counts(spe_151507)[ix, ]))
