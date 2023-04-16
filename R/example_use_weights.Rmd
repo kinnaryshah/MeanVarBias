@@ -74,8 +74,8 @@ assay(spe_151507, "logcounts") <- weighted_counts # assign a new entry to assays
 
 # set seed for reproducibility
 set.seed(123)
-#run nnSVG, element-wise multiplication
-spe_151507 <- nnSVG(spe_151507)
+#run nnSVG with covariate
+spe_151507 <- nnSVG(spe_151507, X=w)
 
 # show results
 rowData(spe_151507)
