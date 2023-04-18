@@ -224,17 +224,26 @@ length(intersect(rowData(spe_151507_umi_filter)$gene_name, rowData(spe_151507_fi
 ```{r}
 library(spatialLIBD)
 library(nnSVG)
+library(scuttle)
 
 spe <- fetch_data(type = "spe")
 spe_151507 <- spe[, spe$sample_id == "151507"]
 spe_151507 <- spe_151507[, !is.na(unfactor(colData(spe_151507)$spatialLIBD))]
 spe_151507 <- filter_genes(spe_151507)
+spe_151507 <- addPerFeatureQCMetrics(spe_151507)
 
 objs_list <- readRDS(file = "mean_var_project/objs.rds") #contains r_tilda & s_g from running weight algorithm
-indices <- as.data.frame(objs_list[2]) > 1
-high_s_g_indices <- as.vector(indices)
+indices <- as.data.frame(objs_list[2]) < 0.36
+low_s_g_indices <- as.vector(indices)
 
-ix = which(high_s_g_indices)[1]
+par(mfrow=c(2,2))
+hist(rowData(spe_151507)$detected, breaks = 20, xlim=c(0,100))
+hist(rowData(spe_151507)$mean, breaks = 20, xlim=c(0,14))
+hist(rowData(spe_151507)$detected[low_s_g_indices], breaks = 20, xlim=c(0,100))
+hist(rowData(spe_151507)$mean[low_s_g_indices], breaks = 20, xlim=c(0,14))
+
+
+ix = which(low_s_g_indices)[1]
 ix_name = rowData(spe_151507)$gene_name[ix]
 
 df <- as.data.frame(cbind(spatialCoords(spe_151507), expr = counts(spe_151507)[ix, ]))
