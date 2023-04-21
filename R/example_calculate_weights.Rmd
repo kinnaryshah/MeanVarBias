@@ -264,4 +264,20 @@ ggplot(df, aes(x = pxl_col_in_fullres, y = pxl_row_in_fullres,
         axis.text = element_blank(), 
         axis.ticks = element_blank())
 
+r_tilda <- objs_list[[1]]
+s_g <- objs_list[[2]]
+library(ggformula)
+p1 <- data.frame(
+  y = sqrt(s_g),
+  x = r_tilda,
+  detected = rowData(spe_151507)$detected
+) |> 
+  ggplot() +
+  geom_point(aes(x = x, y = y, color = detected)) +
+  geom_smooth(aes(x = x, y = y), method = "loess") +
+  stat_spline(aes(x = x, y = y), nknots=4) +
+  labs(
+    x = "log2(count size)",
+    y = "Sqrt(s_g)"
+  )
 ```
