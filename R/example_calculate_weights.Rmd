@@ -231,6 +231,9 @@ spe_151507 <- spe[, spe$sample_id == "151507"]
 spe_151507 <- spe_151507[, !is.na(unfactor(colData(spe_151507)$spatialLIBD))]
 spe_151507 <- filter_genes(spe_151507)
 spe_151507 <- addPerFeatureQCMetrics(spe_151507)
+spe_151507 <- addPerCellQCMetrics(spe_151507)
+
+hist(colData(spe_151507)$sum, breaks = 20)
 
 objs_list <- readRDS(file = "mean_var_project/objs.rds") #contains r_tilda & s_g from running weight algorithm
 indices <- as.data.frame(objs_list[2]) < 0.36
