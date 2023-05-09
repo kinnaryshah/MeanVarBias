@@ -82,7 +82,7 @@ assay(spe_151507, "logcounts") <- weighted_counts # assign a new entry to assays
 set.seed(123)
 #run nnSVG with covariate
 i=1
-weight_output <- nnSVG(spe_151507[i,], X=w[,i])
+weight_output <- nnSVG(spe_151507[i,], X=matrix(w[,i]))
 
 ```
 
