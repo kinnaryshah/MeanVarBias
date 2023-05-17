@@ -23,7 +23,7 @@ library(nnSVG)
 #download LC data
 spe <- WeberDivechaLCdata_Visium()
 #subset one sample
-spe_Br2701_LC_round2 <- spe[, spe$sample_id == "Br2701_LC_round2"]
+spe_Br2701_LC_round2 <- spe[, spe$sample_part_id == "Br2701_LC_round2_bottom"]
 
 n_umis <- 80
 ix_low_genes <- rowSums(counts(spe_Br2701_LC_round2)) < n_umis
