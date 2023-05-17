@@ -237,8 +237,8 @@ spe_151507 <- addPerCellQCMetrics(spe_151507)
 hist(colData(spe_151507)$sum, breaks = 20)
 
 objs_list <- readRDS(file = "mean_var_project/objs.rds") #contains r_tilda & s_g from running weight algorithm
-indices <- as.data.frame(objs_list[2]) < 0.01
-low_s_g_indices <- as.vector(indices)
+indices <- as.data.frame(objs_list[2]) > 1
+high_s_g_indices <- as.vector(indices)
 
 par(mfrow=c(2,2))
 hist(rowData(spe_151507)$detected, breaks = 20, xlim=c(0,100))
@@ -247,7 +247,7 @@ hist(rowData(spe_151507)$detected[low_s_g_indices], breaks = 20, xlim=c(0,100))
 hist(rowData(spe_151507)$mean[low_s_g_indices], breaks = 20, xlim=c(0,14))
 
 
-ix = which(low_s_g_indices)[5]
+ix = which(high_s_g_indices)[60]
 ix_name = rowData(spe_151507)$gene_name[ix]
 
 df <- as.data.frame(cbind(spatialCoords(spe_151507), expr = logcounts(spe_151507)[ix, ]))
@@ -260,7 +260,7 @@ ggplot(df, aes(x = pxl_col_in_fullres, y = pxl_row_in_fullres,
   scale_color_gradient(low = "gray90", high = "blue", 
                        trans = "sqrt", breaks = range(df$expr), 
                        name = "logcounts") + 
-  ggtitle(paste(ix_name, "- outlier")) + 
+  ggtitle(paste(ix_name, "- in curve")) + 
   theme_bw() + 
   theme(plot.title = element_text(face = "italic"), 
         panel.grid = element_blank(), 
