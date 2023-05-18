@@ -92,6 +92,5 @@ weight_LR <- unlist(LR_list)
 LRs <- as.data.frame(cbind(no_weight_LR, weight_LR))
 LRs$no_weight_rank <- rank(-1 * no_weight_LR)
 LRs$weight_rank <- rank(-1 * weight_LR)
-plot(LRs)
 ```
 
