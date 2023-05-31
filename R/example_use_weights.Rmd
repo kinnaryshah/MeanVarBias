@@ -1,0 +1,106 @@
+---
+title: "example_use_weights"
+output: html_document
+date: "2023-04-12"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+
+library(spatialLIBD)
+library(nnSVG)
+library(BiocParallel)
+
+spe <- fetch_data(type = "spe")
+spe_151507 <- spe[, spe$sample_id == "151507"]
+spe_151507 <- spe_151507[, !is.na(unfactor(colData(spe_151507)$spatialLIBD))]
+spe_151507 <- filter_genes(spe_151507)
+
+# Count Matrix, transpose so each row is a spot, and each column is a gene
+y <- t(as.matrix(counts(spe_151507)))
+n = dim(spe_151507)[2]
+
+w <- readRDS(file = "mean_var_project/DLPFC_151507_BRISC_estimation_spline.rds")
+
+#ix <- seq_len(ncol(y))
+ix <- c(1,2,3)
+out_brisc <- bplapply(ix, function(i) {
+
+  y_i = y[ ,i]
+  X = data.frame(intercept = rep(1, n))
+  #intercept only model
+  raw_fit <- lm(y_i ~ .-1, X)
+  print(summary(raw_fit))
+  
+  w_i <- w[ ,i]
+  wtd_X <- w_i*X
+  wtd_y_i <- w_i*y_i
+  wtd_fit <- lm(wtd_y_i ~ .-1, wtd_X)
+  print(summary(wtd_fit))
+  
+  #alternatively, use weighted least squares by squaring w_i
+  wtd_fit_lm_var <- lm(y_i ~ .-1, X, weights = w_i^2)
+  print(summary(wtd_fit_lm_var))
+  
+  #return both fits to compare
+}, BPPARAM = MulticoreParam(workers = 1)) #change to 20 on JHPCE
+
+
+#Note: this can fit all models at once instead of in loop
+raw_fit <- lm(y ~ .-1, X) 
+
+```
+
+```{r}
+library(nnSVG)
+library(spatialLIBD)
+library(scran)
+
+spe <- fetch_data(type = "spe")
+spe_151507 <- spe[, spe$sample_id == "151507"]
+spe_151507 <- spe_151507[, !is.na(unfactor(colData(spe_151507)$spatialLIBD))]
+spe_151507 <- filter_genes(spe_151507)
+spe_151507 <- logNormCounts(spe_151507)
+
+# set seed for reproducibility
+set.seed(123)
+no_weight_output <- nnSVG(spe_151507[c(1:10),])
+
+#multiply by weights after log transf.
+#w <- readRDS(file = "mean_var_project/DLPFC_151507_BRISC_estimation_spline.rds")
+w <- matrix(1, dim(spe_151507)[2], dim(spe_151507)[1])
+#w <- matrix(abs(rnorm(4221*1695, mean = 1, sd = 20)) , nrow = 4221)
+
+weighted_counts <- t(w)*logcounts(spe_151507)
+assays(spe_151507) <- assays(spe_151507)[1]
+assay(spe_151507, "logcounts") <- weighted_counts # assign a new entry to assays slot, nnSVG will use "logcounts"
+
+# set seed for reproducibility
+#run nnSVG with covariate
+LR_list <- c()
+for (i in c(1:10)) {
+  set.seed(123)
+  weight_output_i <- nnSVG(spe_151507[i,], X=matrix(w[,i]))
+  
+  y_i <- matrix(logcounts(spe_151507[1,]))
+  x <- matrix(w[,i])
+  
+  loglik_lm <- as.numeric(logLik(lm(y_i ~ x-1)))
+  
+  LR_stat <- -2 * (loglik_lm - rowData(weight_output_i)$loglik)
+  
+  pval <- 1 - pchisq(LR_stat, df = 2)
+
+  LR_list <- append(LR_list, rowData(weight_output_i)$LR_stat)
+}
+
+no_weight_LR <- unlist(rowData(no_weight_output)$LR_stat)
+weight_LR <- unlist(LR_list)
+LRs <- as.data.frame(cbind(no_weight_LR, weight_LR))
+LRs$no_weight_rank <- rank(-1 * no_weight_LR)
+LRs$weight_rank <- rank(-1 * weight_LR)
+```
+
