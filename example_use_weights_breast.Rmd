@@ -39,24 +39,21 @@ w <- readRDS(file = "mean_var_project/breast_BRISC_estimation_spline.rds")
 
 weighted_counts <- t(w)*logcounts(spe_breast)
 assays(spe_breast) <- assays(spe_breast)[1]
-assay(spe_breast, "logcounts") <- weighted_counts # assign a new entry to assays slot, nnSVG will use "logcounts"
+assay(spe_breast, "weighted_logcounts") <- weighted_counts # assign a new entry to assays slot, nnSVG will use "logcounts"
+
+# Make sure nnSVG fixed the interceptless model 
+stopifnot(
+  "Please update your nnSVG to minimumly v1.5.3 to have the correct result" = 
+    packageVersion("nnSVG")>='1.5.3'
+)
 
 # set seed for reproducibility
 #run nnSVG with covariate
 LR_list <- c()
 for (i in c(1:10)) {
   set.seed(123)
-  weight_output_i <- nnSVG(spe_breast[i,], X=matrix(w[,i]))
-  
-  y_i <- matrix(logcounts(spe_breast[1,]))
-  x <- matrix(w[,i])
-  
-  loglik_lm <- as.numeric(logLik(lm(y_i ~ x-1)))
-  
-  LR_stat <- -2 * (loglik_lm - rowData(weight_output_i)$loglik)
-  
-  pval <- 1 - pchisq(LR_stat, df = 2)
-
+  weight_output_i <- nnSVG(spe_breast[i,], X=matrix(w[,i]), 
+                           assay_name = "weighted_logcounts")
   LR_list <- append(LR_list, rowData(weight_output_i)$LR_stat)
 }
 
