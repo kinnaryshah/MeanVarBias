@@ -88,23 +88,14 @@ stopifnot(
 # set seed for reproducibility
 #run nnSVG with covariate
 LR_list <- c()
-for (i in c(1:10)) {
+for (i in c(1:dim(spe_151507)[1])) {
   # browser()
+  tryCatch({
   set.seed(123)
+  #print(i)
   weight_output_i <- nnSVG(spe_151507[i,], X=matrix(w[,i]), assay_name = "weighted_logcounts")
-  
-  # Do not need these code because nnSVG corrected this implementation
-  # TODO(): Detelete this
-  # y_i <- matrix(logcounts(spe_151507[1,]))
-  # x <- matrix(w[,i])
-  # 
-  # loglik_lm <- as.numeric(logLik(lm(y_i ~ x-1)))
-  # 
-  # LR_stat <- -2 * (loglik_lm - rowData(weight_output_i)$loglik)
-  # 
-  # pval <- 1 - pchisq(LR_stat, df = 2)
-  
   LR_list <- append(LR_list, rowData(weight_output_i)$LR_stat)
+}, error=function(e){cat("ERROR :",conditionMessage(e), "\n")})
 }
 
 no_weight_LR <- unlist(rowData(no_weight_output)$LR_stat)
