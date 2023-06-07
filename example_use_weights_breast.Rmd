@@ -64,3 +64,53 @@ LRs$no_weight_rank <- rank(-1 * no_weight_LR)
 LRs$weight_rank <- rank(-1 * weight_LR)
 ```
 
+```{r}
+library(nnSVG)
+library(spatialLIBD)
+library(scran)
+
+(spe <- read10xVisium("/users/kshah/mean_var_project/breast_cancer_data/outs",
+  type = "sparse",   # use sparse (not HDF5) format
+  data = "raw",     
+  images = "lowres", # specify which image(s) to include
+  load = TRUE))      # specify whether or not to load image(s)
+
+#removes 94 spots not in tissue
+spe <- spe[, colData(spe)$in_tissue == 1]
+
+#filter low expressed genes - cannot use filter_genes because there is no "gene" name in col of rowData
+n_umis <- 100
+ix_low_genes <- rowSums(counts(spe)) < n_umis
+spe_breast <- spe[!ix_low_genes, ]
+spe_breast <- logNormCounts(spe_breast)
+
+LRs_breast <- readRDS(file = "mean_var_project/spe_breast_weighted_nnSVG.rds")
+hist(LRs_breast, breaks = 100)
+
+#47 genes had c++ error and could not calculate LR
+#first few indices are 535, 905, 1252, 1272
+ix <- 905
+ix_name <- ""
+
+df <- as.data.frame(cbind(spatialCoords(spe_breast), expr = logcounts(spe_breast)[ix, ]))
+
+ggplot(df, aes(x = pxl_col_in_fullres, y = pxl_row_in_fullres, 
+               color = expr)) + 
+  geom_point(size = 0.8) + 
+  coord_fixed() + 
+  scale_y_reverse() + 
+  scale_color_gradient(low = "gray90", high = "blue", 
+                       trans = "sqrt", breaks = range(df$expr), 
+                       name = "logcounts") + 
+  ggtitle(ix_name) + 
+  theme_bw() + 
+  theme(plot.title = element_text(face = "italic"), 
+        panel.grid = element_blank(), 
+        axis.title = element_blank(), 
+        axis.text = element_blank(), 
+        axis.ticks = element_blank())
+
+
+```
+
+

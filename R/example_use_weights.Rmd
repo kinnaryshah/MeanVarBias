@@ -98,10 +98,54 @@ for (i in c(1:dim(spe_151507)[1])) {
 }, error=function(e){cat("ERROR :",conditionMessage(e), "\n")})
 }
 
+saveRDS(LR_list, file = "spe_151507_DLPFC_weighted_nnSVG.rds")
+
 no_weight_LR <- unlist(rowData(no_weight_output)$LR_stat)
 weight_LR <- unlist(LR_list)
 LRs <- as.data.frame(cbind(no_weight_LR, weight_LR))
 LRs$no_weight_rank <- rank(-1 * no_weight_LR)
 LRs$weight_rank <- rank(-1 * weight_LR)
 ```
+
+```{r}
+library(ggplot2)
+library(nnSVG)
+library(spatialLIBD)
+library(scran)
+
+spe <- fetch_data(type = "spe")
+spe_151507 <- spe[, spe$sample_id == "151507"]
+spe_151507 <- spe_151507[, !is.na(unfactor(colData(spe_151507)$spatialLIBD))]
+spe_151507 <- filter_genes(spe_151507)
+
+#offset indices after 972 because 928 and 972 were not included in the LR list
+LRs_DLPFC <- readRDS(file = "mean_var_project/spe_151507_DLPFC_weighted_nnSVG.rds")
+#hist(LRs_DLPFC, breaks = 100)
+negative_LR_indices <- which(LRs_DLPFC < -1)
+negative_LR_indices[11:24] <- negative_LR_indices[11:24] + 2
+
+#ix <- 928 and 972 gave c++ errors so could not calculate LRs
+ix <- negative_LR_indices[10]
+ix_name <- rowData(spe_151507)$gene_name[ix]
+
+df <- as.data.frame(cbind(spatialCoords(spe_151507), expr = logcounts(spe_151507)[ix, ]))
+
+ggplot(df, aes(x = pxl_col_in_fullres, y = pxl_row_in_fullres, 
+               color = expr)) + 
+  geom_point(size = 0.8) + 
+  coord_fixed() + 
+  scale_y_reverse() + 
+  scale_color_gradient(low = "gray90", high = "blue", 
+                       trans = "sqrt", breaks = range(df$expr), 
+                       name = "logcounts") + 
+  ggtitle(ix_name) + 
+  theme_bw() + 
+  theme(plot.title = element_text(face = "italic"), 
+        panel.grid = element_blank(), 
+        axis.title = element_blank(), 
+        axis.text = element_blank(), 
+        axis.ticks = element_blank())
+
+```
+
 
