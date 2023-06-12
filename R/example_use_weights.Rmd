@@ -90,8 +90,7 @@ stopifnot(
 LR_calc <- function(i){
   res = tryCatch({
   set.seed(123)
-  weight_output_i <- nnSVG(spe_151507[i,], X=matrix(w[,i]), assay_name = "weighted_logcounts")
-  print(rowData(weight_output_i))
+  weight_output_i <- nnSVG(spe_151507[i,], X=matrix(w[,i]), assay_name = "logcounts")
   list(weighted_LR_stat = rowData(weight_output_i)$LR_stat,
        weighted_mean = rowData(weight_output_i)$mean,
        weighted_var = rowData(weight_output_i)$var,
