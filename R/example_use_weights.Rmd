@@ -77,7 +77,7 @@ w <- readRDS(file = "mean_var_project/DLPFC_151507_BRISC_estimation_spline.rds")
 
 weighted_counts <- t(w)*logcounts(spe_151507)
 assays(spe_151507) <- assays(spe_151507)[1]
-assay(spe_151507, "weighted_logcounts") <- weighted_counts # assign a new entry to assays slot, nnSVG will use "logcounts"
+assay(spe_151507, "logcounts") <- weighted_counts # assign a new entry to assays slot, nnSVG will use "logcounts"
 
 # Make sure nnSVG fixed the interceptless model 
 stopifnot(
@@ -91,10 +91,23 @@ LR_calc <- function(i){
   res = tryCatch({
   set.seed(123)
   weight_output_i <- nnSVG(spe_151507[i,], X=matrix(w[,i]), assay_name = "weighted_logcounts")
-  rowData(weight_output_i)$LR_stat
+  print(rowData(weight_output_i))
+  list(weighted_LR_stat = rowData(weight_output_i)$LR_stat,
+       weighted_mean = rowData(weight_output_i)$mean,
+       weighted_var = rowData(weight_output_i)$var,
+       weighted_sigma.sq = rowData(weight_output_i)$sigma.sq,
+       weighted_tau.sq = rowData(weight_output_i)$tau.sq,
+       weighted_prop_sv = rowData(weight_output_i)$prop_sv,
+       weighted_phi = rowData(weight_output_i)$phi)
 }, error=function(e){
   cat("ERROR :",conditionMessage(e), "\n")
-  NA
+  list(weighted_LR_stat = NA,
+       weighted_mean = NA,
+       weighted_var = NA,
+       weighted_sigma.sq = NA,
+       weighted_tau.sq = NA,
+       weighted_prop_sv = NA,
+       weighted_phi = NA)
   })
   return(res)
 }
