@@ -106,6 +106,38 @@ saveRDS(LR_list, file = "spe_151507_DLPFC_weighted_nnSVG.rds")
 ```
 
 ```{r}
+#visualizing change in ranks comparing weighted and unweighted
+
+spe <- readRDS(file = "mean_var_project/spe_151507_DLPFC_nnSVG.rds")
+
+#add LR list as another col in spe_151507
+LR_list <- readRDS(file = "mean_var_project/spe_151507_DLPFC_weighted_nnSVG.rds")
+rowData(spe)$weighted_LR_stat <- unlist(LR_list)
+
+#remove genes with NA in weighted_LR_stat
+NA_indices <- is.na(rowData(spe)$weighted_LR_stat)
+spe <- spe[!NA_indices,]
+
+#remove genes with < -1 values in weighted_LR_stat 
+neg_indices <- rowData(spe)$weighted_LR_stat < -1
+spe <- spe[!neg_indices,]
+
+#rerank genes both unweighted and weighted since we removed genes 
+rowData(spe)$rank <- NULL
+rowData(spe)$un_weighted_rank <- rank(-1 * rowData(spe)$LR_stat)
+rowData(spe)$weighted_rank <- rank(-1 * rowData(spe)$weighted_LR_stat)
+
+#new value for change in rank
+rowData(spe)$rank_shift <- rowData(spe)$un_weighted_rank - rowData(spe)$weighted_rank
+
+plot(rowData(spe)$mean, rowData(spe)$rank_shift, main = "Rank Changes DLPFC 151507",
+     xlab = "mean expression", ylab = "unweighted rank - weighted rank",
+     pch = 19, frame = FALSE)
+
+```
+
+
+```{r}
 library(ggplot2)
 library(nnSVG)
 library(spatialLIBD)
