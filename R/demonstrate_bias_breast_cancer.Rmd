@@ -30,7 +30,7 @@ library(scran)
 spe <- spe[, colData(spe)$in_tissue == 1]
 
 #filter low expressed genes
-n_umis <- 80
+n_umis <- 100
 ix_low_genes <- rowSums(counts(spe)) < n_umis
 table(ix_low_genes)
 spe <- spe[!ix_low_genes, ]

@@ -24,6 +24,7 @@ vis_clus(
 )
 
 spe_151507 <- spe[, spe$sample_id == "151507"]
+spe_151507 <- spe_151507[, !is.na(unfactor(colData(spe_151507)$spatialLIBD))]
 spe_151507 <- filter_genes(spe_151507) ##https://github.com/lmweber/nnSVG/issues/7 keep getting error that c++ error: dpotrf failed 
 # set seed for reproducibility
 set.seed(123)
