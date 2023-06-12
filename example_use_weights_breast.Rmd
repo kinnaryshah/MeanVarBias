@@ -49,19 +49,22 @@ stopifnot(
 
 # set seed for reproducibility
 #run nnSVG with covariate
-LR_list <- c()
-for (i in c(1:10)) {
+LR_calc <- function(i){
+  res = tryCatch({
   set.seed(123)
-  weight_output_i <- nnSVG(spe_breast[i,], X=matrix(w[,i]), 
-                           assay_name = "weighted_logcounts")
-  LR_list <- append(LR_list, rowData(weight_output_i)$LR_stat)
+  weight_output_i <- nnSVG(spe_breast[i,], X=matrix(w[,i]), assay_name = "weighted_logcounts")
+  rowData(weight_output_i)$LR_stat
+}, error=function(e){
+  cat("ERROR :",conditionMessage(e), "\n")
+  NA
+  })
+  return(res)
 }
 
-no_weight_LR <- unlist(rowData(no_weight_output)$LR_stat)
-weight_LR <- unlist(LR_list)
-LRs <- as.data.frame(cbind(no_weight_LR, weight_LR))
-LRs$no_weight_rank <- rank(-1 * no_weight_LR)
-LRs$weight_rank <- rank(-1 * weight_LR)
+LR_list <- lapply(c(1:dim(spe_breast)[1]),LR_calc)
+
+saveRDS(LR_list, file = "spe_breast_cancer_nnSVG.rds")
+
 ```
 
 ```{r}
