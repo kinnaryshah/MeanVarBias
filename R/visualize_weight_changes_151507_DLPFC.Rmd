@@ -51,6 +51,8 @@ df <- data.frame(LR_stat = unlist(lapply(weighted_output, function (x) x[c('weig
 
 region <- "DLPFC"
 
+df <- subset(df, mean < 5e+12) #removes 1 outlier and 2 NA
+
 # variance vs. mean
 var <- ggplot(df, 
        aes(x = mean, y = var, color = LR_stat)) + 
