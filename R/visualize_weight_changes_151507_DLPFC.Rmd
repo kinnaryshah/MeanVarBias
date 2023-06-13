@@ -2,10 +2,23 @@
 ```{r}
 #visualizing change in ranks comparing weighted and unweighted
 
+library(SpatialExperiment)
+library(here)
+library(dplyr)
+library(tidyr)
+library(readr)
+library(ggplot2)
+library(ggrepel)
+library(viridis)
+library(ggpubr)
+library(purrr)
+
 spe <- readRDS(file = "mean_var_project/spe_151507_DLPFC_nnSVG.rds")
 
+weighted_output <- readRDS(file = "mean_var_project/spe_151507_DLPFC_weighted_nnSVG.rds")
+
 #add LR list as another col in spe_151507
-LR_list <- readRDS(file = "mean_var_project/spe_151507_DLPFC_weighted_nnSVG.rds")
+LR_list <- unlist(lapply(weighted_output, function (x) x[c('weighted_LR_stat')]))
 rowData(spe)$weighted_LR_stat <- unlist(LR_list)
 
 #remove genes with NA in weighted_LR_stat
@@ -17,16 +30,81 @@ neg_indices <- rowData(spe)$weighted_LR_stat < -1
 spe <- spe[!neg_indices,]
 
 #rerank genes both unweighted and weighted since we removed genes 
-rowData(spe)$rank <- NULL
 rowData(spe)$un_weighted_rank <- rank(-1 * rowData(spe)$LR_stat)
 rowData(spe)$weighted_rank <- rank(-1 * rowData(spe)$weighted_LR_stat)
 
 #new value for change in rank
 rowData(spe)$rank_shift <- rowData(spe)$un_weighted_rank - rowData(spe)$weighted_rank
 
+#plot shift in rank against mean expression 
 plot(rowData(spe)$mean, rowData(spe)$rank_shift, main = "Rank Changes DLPFC 151507",
      xlab = "mean expression", ylab = "unweighted rank - weighted rank",
-     pch = 19, frame = FALSE)
+     pch = 20, frame = FALSE)
+
+df <- data.frame(LR_stat = unlist(lapply(weighted_output, function (x) x[c('weighted_LR_stat')])),
+                mean = unlist(lapply(weighted_output, function (x) x[c('weighted_mean')])),
+                var = unlist(lapply(weighted_output, function (x) x[c('weighted_var')])),
+                sigma.sq = unlist(lapply(weighted_output, function (x) x[c('weighted_sigma.sq')])),
+                tau.sq = unlist(lapply(weighted_output, function (x) x[c('weighted_tau.sq')])),
+                prop_sv = unlist(lapply(weighted_output, function (x) x[c('weighted_prop_sv')])),
+                phi = unlist(lapply(weighted_output, function (x) x[c('weighted_phi')])))
+
+region <- "DLPFC"
+
+# variance vs. mean
+var <- ggplot(df, 
+       aes(x = mean, y = var, color = LR_stat)) + 
+  geom_point(size = 2) + 
+  geom_smooth(method="loess", color="black", size=0.5) +
+  scale_color_viridis(trans = "log10") +
+  scale_color_gradient(low = "blue", high = "red") +
+  labs(x = "mean logcounts", 
+       y = "variance", 
+       color = "LR stat",
+       title = region) + 
+  theme_bw() + 
+  theme(strip.text.y.left = element_text(angle = 0))
+
+# spatial variance vs. mean
+spat_var <- ggplot(df, 
+       aes(x = mean, y = sigma.sq, color = LR_stat)) + 
+  geom_point(size = 2) + 
+  scale_color_viridis(trans = "log10") +
+  scale_color_gradient(low = "blue", high = "red") +
+  labs(x = "mean logcounts", 
+       y = expression(paste("spatial variance ", sigma^{2})), 
+       color = "LR stat",
+       title = region) + 
+  theme_bw() + 
+  theme(strip.background = element_blank(), strip.text.y = element_blank())
+
+nonspat_var <- ggplot(df, 
+       aes(x = mean, y = tau.sq, color = LR_stat)) + 
+  geom_point(size = 2) + 
+  scale_color_viridis(trans = "log10") +
+  scale_color_gradient(low = "blue", high = "red") +
+  labs(x = "mean logcounts", 
+       y = expression(paste("nonspatial variance ", tau^{2})), 
+       color = "LR stat",
+       title = region) + 
+  theme_bw() + 
+  theme(strip.background = element_blank(), strip.text.y = element_blank())
+
+prop <- ggplot(df, 
+       aes(x = mean, y = prop_sv, color = LR_stat)) + 
+  geom_point(size = 2) + 
+  scale_color_viridis(trans = "log10") +
+  scale_color_gradient(low = "blue", high = "red") +
+  labs(x = "mean logcounts", 
+       y = expression(paste("prop. spatial variance ", sigma^{2}/(sigma^{2}+tau^{2}))), 
+       color = "LR stat",
+       title = region) + 
+  theme_bw() + 
+  theme(strip.background = element_blank(), strip.text.y = element_blank())
+
+library(patchwork)
+wrap_plots(var, spat_var, nonspat_var, prop, guides="collect",
+           ncol=4, nrow=1)
 
 ```
 
