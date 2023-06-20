@@ -1,8 +1,6 @@
 ```{r}
 
 ### GENERATING DATA
-#question: is tau.sq 0 because there is no technical/nonspatial variance?
-#question: where do i incorporate the length-scale parameter?
 
 #1000 spots and 200 genes
 
@@ -15,11 +13,20 @@
   #25 of the 50 genes will have beta values randomly selected from a range 1 to 10
   #25 of the 50 genes will have beta values randomly selected from a range 50 to 100
 
-#we now have beta and sigma.sq values for each gene
-#calculate lambda values by exp(beta+sigma.sq)
-#use rpois() to simulate 1000 values per gene
+#choose fixed length scale parameter (mean of DLPFC length scale param across genes)
+
+#sampling from a poisson distribution - mean controls variance, so we don't specify tau.sq:
+#step 1: use ST example distance matrix instead of creating a new one (Euclidean distance)
+#step 2: calculate gaussian process/kernel 
+#step 3: calculate lambda = exp(beta + gaussian process)
+#step 4: use rpois() to simulate 1000 values per gene
+
+#create spe using counts and distances
 
 ### USING THE DATA
+
+#create logcounts matrix
+
 #run nnSVG on the logcounts matrix
 
 #run weighted nnSVG on the logcounts matrix
