@@ -1,22 +1,52 @@
 ```{r}
+library(SpatialExperiment)
+library(STexampleData)
 
 ### GENERATING DATA
 
 #1000 spots and 200 genes
 
+nspots <- 1000
+ngenes <- 200
+fraction <- 0.25
+max_sigma.sq <- 10
+low_range_beta <- c(1,10)
+high_range_beta <- c(50,100)
+
+#check if integer
+stopifnot(ngenes*fraction*0.5 == round(ngenes*fraction*0.5))
+
   #150 genes will have sigma.sq = 0
   #50 genes will have sigma.sq randomly selected from a range 1 to 10 (this is ground truth of ranks)
 
+sigma.sq <- rep(0,(1-fraction)*ngenes)
+set.seed(123)
+sigma.sq <- append(sigma.sq, runif(fraction*ngenes, 1, max_sigma.sq))
+
   #all genes will have nonzero beta values
 
-  #150 genes will have beta values randomly selected from a range 1 to 100
-  #25 of the 50 genes will have beta values randomly selected from a range 1 to 10
-  #25 of the 50 genes will have beta values randomly selected from a range 50 to 100
+  #150 genes will have exp(beta) values randomly selected from a range 1 to 100
+  #25 of the 50 genes will have exp(beta) values randomly selected from a range 1 to 10
+  #25 of the 50 genes will have exp(beta) values randomly selected from a range 50 to 100
 
-#choose fixed length scale parameter (mean of DLPFC length scale param across genes)
+set.seed(123)
+beta <- runif((1-fraction)*ngenes, log(low_range_beta[1]), log(high_range_beta[2]))
+set.seed(123)
+beta <- append(beta, runif(ngenes*fraction*0.5, log(low_range_beta[1]), log(low_range_beta[2])))
+beta <- append(beta, runif(ngenes*fraction*0.5, log(high_range_beta[1]), log(high_range_beta[2])))
+
+#choose fixed length scale parameter (~medium from nnSVG paper)
+
+length_scale <- rep(0.12, ngenes)
+
+params <- data.frame(sigma.sq, beta, length_scale)
 
 #sampling from a poisson distribution - mean controls variance, so we don't specify tau.sq:
 #step 1: use ST example distance matrix instead of creating a new one (Euclidean distance)
+
+spe <- Visium_humanDLPFC()
+spatialCoords(spe)
+
 #step 2: calculate gaussian process/kernel 
 #step 3: calculate lambda = exp(beta + gaussian process)
 #step 4: use rpois() to simulate 1000 values per gene
