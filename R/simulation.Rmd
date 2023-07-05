@@ -297,7 +297,36 @@ stopifnot(
     packageVersion("nnSVG")>='1.5.3'
 )
 
+#run nnSVG with covariate
+LR_calc <- function(i){
+  res = tryCatch({
+  set.seed(123)
+  weight_output_i <- nnSVG(spe[i,], X=matrix(w[,i]), assay_name = "logcounts")
+  list(weighted_LR_stat = rowData(weight_output_i)$LR_stat,
+       weighted_mean = rowData(weight_output_i)$mean,
+       weighted_var = rowData(weight_output_i)$var,
+       weighted_sigma.sq = rowData(weight_output_i)$sigma.sq,
+       weighted_tau.sq = rowData(weight_output_i)$tau.sq,
+       weighted_prop_sv = rowData(weight_output_i)$prop_sv)
+}, error=function(e){
+  cat("ERROR :",conditionMessage(e), "\n")
+  list(weighted_LR_stat = NA,
+       weighted_mean = NA,
+       weighted_var = NA,
+       weighted_sigma.sq = NA,
+       weighted_tau.sq = NA,
+       weighted_prop_sv = NA)
+  })
+  return(res)
+}
 
+LR_list <- lapply(c(1:dim(spe)[1]), LR_calc)
+
+save(list(spe, LR_list), file = "spe_simulation_weighted_nnSVG.Rdata")
+
+```
+
+```{r}
 
 ### EXPLORING CHANGING RANKS
 #prop sv, sigma.sq, LR pre weighting, LR post weighting, etc.
