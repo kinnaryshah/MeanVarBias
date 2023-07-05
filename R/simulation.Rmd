@@ -66,7 +66,7 @@ C_theta <- with(pair.points, kernel.fun(si.x, si.y, sj.x, sj.y, l = scale_length
 
 counts <- matrix(NA, nrow = n_genes, ncol = n_points)
 
-for (i in c(1:2)) {
+for (i in c(1:n_genes)) {
   
   print(i)
   sigma.sq_i <- sigma.sq[i]
@@ -100,7 +100,7 @@ spe <- SpatialExperiment(
 
 spe <- logNormCounts(spe)
 
-saveRDS(spe, spe_simulation.rds)
+saveRDS(spe, file = "spe_simulation.rds")
 
 ### USING THE DATA
 
