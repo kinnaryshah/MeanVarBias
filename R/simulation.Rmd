@@ -11,8 +11,8 @@ library(scuttle)
 n_genes <- 200
 fraction <- 0.25
 max_sigma.sq <- 10
-low_range_beta <- c(1,10)
-high_range_beta <- c(50,100)
+low_range_beta <- c(0.5,2)
+high_range_beta <- c(4,8)
 
 #check if integer
 stopifnot(n_genes*fraction*0.5 == round(n_genes*fraction*0.5))
