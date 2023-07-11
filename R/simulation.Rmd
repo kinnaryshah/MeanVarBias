@@ -24,7 +24,9 @@ sigma.sq <- rep(0,(1-fraction)*n_genes)
 set.seed(123)
 sigma.sq <- append(sigma.sq, runif(fraction*n_genes, 1, max_sigma.sq))
 
-  #all genes will have nonzero beta values
+ground_truth <- append(rep(FALSE, (1-fraction)*n_genes), rep(TRUE, fraction*n_genes))
+
+    #all genes will have nonzero beta values
 
   #150 genes will have exp(beta) values randomly selected from a range 1 to 100
   #25 of the 50 genes will have exp(beta) values randomly selected from a range 1 to 10
@@ -97,6 +99,8 @@ for (i in c(1:n_genes)) {
 spe <- SpatialExperiment(
     assays = list(counts = counts),
     spatialCoords = points_coord)
+
+rowData(spe)$ground_truth <- ground_truth
 
 spe <- logNormCounts(spe)
 
@@ -322,7 +326,7 @@ LR_calc <- function(i){
 
 LR_list <- lapply(c(1:dim(spe)[1]), LR_calc)
 
-save(list(spe, LR_list), file = "spe_simulation_weighted_nnSVG.Rdata")
+save(spe, LR_list, file = "spe_simulation_weighted_nnSVG.Rdata")
 
 ```
 
@@ -330,6 +334,10 @@ save(list(spe, LR_list), file = "spe_simulation_weighted_nnSVG.Rdata")
 
 ### EXPLORING CHANGING RANKS
 #prop sv, sigma.sq, LR pre weighting, LR post weighting, etc.
+
+load(file = "mean_var_project/spe_simulation_weighted_nnSVG.Rdata")
+
+
 
 ```
 
