@@ -147,14 +147,17 @@ data.frame(
   y = apply(y, MARGIN = 2, sd) |>
     sqrt(),   # Square root of the standard deviation of logCPM (y_i)
   x = log(r+0.5, base = 2) |>
-    colMeans() # log2(r_i + 0.5)
+    colMeans(), # log2(r_i + 0.5)
+  ground_truth = rowData(spe)$ground_truth
 ) |>
   ggplot() +
-  geom_point(aes(x = x, y = y)) +
+  geom_point(aes(x = x, y = y, color = ground_truth)) +
   labs(
     x = "log2(count size + 0.5)",
     y = "Sqrt(standard deviation)"
-  )
+  ) 
+  
+
 
 
 # Calc Weight -------------------------------------------------------------
@@ -241,10 +244,11 @@ stopifnot(length(r_tilda)==G)
 library(ggformula)
 p1 <- data.frame(
   y = sqrt(s_g),
-  x = r_tilda
+  x = r_tilda,
+  ground_truth = rowData(spe)$ground_truth
 ) |> 
   ggplot() +
-  geom_point(aes(x = x, y = y)) +
+  geom_point(aes(x = x, y = y, color = ground_truth)) +
   geom_smooth(aes(x = x, y = y), method = "loess") +
   stat_spline(aes(x = x, y = y), nknots=4) +
   labs(
