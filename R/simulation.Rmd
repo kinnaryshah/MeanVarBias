@@ -25,6 +25,7 @@ set.seed(123)
 sigma.sq <- append(sigma.sq, runif(fraction*n_genes, 1, max_sigma.sq))
 
 ground_truth <- append(rep(FALSE, (1-fraction)*n_genes), rep(TRUE, fraction*n_genes))
+ground_truth_rank <- rank(sigma.sq)
 
     #all genes will have nonzero beta values
 
@@ -101,6 +102,7 @@ spe <- SpatialExperiment(
     spatialCoords = points_coord)
 
 rowData(spe)$ground_truth <- ground_truth
+rowData(spe)$ground_truth_rank <- ground_truth_rank
 
 spe <- logNormCounts(spe)
 
