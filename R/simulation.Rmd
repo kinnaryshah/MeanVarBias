@@ -11,8 +11,8 @@ library(scuttle)
 n_genes <- 200
 fraction <- 0.25
 max_sigma.sq <- 10
-low_range_beta <- c(0.5,2)
-high_range_beta <- c(4,8)
+low_range_beta <- c(0.005,1)
+high_range_beta <- c(1,2)
 
 #check if integer
 stopifnot(n_genes*fraction*0.5 == round(n_genes*fraction*0.5))
@@ -148,7 +148,7 @@ y <- log2(r+0.5) - log2(tmp_R_mat+1) + log2(10^6)
 data.frame(
   y = apply(y, MARGIN = 2, sd) |>
     sqrt(),   # Square root of the standard deviation of logCPM (y_i)
-  x = y |>
+  x = log(r+0.5, base = 2) |>
     colMeans(), # log2(r_i + 0.5)
   ground_truth = rowData(spe)$ground_truth
 ) |>
