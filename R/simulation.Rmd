@@ -104,8 +104,6 @@ spe <- SpatialExperiment(
 rowData(spe)$ground_truth <- ground_truth
 rowData(spe)$ground_truth_rank <- ground_truth_rank
 
-spe <- logNormCounts(spe)
-
 saveRDS(spe, file = "spe_simulation.rds")
 
 ```
@@ -121,6 +119,8 @@ library(BiocParallel)
 ### USING THE DATA
 
 spe <- readRDS(file = "mean_var_project/spe_simulation.rds")
+
+spe <- logNormCounts(spe)
 
 #calculate weights
 
