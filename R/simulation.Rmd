@@ -115,10 +115,13 @@ library(spatialLIBD)
 library(nnSVG)
 library(BRISC)
 library(BiocParallel)
+library(scuttle)
 
 ### USING THE DATA
 
 spe <- readRDS(file = "mean_var_project/spe_simulation.rds")
+spe <- spe[, colSums(counts(spe)) > 0]
+dim(spe)
 
 spe <- logNormCounts(spe)
 
