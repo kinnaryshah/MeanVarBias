@@ -10,9 +10,9 @@ library(scuttle)
 
 n_genes <- 200
 fraction <- 0.25
-max_sigma.sq <- 10
-low_range_beta <- c(0.2,1)
-high_range_beta <- c(1,2)
+max_sigma.sq <- 2
+low_range_beta <- c(0.5,2)
+high_range_beta <- c(4,8)
 
 #check if integer
 stopifnot(n_genes*fraction*0.5 == round(n_genes*fraction*0.5))
@@ -45,6 +45,8 @@ scale_length <- 200
 
 params <- data.frame(sigma.sq, beta)
 
+plot(beta, sigma.sq)
+
 #sampling from a poisson distribution - mean controls variance, so we don't specify tau.sq:
 #step 1: use ST example distance matrix instead of creating a new one (Euclidean distance)
 
@@ -68,6 +70,7 @@ C_theta <- with(pair.points, kernel.fun(si.x, si.y, sj.x, sj.y, l = scale_length
   matrix(nrow = n_points, ncol = n_points)
 
 counts <- matrix(NA, nrow = n_genes, ncol = n_points)
+eta_list <- list()
 
 for (i in c(1:n_genes)) {
   
@@ -83,7 +86,9 @@ for (i in c(1:n_genes)) {
 
   #step 4: calculate lambda = exp(beta + gaussian process) per gene
   
-  lambda_i <- exp(gp_dat + beta_i)
+  eta_i <- gp_dat + beta_i
+  eta_list <- append(eta_list, eta_i)
+  lambda_i <- exp(eta_i)
   
   #step 5: use rpois() to simulate 4992 values per gene
 
@@ -94,6 +99,9 @@ for (i in c(1:n_genes)) {
   
   counts[i,] <- counts_i
 }
+
+p <- plot(beta, eta_list)
+ggsave("beta_eta_simulation.png", plot = p)
 
 #create spe using counts and distance matrix
 
