@@ -86,7 +86,7 @@ for (i in c(1:n_genes)) {
 
   #step 4: calculate lambda = exp(beta + gaussian process) per gene
   
-  eta_i <- gp_dat + beta_i
+  eta_i <- mean(gp_dat + beta_i)
   eta_list <- append(eta_list, eta_i)
   lambda_i <- exp(eta_i)
   
@@ -100,7 +100,7 @@ for (i in c(1:n_genes)) {
   counts[i,] <- counts_i
 }
 
-p <- plot(beta, eta_list)
+p <- plot(beta, unlist(eta_list))
 ggsave("beta_eta_simulation.png", plot = p)
 
 #create spe using counts and distance matrix
