@@ -301,6 +301,7 @@ saveRDS(w, file = "simulation_BRISC_estimation_spline.rds")
 ```{r}
 library(nnSVG)
 library(SpatialExperiment)
+library(scuttle)
 
 #run nnSVG on the logcounts matrix
 spe <- readRDS(file = "spe_simulation.rds")
