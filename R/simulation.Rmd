@@ -160,7 +160,7 @@ y <- log2(r+0.5) - log2(tmp_R_mat+1) + log2(10^6)
 data.frame(
   y = apply(y, MARGIN = 2, sd) |>
     sqrt(),   # Square root of the standard deviation of logCPM (y_i)
-  x = y |>
+  x = log(r+0.5, base = 2) |>
     colMeans(), # log2(r_i + 0.5)
   ground_truth = rowData(spe)$ground_truth
 ) |>
@@ -304,6 +304,12 @@ library(SpatialExperiment)
 
 #run nnSVG on the logcounts matrix
 spe <- readRDS(file = "spe_simulation.rds")
+
+spe <- spe[, colSums(counts(spe)) > 0]
+dim(spe)
+
+spe <- logNormCounts(spe)
+
 spe <- nnSVG(spe)
 
 #run weighted nnSVG on the logcounts matrix
