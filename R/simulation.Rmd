@@ -349,7 +349,6 @@ stopifnot(
 #run nnSVG with covariate
 LR_calc <- function(i){
   res = tryCatch({
-  set.seed(123)
   weight_output_i <- nnSVG(spe[i,], X=matrix(w[,i]), assay_name = "logcounts")
   list(weighted_LR_stat = rowData(weight_output_i)$LR_stat,
        weighted_mean = rowData(weight_output_i)$mean,
@@ -377,7 +376,7 @@ save(spe, LR_list, file = "spe_simulation_weighted_nnSVG.Rdata")
 
 ```{r}
 library(ggplot2)
-
+library(SpatialExperiment)
 ### EXPLORING CHANGING RANKS
 #prop sv, sigma.sq, LR pre weighting, LR post weighting, etc.
 
