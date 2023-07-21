@@ -134,6 +134,26 @@ dim(spe)
 
 spe <- logNormCounts(spe)
 
+# plot spatial expression of top ground truth SVG
+ix <- which(rowData(spe)$ground_truth_rank == 200)
+
+ix <- 1
+df <- as.data.frame(cbind(spatialCoords(spe), expr = logcounts(spe)[ix, ]))
+
+ggplot(df, aes(x = pxl_col_in_fullres, y = pxl_row_in_fullres, 
+               color = expr)) + 
+  geom_point(size = 0.8) + 
+  coord_fixed() + 
+  scale_y_reverse() + 
+  scale_color_viridis_c(name = "logcounts") + 
+  ggtitle("top ground truth, beta=0.28") + 
+  theme_bw() + 
+  theme(plot.title = element_text(face = "italic"), 
+        panel.grid = element_blank(), 
+        axis.title = element_blank(), 
+        axis.text = element_blank(), 
+        axis.ticks = element_blank())
+
 #calculate weights
 
 # Count Matrix, transpose so each row is a spot, and each column is a gene
