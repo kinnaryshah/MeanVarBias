@@ -1,0 +1,61 @@
+---
+title: "create_voom_figure"
+output: html_document
+date: '2023-07-25'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(ggplot2)
+library(ggformula)
+library(patchwork)
+
+load("mean_var_project/objs_HPC.Rdata")
+
+dat <- data.frame(
+  y = sqrt(s_g),
+  x = r_tilda
+) 
+
+p1 <- ggplot(dat, aes(x=x, y=y)) +
+  geom_point(size=0.5) +
+  labs(
+    x = "average log2(count size)",
+    y = "sqrt(std dev)"
+  ) +
+  theme_bw()
+
+#add trend label
+
+p2 <- ggplot(dat, aes(x=x, y=y)) +
+  geom_point(size=0.5, alpha = 0.2) +
+  stat_spline(nknots=4, linewidth=2) +
+  labs(
+    x = "average log2(count size)",
+    y = ""
+  )  +
+  annotate("text", x=2, y=0.81, label= "gene-wise mean-var trend") +
+  theme_bw() +
+  theme(axis.ticks.y=element_blank(), axis.text.y=element_blank()) 
+
+#add lines?
+
+p3 <- ggplot(dat, aes(x=x, y=y)) +
+  stat_spline(nknots=4, linewidth=2) +
+  ylim(c(0.6, 1)) +
+  labs(
+    x = "fitted log2(count size)",
+    y = ""
+  )  +
+  theme_bw() +
+  theme(axis.ticks.y=element_blank(), axis.text.y=element_blank())
+
+
+png("mean_var_project/voom_figure.png")
+wrap_plots(p1, p2, p3, ncol=3, nrow=1)
+dev.off()
+```
+
