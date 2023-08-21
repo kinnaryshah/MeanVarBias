@@ -13,6 +13,7 @@ library(scuttle)
 n_genes <- 4
 
 sigma.sq <- c(2, 1.2, 0, 1.5)
+tau.sq <- c(4, 3, 5, 1)
 
 ground_truth <- c(T, T, F, T)
 ground_truth_rank <- rank(sigma.sq)
@@ -42,7 +43,7 @@ colnames(pair.points) <- c("si.x", "si.y", "sj.x", "sj.y")
 
 #step 2: calculate gaussian process/kernel 
 
-kernel.fun <- function(si.x, si.y, sj.x, sj.y,  l = 0.2){
+kernel.fun <- function(si.x, si.y, sj.x, sj.y){
   exp(-1*sqrt(((si.x-sj.x)^2+(si.y-sj.y)^2))/l)
 }
 
@@ -70,7 +71,8 @@ for (i in c(1:n_genes)) {
   
   #step 5: use rpois() to simulate 4992 values per gene
   
-  counts_i <- rpois(n = n_points, lambda_i)
+  #counts_i <- rpois(n = n_points, lambda_i)
+  counts_i <- rnorm(n = n_points, lambda_i, tau.sq[i]) #this produces negatives, need to adjust
   
   #put all counts in matrix 
   #orientation: genes x spots
@@ -403,3 +405,59 @@ all_data <- data.frame(
 
 ```
 
+#~~~~~~~~~~~~~~~~~
+# checking if we can recover true sigma.sq value using BRISC
+#~~~~~~~~~~~~~~~~~
+
+library(SpatialExperiment)
+library(STexampleData)
+library(MASS)
+library(scuttle)
+library(BRISC)
+
+n_genes <- 1
+
+sigma.sq <- 3
+tau.sq <- 0.1
+beta <- 0
+scale_length <- 500
+
+#step 1: use ST example distance matrix instead of creating a new one (Euclidean distance)
+
+spe_demo <- Visium_humanDLPFC()
+points_coord <- spatialCoords(spe_demo)
+n_points <- nrow(points_coord)
+
+pair.points <- cbind(
+  matrix( rep(points_coord, each = n_points), ncol = 2, byrow = FALSE),
+  rep(1, times = n_points) %x% points_coord # Creating the combinations using kronecker product.
+) |> data.frame()
+colnames(pair.points) <- c("si.x", "si.y", "sj.x", "sj.y")
+
+#step 2: calculate gaussian process/kernel 
+
+kernel.fun <- function(si.x, si.y, sj.x, sj.y,  l){
+  exp(-1*sqrt(((si.x-sj.x)^2+(si.y-sj.y)^2))/l)
+}
+
+C_theta <- with(pair.points, kernel.fun(si.x, si.y, sj.x, sj.y, l = scale_length)) |> 
+  matrix(nrow = n_points, ncol = n_points)
+
+#step 3: simulate gaussian process per gene
+
+gp_dat <- mvrnorm(n = 1, rep(0,n_points), sigma.sq* C_theta) 
+
+#step 4: calculate lambda = exp(beta + gaussian process) per gene
+
+eta <- mean(gp_dat + beta)
+lambda <- exp(eta)
+
+#step 5: use rpois() to simulate 4992 values per gene
+
+#counts <- rpois(n = n_points, lambda)
+counts <- rnorm(n = n_points, lambda, tau.sq)
+
+estimation_result <- BRISC_estimation(coords = points_coord, y = counts)
+
+estimation_result$Theta ##Estimates of covariance model parameters.
+estimation_result$Beta ##Estimates of Beta
