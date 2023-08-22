@@ -13,12 +13,12 @@ library(scuttle)
 n_genes <- 4
 
 sigma.sq <- c(2, 1.2, 0, 1.5)
-tau.sq <- c(4, 3, 5, 1)
+tau.sq <- c(0.2, 0.15, 0.25, 0.1)
 
 ground_truth <- c(T, T, F, T)
 ground_truth_rank <- rank(sigma.sq)
 
-beta <- c(2, -0.5, 1, 0.5)
+beta <- c(9, 10, 8, 7)
 
 #choose fixed length scale parameter (~medium from nnSVG paper)
 
@@ -43,7 +43,7 @@ colnames(pair.points) <- c("si.x", "si.y", "sj.x", "sj.y")
 
 #step 2: calculate gaussian process/kernel 
 
-kernel.fun <- function(si.x, si.y, sj.x, sj.y){
+kernel.fun <- function(si.x, si.y, sj.x, sj.y, l){
   exp(-1*sqrt(((si.x-sj.x)^2+(si.y-sj.y)^2))/l)
 }
 
@@ -65,14 +65,14 @@ for (i in c(1:n_genes)) {
   
   #step 4: calculate lambda = exp(beta + gaussian process) per gene
   
-  eta_i <- mean(gp_dat + beta_i)
-  eta_list <- append(eta_list, eta_i)
-  lambda_i <- exp(eta_i)
+  #eta_i <- mean(gp_dat + beta_i)
+  #eta_list <- append(eta_list, eta_i)
+  lambda_i <- gp_dat + beta_i
   
   #step 5: use rpois() to simulate 4992 values per gene
   
   #counts_i <- rpois(n = n_points, lambda_i)
-  counts_i <- rnorm(n = n_points, lambda_i, tau.sq[i]) #this produces negatives, need to adjust
+  counts_i <- rnorm(n = n_points, lambda_i, tau.sq[i]) 
   
   #put all counts in matrix 
   #orientation: genes x spots
@@ -80,9 +80,9 @@ for (i in c(1:n_genes)) {
   counts[i,] <- counts_i
 }
 
-pdf("beta_eta_simulation.pdf", width = 21, height = 10)
-plot(beta, unlist(eta_list))
-dev.off()
+#pdf("beta_eta_simulation.pdf", width = 21, height = 10)
+#plot(beta, unlist(eta_list))
+#dev.off()
 
 #create spe using counts and distance matrix
 
@@ -302,12 +302,7 @@ library(scuttle)
 
 #run nnSVG on the logcounts matrix
 
-spe <- spe[, colSums(counts(spe)) > 0]
-dim(spe)
-
-spe <- logNormCounts(spe)
-
-spe <- nnSVG(spe)
+spe <- nnSVG(spe, assay_name = "counts")
 
 #run weighted nnSVG on the logcounts matrix
 
@@ -420,7 +415,7 @@ n_genes <- 1
 sigma.sq <- 3
 tau.sq <- 0.1
 beta <- 0
-scale_length <- 500
+scale_length <- 200
 
 #step 1: use ST example distance matrix instead of creating a new one (Euclidean distance)
 
@@ -450,7 +445,8 @@ gp_dat <- mvrnorm(n = 1, rep(0,n_points), sigma.sq* C_theta)
 #step 4: calculate lambda = exp(beta + gaussian process) per gene
 
 eta <- mean(gp_dat + beta)
-lambda <- exp(eta)
+#lambda <- exp(eta)
+lambda <- gp_dat + beta
 
 #step 5: use rpois() to simulate 4992 values per gene
 
