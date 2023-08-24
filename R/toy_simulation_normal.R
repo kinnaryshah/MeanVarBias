@@ -112,7 +112,7 @@ library(scuttle)
 spe <- spe[, colSums(counts(spe)) > 0]
 dim(spe)
 
-spe <- logNormCounts(spe)
+#spe <- logNormCounts(spe)
 
 # plot spatial expression of top ground truth SVG
 ix <- which(rowData(spe)$ground_truth_rank == 4)
@@ -306,7 +306,7 @@ spe <- nnSVG(spe, assay_name = "counts")
 
 #run weighted nnSVG on the logcounts matrix
 
-weighted_counts <- t(w)*logcounts(spe)
+weighted_counts <- t(w)*counts(spe)
 assays(spe) <- assays(spe)[1]
 assay(spe, "logcounts") <- weighted_counts # assign a new entry to assays slot, nnSVG will use "logcounts"
 

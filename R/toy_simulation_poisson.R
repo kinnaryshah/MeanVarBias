@@ -1,0 +1,459 @@
+set.seed(1)
+
+
+library(SpatialExperiment)
+library(STexampleData)
+library(MASS)
+library(scuttle)
+
+### GENERATING DATA
+
+#4992 spots and 2 genes
+
+n_genes <- 4
+
+sigma.sq <- c(2, 1.2, 0, 1.5)
+#tau.sq <- c(0.2, 0.15, 0.25, 0.1)
+
+ground_truth <- c(T, T, F, T)
+ground_truth_rank <- rank(sigma.sq)
+
+beta <- log(c(9, 10, 8, 7))
+
+#choose fixed length scale parameter (~medium from nnSVG paper)
+
+scale_length <- 200
+
+params <- data.frame(sigma.sq, beta)
+
+#plot(beta, sigma.sq)
+
+#sampling from a poisson distribution - mean controls variance, so we don't specify tau.sq:
+#step 1: use ST example distance matrix instead of creating a new one (Euclidean distance)
+
+spe_demo <- Visium_humanDLPFC()
+points_coord <- spatialCoords(spe_demo)
+n_points <- nrow(points_coord)
+
+pair.points <- cbind(
+  matrix( rep(points_coord, each = n_points), ncol = 2, byrow = FALSE),
+  rep(1, times = n_points) %x% points_coord # Creating the combinations using kronecker product.
+) |> data.frame()
+colnames(pair.points) <- c("si.x", "si.y", "sj.x", "sj.y")
+
+#step 2: calculate gaussian process/kernel 
+
+kernel.fun <- function(si.x, si.y, sj.x, sj.y, l){
+  exp(-1*sqrt(((si.x-sj.x)^2+(si.y-sj.y)^2))/l)
+}
+
+C_theta <- with(pair.points, kernel.fun(si.x, si.y, sj.x, sj.y, l = scale_length)) |> 
+  matrix(nrow = n_points, ncol = n_points)
+
+counts <- matrix(NA, nrow = n_genes, ncol = n_points)
+eta_list <- list()
+
+for (i in c(1:n_genes)) {
+  print(i)
+  sigma.sq_i <- sigma.sq[i]
+  beta_i <- beta[i]
+  print(paste0(sigma.sq_i, " ", beta_i))
+  
+  #step 3: simulate gaussian process per gene
+  
+  gp_dat <- mvrnorm(n = 1, rep(0,n_points), sigma.sq_i* C_theta) 
+  
+  #step 4: calculate lambda = exp(beta + gaussian process) per gene
+  
+  #eta_i <- mean(gp_dat + beta_i)
+  #eta_list <- append(eta_list, eta_i)
+  lambda_i <- exp(gp_dat + beta_i)
+  
+  #step 5: use rpois() to simulate 4992 values per gene
+  
+  counts_i <- rpois(n = n_points, lambda_i)
+  #counts_i <- rnorm(n = n_points, lambda_i, tau.sq[i]) 
+  
+  #put all counts in matrix 
+  #orientation: genes x spots
+  
+  counts[i,] <- counts_i
+}
+
+#pdf("beta_eta_simulation.pdf", width = 21, height = 10)
+#plot(beta, unlist(eta_list))
+#dev.off()
+
+#create spe using counts and distance matrix
+
+spe <- SpatialExperiment(
+  assays = list(counts = counts),
+  spatialCoords = points_coord)
+
+rowData(spe)$ground_truth <- ground_truth
+rowData(spe)$ground_truth_rank <- ground_truth_rank
+rowData(spe)$ground_truth_sigma.sq <- sigma.sq
+rowData(spe)$ground_truth_beta <- beta
+
+
+```
+
+```{r}
+library(SpatialExperiment)
+library(ggplot2)
+library(spatialLIBD)
+library(nnSVG)
+library(BRISC)
+library(BiocParallel)
+library(scuttle)
+
+### USING THE DATA
+
+spe <- spe[, colSums(counts(spe)) > 0]
+dim(spe)
+
+spe <- logNormCounts(spe)
+
+# plot spatial expression of top ground truth SVG
+ix <- which(rowData(spe)$ground_truth_rank == 4)
+
+df <- as.data.frame(cbind(spatialCoords(spe), expr = logcounts(spe)[ix, ]))
+
+ggplot(df, aes(x = pxl_col_in_fullres, y = pxl_row_in_fullres, 
+               color = expr)) + 
+  geom_point(size = 0.8) + 
+  coord_fixed() + 
+  scale_y_reverse() + 
+  scale_color_viridis_c(name = "logcounts") + 
+  ggtitle("top ground truth") + 
+  theme_bw() + 
+  theme(plot.title = element_text(face = "italic"), 
+        panel.grid = element_blank(), 
+        axis.title = element_blank(), 
+        axis.text = element_blank(), 
+        axis.ticks = element_blank())
+
+#calculate weights
+
+# Count Matrix, transpose so each row is a spot, and each column is a gene
+r <- t(as.matrix(counts(spe)))
+
+n <- dim(spe)[2] # Number of Cells
+G <- dim(spe)[1] # Number of Genes
+
+# Sample-specific Library Size
+R <- rowSums(r)
+stopifnot(length(R)==n)
+
+# Temporary Matrix, replicate library size for each row
+tmp_R_mat <- matrix(
+  rep(R, each = G),
+  byrow = TRUE, nrow = n, ncol = G
+)
+
+# logCPM
+y <- log2(r+0.5) - log2(tmp_R_mat+1) + log2(10^6)
+
+
+# Viz Mean-variance -------------------------------------------------------
+data.frame(
+  y = apply(y, MARGIN = 2, sd) |>
+    sqrt(),   # Square root of the standard deviation of logCPM (y_i)
+  x = log(r+0.5, base = 2) |>
+    colMeans(), # log2(r_i + 0.5)
+  ground_truth = rowData(spe)$ground_truth
+) |>
+  ggplot() +
+  geom_point(aes(x = x, y = y, color = ground_truth)) +
+  labs(
+    x = "log2(count size + 0.5)",
+    y = "Sqrt(standard deviation)"
+  ) 
+
+
+
+
+# Calc Weight -------------------------------------------------------------
+
+# *BRISC ----------------------------------------------------------
+
+coords <- spatialCoords(spe)
+
+# scale coordinates proportionally
+range_all <- max(apply(coords, 2, function(col) diff(range(col))))
+coords <- apply(coords, 2, function(col) (col - min(col)) / range_all)
+
+# calculate ordering of coordinates
+order_brisc <- BRISC_order(coords, order = "AMMD", verbose = F)
+
+# calculate nearest neighbors
+nn_brisc <- BRISC_neighbor(coords, n.neighbors = 10, n_omp = 1, 
+                           search.type = "tree", ordering = order_brisc, 
+                           verbose = F)
+
+
+# run BRISC using parallelization
+# run BRISC by column of y so BRISC is run per gene
+ix <- seq_len(ncol(y))
+out_brisc <- bplapply(ix, function(i) {
+  # fit model (intercept-only model if x is NULL)
+  y_i <- y[ ,i]
+  suppressWarnings({
+    runtime <- system.time({
+      out_i <- BRISC_estimation(coords = coords, y = y_i, x = NULL, 
+                                cov.model = "exponential", 
+                                ordering = order_brisc, neighbor = nn_brisc, 
+                                verbose = F)
+    })
+  })
+  
+  pred_i <- BRISC_prediction(out_i, coords = coords, X.0 = NULL, verbose = F)
+  residual_i <- y_i - pred_i$prediction
+  
+  return(list(pred_i$prediction, residual_i))
+}, BPPARAM = MulticoreParam(workers = 1)) #change to 20 on JHPCE
+
+# collapse output list into matrix
+mat_brisc <- do.call("rbind", out_brisc)
+
+# *Voom Variance Modelling -------------------------------------------------
+
+mu_hat <- unname(as.matrix(as.data.frame(mat_brisc[,1])))
+stopifnot(dim(mu_hat) == c(n, G))
+
+s_g <- unname(as.data.frame(mat_brisc[,2])) |> 
+  apply(MARGIN = 2,  # Column wise
+        FUN = sd)
+stopifnot(length(s_g) == G)
+
+y_bar <- colMeans(mu_hat)
+stopifnot(length(y_bar) == G)
+
+# Geometric Mean
+R_tilda <- exp(mean(log(R)))
+# The reason of calculating log is to avoid integer overflow
+
+# Log2 Counts
+# Note: slight notation abuse. Prev r denotes read counts
+r_tilda <- y_bar + log2(R_tilda) - log2(10^6)
+stopifnot(length(r_tilda)==G)
+
+# *Plot Relationship -----------------------------------------------------
+
+
+# data.frame(
+#   y = sqrt(s_g),
+#   x = r_tilda
+# ) |> 
+#   ggplot() +
+#   geom_point(aes(x = x, y = y)) +
+#   geom_smooth(aes(x = x, y = y)) +
+#   labs(
+#     x = "log2(count size)",
+#     y = "Sqrt(s_g)"
+#   )
+
+library(ggformula)
+p1 <- data.frame(
+  y = sqrt(s_g),
+  x = r_tilda,
+  ground_truth = rowData(spe)$ground_truth
+) |> 
+  ggplot() +
+  geom_point(aes(x = x, y = y, color = ground_truth)) +
+  geom_smooth(aes(x = x, y = y), method = "loess") +
+  stat_spline(aes(x = x, y = y), nknots=4) +
+  labs(
+    x = "log2(count size)",
+    y = "Sqrt(s_g)"
+  )
+
+ggsave("relationship_simulation.png", plot = p1)
+
+# *PREDICT MODEL -----------------------------------------------------------------
+stopifnot(dim(mu_hat)==dim(tmp_R_mat))
+lambda_hat <- mu_hat + log2(tmp_R_mat+1) - log2(10^6)
+
+#gives percentage of lambda_hat values out of range
+sum(lambda_hat < range(r_tilda)[1] | lambda_hat > range(r_tilda)[2]) / (dim(spe)[1]*dim(spe)[2]) 
+sum(lambda_hat < range(r_tilda)[1]) / (dim(spe)[1]*dim(spe)[2])
+sum(lambda_hat > range(r_tilda)[2]) / (dim(spe)[1]*dim(spe)[2])
+
+spline_fit <- smooth.spline(y=sqrt(s_g), x=r_tilda)
+
+# NOTE: It is possible that lambda is out of range of r_tilda
+# which will produce NA predicted values due to extrapolation
+tmp_pred_sqrt_sg <- predict(
+  spline_fit, 
+  x = c(lambda_hat)
+)$y |> 
+  matrix(
+    nrow = n, ncol = G
+  )
+
+w <- tmp_pred_sqrt_sg^(-4) 
+
+```
+
+```{r}
+library(nnSVG)
+library(SpatialExperiment)
+library(scuttle)
+
+#run nnSVG on the logcounts matrix
+
+spe <- nnSVG(spe, assay_name = "logcounts")
+
+#run weighted nnSVG on the logcounts matrix
+
+weighted_counts <- t(w)*logcounts(spe)
+assays(spe) <- assays(spe)[1]
+assay(spe, "logcounts") <- weighted_counts # assign a new entry to assays slot, nnSVG will use "logcounts"
+
+# Make sure nnSVG fixed the interceptless model 
+stopifnot(
+  "Please update your nnSVG to minimum v1.5.3 to have the correct result" = 
+    packageVersion("nnSVG")>='1.5.3'
+)
+
+#run nnSVG with covariate
+LR_calc <- function(i){
+  res = tryCatch({
+    weight_output_i <- nnSVG(spe[i,], X=matrix(w[,i]), assay_name = "logcounts")
+    list(weighted_LR_stat = rowData(weight_output_i)$LR_stat,
+         weighted_mean = rowData(weight_output_i)$mean,
+         weighted_var = rowData(weight_output_i)$var,
+         weighted_sigma.sq = rowData(weight_output_i)$sigma.sq,
+         weighted_tau.sq = rowData(weight_output_i)$tau.sq,
+         weighted_prop_sv = rowData(weight_output_i)$prop_sv)
+  }, error=function(e){
+    cat("ERROR :",conditionMessage(e), "\n")
+    list(weighted_LR_stat = NA,
+         weighted_mean = NA,
+         weighted_var = NA,
+         weighted_sigma.sq = NA,
+         weighted_tau.sq = NA,
+         weighted_prop_sv = NA)
+  })
+  return(res)
+}
+
+LR_list <- lapply(c(1:dim(spe)[1]), LR_calc)
+
+
+```
+
+```{r}
+library(ggplot2)
+library(SpatialExperiment)
+### EXPLORING CHANGING RANKS
+#prop sv, sigma.sq, LR pre weighting, LR post weighting, etc.
+
+weighted_rank <- rank(-1*unlist(lapply(LR_list, function (x) x[c('weighted_LR_stat')])))
+
+#new value for change in rank
+rank_shift <- rowData(spe)$rank - weighted_rank
+
+#plot shift in rank against mean expression 
+plot(rowData(spe)$mean, rank_shift, main = "Rank Changes simulation",
+     xlab = "mean expression", ylab = "unweighted rank - weighted rank",
+     pch = 20, frame = FALSE)
+
+#check if genes with spatial variation ranked higher compared to genes without spatial variation
+data.frame(
+  y = rowData(spe)$rank,
+  x = rowData(spe)$mean,
+  ground_truth = rowData(spe)$ground_truth
+) |> 
+  ggplot() +
+  geom_point(aes(x = x, y = y, color = ground_truth)) +
+  labs(
+    x = "mean of logcounts",
+    y = "rank"
+  )
+
+data.frame(
+  y = rank(-1*unlist(lapply(LR_list, function (x) x[c('weighted_LR_stat')]))),
+  x = unlist(lapply(LR_list, function (x) x[c('weighted_mean')])),
+  ground_truth = rowData(spe)$ground_truth
+) |> 
+  ggplot() +
+  geom_point(aes(x = x, y = y, color = ground_truth)) +
+  labs(
+    x = "mean of logcounts",
+    y = "rank"
+  )
+
+all_data <- data.frame(
+  ground_truth_sigma.sq = rowData(spe)$ground_truth_sigma.sq,
+  unweighted_sigma.sq = rowData(spe)$sigma.sq,
+  weighted_sigma.sq = unlist(lapply(LR_list, function (x) x[c('weighted_sigma.sq')])),
+  unweighted_tau.sq = rowData(spe)$tau.sq,
+  weighted_tau.sq = unlist(lapply(LR_list, function (x) x[c('weighted_tau.sq')])),
+  unweighted_prop_sv = rowData(spe)$prop_sv,
+  weighted_prop_sv = unlist(lapply(LR_list, function (x) x[c('weighted_prop_sv')])),
+  ground_truth_beta = rowData(spe)$ground_truth_beta,
+  ground_truth_rank = rowData(spe)$ground_truth_rank,
+  unweighted_rank = rowData(spe)$rank,
+  weighted_rank = rank(-1*unlist(lapply(LR_list, function (x) x[c('weighted_LR_stat')])))
+)
+
+```
+
+#~~~~~~~~~~~~~~~~~
+# checking if we can recover true sigma.sq value using BRISC
+#~~~~~~~~~~~~~~~~~
+
+library(SpatialExperiment)
+library(STexampleData)
+library(MASS)
+library(scuttle)
+library(BRISC)
+
+n_genes <- 1
+
+sigma.sq <- 3
+tau.sq <- 0.1
+beta <- 0
+scale_length <- 200
+
+#step 1: use ST example distance matrix instead of creating a new one (Euclidean distance)
+
+spe_demo <- Visium_humanDLPFC()
+points_coord <- spatialCoords(spe_demo)
+n_points <- nrow(points_coord)
+
+pair.points <- cbind(
+  matrix( rep(points_coord, each = n_points), ncol = 2, byrow = FALSE),
+  rep(1, times = n_points) %x% points_coord # Creating the combinations using kronecker product.
+) |> data.frame()
+colnames(pair.points) <- c("si.x", "si.y", "sj.x", "sj.y")
+
+#step 2: calculate gaussian process/kernel 
+
+kernel.fun <- function(si.x, si.y, sj.x, sj.y,  l){
+  exp(-1*sqrt(((si.x-sj.x)^2+(si.y-sj.y)^2))/l)
+}
+
+C_theta <- with(pair.points, kernel.fun(si.x, si.y, sj.x, sj.y, l = scale_length)) |> 
+  matrix(nrow = n_points, ncol = n_points)
+
+#step 3: simulate gaussian process per gene
+
+gp_dat <- mvrnorm(n = 1, rep(0,n_points), sigma.sq* C_theta) 
+
+#step 4: calculate lambda = exp(beta + gaussian process) per gene
+
+eta <- mean(gp_dat + beta)
+#lambda <- exp(eta)
+lambda <- gp_dat + beta
+
+#step 5: use rpois() to simulate 4992 values per gene
+
+#counts <- rpois(n = n_points, lambda)
+counts <- rnorm(n = n_points, lambda, tau.sq)
+
+estimation_result <- BRISC_estimation(coords = points_coord, y = counts)
+
+estimation_result$Theta ##Estimates of covariance model parameters.
+estimation_result$Beta ##Estimates of Beta
