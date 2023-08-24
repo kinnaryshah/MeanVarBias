@@ -16,7 +16,7 @@ sigma.sq <- c(2, 1.2, 0, 1.5)
 tau.sq <- c(0.2, 0.15, 0.25, 0.1)
 
 ground_truth <- c(T, T, F, T)
-ground_truth_rank <- rank(sigma.sq)
+ground_truth_rank <- rank(-sigma.sq)
 
 beta <- c(9, 10, 8, 7)
 
