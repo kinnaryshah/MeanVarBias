@@ -135,6 +135,8 @@ ggplot(df, aes(x = pxl_col_in_fullres, y = pxl_row_in_fullres,
 
 #calculate weights
 
+set.seed(10)
+
 # Count Matrix, transpose so each row is a spot, and each column is a gene
 r <- t(as.matrix(counts(spe)))
 
