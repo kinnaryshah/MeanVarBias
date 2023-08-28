@@ -115,7 +115,7 @@ dim(spe)
 spe <- logNormCounts(spe)
 
 # plot spatial expression of top ground truth SVG
-ix <- which(rowData(spe)$ground_truth_rank == 4)
+ix <- which(rowData(spe)$ground_truth_rank == 1)
 
 df <- as.data.frame(cbind(spatialCoords(spe), expr = logcounts(spe)[ix, ]))
 
@@ -211,7 +211,7 @@ out_brisc <- bplapply(ix, function(i) {
   residual_i <- y_i - pred_i$prediction
   
   return(list(pred_i$prediction, residual_i))
-}, BPPARAM = MulticoreParam(workers = 1)) #change to 20 on JHPCE
+}, BPPARAM = MulticoreParam(workers = 1)) 
 
 # collapse output list into matrix
 mat_brisc <- do.call("rbind", out_brisc)
@@ -240,21 +240,8 @@ stopifnot(length(r_tilda)==G)
 
 # *Plot Relationship -----------------------------------------------------
 
-
-# data.frame(
-#   y = sqrt(s_g),
-#   x = r_tilda
-# ) |> 
-#   ggplot() +
-#   geom_point(aes(x = x, y = y)) +
-#   geom_smooth(aes(x = x, y = y)) +
-#   labs(
-#     x = "log2(count size)",
-#     y = "Sqrt(s_g)"
-#   )
-
 library(ggformula)
-p1 <- data.frame(
+data.frame(
   y = sqrt(s_g),
   x = r_tilda,
   ground_truth = rowData(spe)$ground_truth
@@ -267,8 +254,6 @@ p1 <- data.frame(
     x = "log2(count size)",
     y = "Sqrt(s_g)"
   )
-
-ggsave("relationship_simulation.png", plot = p1)
 
 # *PREDICT MODEL -----------------------------------------------------------------
 stopifnot(dim(mu_hat)==dim(tmp_R_mat))
@@ -301,14 +286,13 @@ library(SpatialExperiment)
 library(scuttle)
 
 #run nnSVG on the logcounts matrix
-
+set.seed(2)
 spe <- nnSVG(spe, assay_name = "logcounts")
 
 #run weighted nnSVG on the logcounts matrix
 
-weighted_counts <- t(w)*logcounts(spe)
-assays(spe) <- assays(spe)[1]
-assay(spe, "logcounts") <- weighted_counts # assign a new entry to assays slot, nnSVG will use "logcounts"
+weighted_logcounts <- t(w)*logcounts(spe)
+assay(spe, "weighted_logcounts") <- weighted_logcounts # assign a new entry to assays slot, nnSVG will use "logcounts" by default
 
 # Make sure nnSVG fixed the interceptless model 
 stopifnot(
@@ -316,10 +300,12 @@ stopifnot(
     packageVersion("nnSVG")>='1.5.3'
 )
 
+set.seed(3)
+
 #run nnSVG with covariate
 LR_calc <- function(i){
   res = tryCatch({
-    weight_output_i <- nnSVG(spe[i,], X=matrix(w[,i]), assay_name = "logcounts")
+    weight_output_i <- nnSVG(spe[i,], X=matrix(w[,i]), assay_name = "weighted_logcounts")
     list(weighted_LR_stat = rowData(weight_output_i)$LR_stat,
          weighted_mean = rowData(weight_output_i)$mean,
          weighted_var = rowData(weight_output_i)$var,
@@ -399,61 +385,3 @@ all_data <- data.frame(
 )
 
 ```
-
-#~~~~~~~~~~~~~~~~~
-# checking if we can recover true sigma.sq value using BRISC
-#~~~~~~~~~~~~~~~~~
-
-library(SpatialExperiment)
-library(STexampleData)
-library(MASS)
-library(scuttle)
-library(BRISC)
-
-n_genes <- 1
-
-sigma.sq <- 3
-tau.sq <- 0.1
-beta <- 0
-scale_length <- 200
-
-#step 1: use ST example distance matrix instead of creating a new one (Euclidean distance)
-
-spe_demo <- Visium_humanDLPFC()
-points_coord <- spatialCoords(spe_demo)
-n_points <- nrow(points_coord)
-
-pair.points <- cbind(
-  matrix( rep(points_coord, each = n_points), ncol = 2, byrow = FALSE),
-  rep(1, times = n_points) %x% points_coord # Creating the combinations using kronecker product.
-) |> data.frame()
-colnames(pair.points) <- c("si.x", "si.y", "sj.x", "sj.y")
-
-#step 2: calculate gaussian process/kernel 
-
-kernel.fun <- function(si.x, si.y, sj.x, sj.y,  l){
-  exp(-1*sqrt(((si.x-sj.x)^2+(si.y-sj.y)^2))/l)
-}
-
-C_theta <- with(pair.points, kernel.fun(si.x, si.y, sj.x, sj.y, l = scale_length)) |> 
-  matrix(nrow = n_points, ncol = n_points)
-
-#step 3: simulate gaussian process per gene
-
-gp_dat <- mvrnorm(n = 1, rep(0,n_points), sigma.sq* C_theta) 
-
-#step 4: calculate lambda = exp(beta + gaussian process) per gene
-
-eta <- mean(gp_dat + beta)
-#lambda <- exp(eta)
-lambda <- gp_dat + beta
-
-#step 5: use rpois() to simulate 4992 values per gene
-
-#counts <- rpois(n = n_points, lambda)
-counts <- rnorm(n = n_points, lambda, tau.sq)
-
-estimation_result <- BRISC_estimation(coords = points_coord, y = counts)
-
-estimation_result$Theta ##Estimates of covariance model parameters.
-estimation_result$Beta ##Estimates of Beta
