@@ -87,7 +87,7 @@ for (i in c(1:n_genes)) {
 #create spe using counts and distance matrix
 
 spe <- SpatialExperiment(
-  assays = list(counts = counts),
+  assays = list(logcounts = counts),
   spatialCoords = points_coord)
 
 rowData(spe)$ground_truth <- ground_truth
@@ -103,8 +103,8 @@ library(scuttle)
 
 #run nnSVG on the logcounts matrix
 
-spe <- nnSVG(spe, assay_name = "counts")
-
+spe <- nnSVG(spe, assay_name = "logcounts")
+rowData(spe)$sigma.sq
 
 
 #~~~~~~~~~~~~~~~~~
