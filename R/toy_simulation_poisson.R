@@ -287,7 +287,7 @@ library(scuttle)
 
 #run nnSVG on the logcounts matrix
 set.seed(2)
-spe <- nnSVG(spe, assay_name = "logcounts")
+spe_unweighted <- nnSVG(spe, assay_name = "logcounts")
 
 #run weighted nnSVG on the logcounts matrix
 
@@ -303,7 +303,7 @@ stopifnot(
 set.seed(3)
 
 #run nnSVG with covariate
-LR_calc <- function(i){
+weighted_nnSVG_calc <- function(i){
   res = tryCatch({
     weight_output_i <- nnSVG(spe[i,], X=matrix(w[,i]), assay_name = "weighted_logcounts")
     list(weighted_LR_stat = rowData(weight_output_i)$LR_stat,
@@ -324,7 +324,7 @@ LR_calc <- function(i){
   return(res)
 }
 
-LR_list <- lapply(c(1:dim(spe)[1]), LR_calc)
+weighted_nnSVG_list <- lapply(c(1:dim(spe)[1]), weighted_nnSVG_calc)
 
 
 ```
@@ -335,7 +335,7 @@ library(SpatialExperiment)
 ### EXPLORING CHANGING RANKS
 #prop sv, sigma.sq, LR pre weighting, LR post weighting, etc.
 
-weighted_rank <- rank(-1*unlist(lapply(LR_list, function (x) x[c('weighted_LR_stat')])))
+weighted_rank <- rank(-1*unlist(lapply(weighted_nnSVG_list, function (x) x[c('weighted_LR_stat')])))
 
 #new value for change in rank
 rank_shift <- rowData(spe)$rank - weighted_rank
@@ -359,8 +359,8 @@ data.frame(
   )
 
 data.frame(
-  y = rank(-1*unlist(lapply(LR_list, function (x) x[c('weighted_LR_stat')]))),
-  x = unlist(lapply(LR_list, function (x) x[c('weighted_mean')])),
+  y = rank(-1*unlist(lapply(weighted_nnSVG_list, function (x) x[c('weighted_LR_stat')]))),
+  x = unlist(lapply(weighted_nnSVG_list, function (x) x[c('weighted_mean')])),
   ground_truth = rowData(spe)$ground_truth
 ) |> 
   ggplot() +
@@ -371,17 +371,17 @@ data.frame(
   )
 
 all_data <- data.frame(
-  ground_truth_sigma.sq = rowData(spe)$ground_truth_sigma.sq,
-  unweighted_sigma.sq = rowData(spe)$sigma.sq,
-  weighted_sigma.sq = unlist(lapply(LR_list, function (x) x[c('weighted_sigma.sq')])),
-  unweighted_tau.sq = rowData(spe)$tau.sq,
-  weighted_tau.sq = unlist(lapply(LR_list, function (x) x[c('weighted_tau.sq')])),
-  unweighted_prop_sv = rowData(spe)$prop_sv,
-  weighted_prop_sv = unlist(lapply(LR_list, function (x) x[c('weighted_prop_sv')])),
-  ground_truth_beta = rowData(spe)$ground_truth_beta,
-  ground_truth_rank = rowData(spe)$ground_truth_rank,
-  unweighted_rank = rowData(spe)$rank,
-  weighted_rank = rank(-1*unlist(lapply(LR_list, function (x) x[c('weighted_LR_stat')])))
+  ground_truth_sigma.sq = rowData(spe_unweighted)$ground_truth_sigma.sq,
+  unweighted_sigma.sq = rowData(spe_unweighted)$sigma.sq,
+  weighted_sigma.sq = unlist(lapply(weighted_nnSVG_list, function (x) x[c('weighted_sigma.sq')])),
+  unweighted_tau.sq = rowData(spe_unweighted)$tau.sq,
+  weighted_tau.sq = unlist(lapply(weighted_nnSVG_list, function (x) x[c('weighted_tau.sq')])),
+  unweighted_prop_sv = rowData(spe_unweighted)$prop_sv,
+  weighted_prop_sv = unlist(lapply(weighted_nnSVG_list, function (x) x[c('weighted_prop_sv')])),
+  ground_truth_beta = rowData(spe_unweighted)$ground_truth_beta,
+  ground_truth_rank = rowData(spe_unweighted)$ground_truth_rank,
+  unweighted_rank = rowData(spe_unweighted)$rank,
+  weighted_rank = rank(-1*unlist(lapply(weighted_nnSVG_list, function (x) x[c('weighted_LR_stat')])))
 )
 
 ```
