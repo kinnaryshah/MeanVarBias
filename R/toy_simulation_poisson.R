@@ -18,7 +18,7 @@ sigma.sq <- c(2, 1.2, 0, 1.5)
 ground_truth <- c(T, T, F, T)
 ground_truth_rank <- rank(-sigma.sq)
 
-beta <- log(c(9, 10, 8, 7))
+beta <- c(2, 0.5, 1, 0.5)
 
 #choose fixed length scale parameter (~medium from nnSVG paper)
 
@@ -340,18 +340,18 @@ library(SpatialExperiment)
 weighted_rank <- rank(-1*unlist(lapply(weighted_nnSVG_list, function (x) x[c('weighted_LR_stat')])))
 
 #new value for change in rank
-rank_shift <- rowData(spe)$rank - weighted_rank
+rank_shift <- rowData(spe_unweighted)$rank - weighted_rank
 
 #plot shift in rank against mean expression 
-plot(rowData(spe)$mean, rank_shift, main = "Rank Changes simulation",
+plot(rowData(spe_unweighted)$mean, rank_shift, main = "Rank Changes simulation",
      xlab = "mean expression", ylab = "unweighted rank - weighted rank",
      pch = 20, frame = FALSE)
 
 #check if genes with spatial variation ranked higher compared to genes without spatial variation
 data.frame(
-  y = rowData(spe)$rank,
-  x = rowData(spe)$mean,
-  ground_truth = rowData(spe)$ground_truth
+  y = rowData(spe_unweighted)$rank,
+  x = rowData(spe_unweighted)$mean,
+  ground_truth = rowData(spe_unweighted)$ground_truth
 ) |> 
   ggplot() +
   geom_point(aes(x = x, y = y, color = ground_truth)) +
@@ -363,7 +363,7 @@ data.frame(
 data.frame(
   y = rank(-1*unlist(lapply(weighted_nnSVG_list, function (x) x[c('weighted_LR_stat')]))),
   x = unlist(lapply(weighted_nnSVG_list, function (x) x[c('weighted_mean')])),
-  ground_truth = rowData(spe)$ground_truth
+  ground_truth = rowData(spe_unweighted)$ground_truth
 ) |> 
   ggplot() +
   geom_point(aes(x = x, y = y, color = ground_truth)) +
