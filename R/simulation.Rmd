@@ -84,10 +84,11 @@ for (i in c(1:n_genes)) {
 
   #step 4: calculate lambda = exp(beta + gaussian process) per gene
   
-  eta_i <- mean(gp_dat + beta_i)
-  eta_list <- append(eta_list, eta_i)
-  lambda_i <- exp(eta_i)
-  
+  #eta_i <- mean(gp_dat + beta_i)
+  #eta_list <- append(eta_list, eta_i)
+  #lambda_i <- exp(eta_i)
+  lambda_i <- exp(gp_dat + beta_i)
+
   #step 5: use rpois() to simulate 4992 values per gene
 
   counts_i <- rpois(n = n_points, lambda_i)
