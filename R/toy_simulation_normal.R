@@ -12,8 +12,8 @@ library(scuttle)
 
 n_genes <- 4
 
-sigma.sq <- c(2, 1.2, 0, 1.5)
-tau.sq <- c(0.2, 0.15, 0.25, 0.1)
+sigma.sq <- c(2, 1, 0, 5)
+tau.sq <- c(6, 5, 4, 7)
 
 ground_truth <- c(T, T, F, T)
 ground_truth_rank <- rank(-sigma.sq)
@@ -72,7 +72,7 @@ for (i in c(1:n_genes)) {
   #step 5: use rpois() to simulate 4992 values per gene
   
   #counts_i <- rpois(n = n_points, lambda_i)
-  counts_i <- rnorm(n = n_points, lambda_i, tau.sq[i]) 
+  counts_i <- rnorm(n = n_points, lambda_i, sqrt(tau.sq[i]))
   
   #put all counts in matrix 
   #orientation: genes x spots
@@ -93,6 +93,7 @@ spe <- SpatialExperiment(
 rowData(spe)$ground_truth <- ground_truth
 rowData(spe)$ground_truth_rank <- ground_truth_rank
 rowData(spe)$ground_truth_sigma.sq <- sigma.sq
+rowData(spe)$ground_truth_tau.sq <- tau.sq
 rowData(spe)$ground_truth_beta <- beta
 
 
