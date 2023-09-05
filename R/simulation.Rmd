@@ -404,7 +404,8 @@ data.frame(
   geom_point(aes(x = x, y = y, color = ground_truth)) +
   labs(
     x = "mean of logcounts",
-    y = "rank"
+    y = "rank",
+    title = "unweighted nnSVG"
   )
 
 data.frame(
@@ -416,7 +417,8 @@ data.frame(
   geom_point(aes(x = x, y = y, color = ground_truth)) +
   labs(
     x = "mean of logcounts",
-    y = "rank"
+    y = "rank",
+    title = "weighted nnSVG"
   )
 
 all_data <- data.frame(
