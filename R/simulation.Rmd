@@ -435,7 +435,23 @@ all_data <- data.frame(
   weighted_rank = rank(-1*unlist(lapply(weighted_nnSVG_list, function (x) x[c('weighted_LR_stat')])))
 )
 
+#calculate spearman correlation between unweighted & ground truth = -0.74
+corr.unweighted <- cor.test(all_data$ground_truth_rank, all_data$unweighted_rank, method = 'spearman')
 
+library(coin)
+spearman_test(all_data$ground_truth_rank ~ all_data$unweighted_rank)
+
+library(Hmisc)
+rcorr(all_data$ground_truth_rank, all_data$unweighted_rank, type="spearman")
+
+#calculate spearman correlation between weighted & ground truth = -0.11
+corr.weighted <- cor.test(all_data$ground_truth_rank, all_data$weighted_rank, method = 'spearman')
+
+library(coin)
+spearman_test(all_data$ground_truth_rank ~ all_data$weighted_rank)
+
+library(Hmisc)
+rcorr(all_data$ground_truth_rank, all_data$weighted_rank, type="spearman")
 
 ```
 
