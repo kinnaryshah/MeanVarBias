@@ -11,9 +11,9 @@ set.seed(1)
 #4992 spots and 200 genes
 
 n_genes <- 200
-fraction <- 0.25
-max_sigma.sq <- 2
-low_range_beta <- c(0.5,2)
+fraction <- 0.5
+max_sigma.sq <- 1
+low_range_beta <- c(0.5,1)
 high_range_beta <- c(4,8)
 
 #check if integer
@@ -22,11 +22,11 @@ stopifnot(n_genes*fraction*0.5 == round(n_genes*fraction*0.5))
   #150 genes will have sigma.sq = 0
   #50 genes will have sigma.sq randomly selected from a range 1 to 10 (this is ground truth of ranks)
 
-sigma.sq <- rep(0,(1-fraction)*n_genes)
-sigma.sq <- append(sigma.sq, runif(fraction*n_genes, 1, max_sigma.sq))
+sigma.sq <- runif(fraction*n_genes, 0, 0.1)
+sigma.sq <- append(sigma.sq, runif(fraction*n_genes, 0.9, max_sigma.sq))
 
 ground_truth <- append(rep(FALSE, (1-fraction)*n_genes), rep(TRUE, fraction*n_genes))
-ground_truth_rank <- rank(sigma.sq)
+ground_truth_rank <- rank(-sigma.sq)
 
     #all genes will have nonzero beta values
 
@@ -34,9 +34,8 @@ ground_truth_rank <- rank(sigma.sq)
   #25 of the 50 genes will have exp(beta) values randomly selected from a range 1 to 10
   #25 of the 50 genes will have exp(beta) values randomly selected from a range 50 to 100
 
-beta <- runif((1-fraction)*n_genes, log(low_range_beta[1]), log(high_range_beta[2]))
-beta <- append(beta, runif(n_genes*fraction*0.5, log(low_range_beta[1]), log(low_range_beta[2])))
-beta <- append(beta, runif(n_genes*fraction*0.5, log(high_range_beta[1]), log(high_range_beta[2])))
+beta <- runif(n_genes*fraction, log(high_range_beta[1]), log(high_range_beta[2]))
+beta <- append(beta, runif((1-fraction)*n_genes, log(low_range_beta[1]), log(low_range_beta[2])))
 
 #choose fixed length scale parameter (~medium from nnSVG paper)
 
