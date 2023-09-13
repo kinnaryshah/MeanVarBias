@@ -369,6 +369,29 @@ weighted_nnSVG_calc <- function(i){
   return(res)
 }
 
+dim(matrix(assays(spe)$weighted_logcounts[i,],ncol=4992))
+
+weighted_nnSVG_calc <- function(i){
+  res = tryCatch({
+  weight_output_i <- nnSVG(input = matrix(assays(spe)$weighted_logcounts[i,],ncol=4992), spatial_coords = spatialCoords(spe), X = matrix(w[,i]))
+  list(weighted_LR_stat = rowData(weight_output_i)$LR_stat,
+       weighted_mean = rowData(weight_output_i)$mean,
+       weighted_var = rowData(weight_output_i)$var,
+       weighted_sigma.sq = rowData(weight_output_i)$sigma.sq,
+       weighted_tau.sq = rowData(weight_output_i)$tau.sq,
+       weighted_prop_sv = rowData(weight_output_i)$prop_sv)
+}, error=function(e){
+  cat("ERROR :",conditionMessage(e), "\n")
+  list(weighted_LR_stat = NA,
+       weighted_mean = NA,
+       weighted_var = NA,
+       weighted_sigma.sq = NA,
+       weighted_tau.sq = NA,
+       weighted_prop_sv = NA)
+  })
+  return(res)
+}
+
 weighted_nnSVG_list <- lapply(c(1:dim(spe)[1]), weighted_nnSVG_calc)
 
 save(spe_unweighted, weighted_nnSVG_list, file = "spe_simulation_weighted_nnSVG.Rdata")
@@ -482,7 +505,7 @@ prop_w <- data.frame(
   )
 
 
-sigma_unw <- data.frame(
+rank_sigma_unw <- data.frame(
   y = rank(-rowData(spe_unweighted)$sigma.sq),
   x = rowData(spe_unweighted)$mean,
   ground_truth = rowData(spe_unweighted)$ground_truth
@@ -495,7 +518,7 @@ sigma_unw <- data.frame(
     title = "unweighted nnSVG"
   )
 
-sigma_w <- data.frame(
+rank_sigma_w <- data.frame(
   y = rank(-1*unlist(lapply(weighted_nnSVG_list, function (x) x[c('weighted_sigma.sq')]))),
   x = unlist(lapply(weighted_nnSVG_list, function (x) x[c('weighted_mean')])),
   ground_truth = rowData(spe_unweighted)$ground_truth
@@ -511,10 +534,39 @@ sigma_w <- data.frame(
 wrap_plots(rank_unw, rank_w, 
            lrt_unw, lrt_w,
            prop_unw, prop_w,
-           sigma_unw, sigma_w,
+           rank_sigma_unw, rank_sigma_w,
            guides = "collect",
            ncol=2, nrow=4)
 
+sigma_unw <- data.frame(
+  y = rowData(spe_unweighted)$sigma.sq,
+  x = rowData(spe_unweighted)$mean,
+  ground_truth = rowData(spe_unweighted)$ground_truth
+) |> 
+  ggplot() +
+  geom_point(aes(x = x, y = y, color = ground_truth)) +
+  labs(
+    x = "mean of logcounts",
+    y = "est sigma.sq",
+    title = "unweighted nnSVG"
+  )
+
+sigma_w <- data.frame(
+  y = unlist(lapply(weighted_nnSVG_list, function (x) x[c('weighted_sigma.sq')])),
+  x = rowMeans(assays(spe)$weighted_logcounts),
+  ground_truth = rowData(spe_unweighted)$ground_truth
+) |> 
+  ggplot() +
+  geom_point(aes(x = x, y = y, color = ground_truth)) +
+  scale_y_continuous(trans='log10') +
+  scale_x_continuous(trans='log10') +
+  labs(
+    x = "log10(mean of logcounts)",
+    y = "log10(est sigma.sq)",
+    title = "weighted nnSVG"
+  )
+
+wrap_plots(sigma_unw, sigma_w, guides = "collect", nrow = 1)
 
 all_data <- data.frame(
   ground_truth_sigma.sq = rowData(spe_unweighted)$ground_truth_sigma.sq,
@@ -527,7 +579,10 @@ all_data <- data.frame(
   ground_truth_beta = rowData(spe_unweighted)$ground_truth_beta,
   ground_truth_rank = rowData(spe_unweighted)$ground_truth_rank,
   unweighted_rank = rowData(spe_unweighted)$rank,
-  weighted_rank = rank(-1*unlist(lapply(weighted_nnSVG_list, function (x) x[c('weighted_LR_stat')])))
+  weighted_rank = rank(-1*unlist(lapply(weighted_nnSVG_list, function (x) x[c('weighted_LR_stat')]))),
+  unweighted_LR_stat = rowData(spe_unweighted)$LR_stat,
+  weighted_LR_stat = unlist(lapply(weighted_nnSVG_list, function (x) x[c('weighted_LR_stat')])),
+  ground_truth = rowData(spe_unweighted)$ground_truth
 )
 
 #calculate spearman correlation between unweighted & ground truth = -0.74
@@ -547,6 +602,12 @@ spearman_test(all_data$ground_truth_rank ~ all_data$weighted_rank)
 
 library(Hmisc)
 rcorr(all_data$ground_truth_rank, all_data$weighted_rank, type="spearman")
+
+#calculate spearman correlation only for ground truth SVG genes 
+#need to re rank genes 
+library(dplyr)
+cor.test(filter(all_data, ground_truth == TRUE)$ground_truth_rank, rank(-1*filter(all_data, ground_truth == TRUE)$unweighted_LR_stat))
+cor.test(filter(all_data, ground_truth == TRUE)$ground_truth_rank,rank(-1*filter(all_data, ground_truth == TRUE)$weighted_LR_stat))
 
 #compare all means 
 
