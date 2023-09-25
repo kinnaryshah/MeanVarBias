@@ -315,7 +315,7 @@ tmp_pred_sqrt_sg <- predict(
 
 w <- tmp_pred_sqrt_sg^(-4) 
 
-saveRDS(w, file = "simulation_BRISC_estimation_spline.rds")
+save(w, spline_fit, file = "simulation_BRISC_estimation_spline.rds")
 ```
 
 ```{r}
@@ -337,7 +337,7 @@ spe_unweighted <- nnSVG(spe, assay_name = "logcounts")
 
 #run weighted nnSVG on the logcounts matrix
 
-w <- readRDS(file = "simulation_BRISC_estimation_spline.rds")
+load(file = "simulation_BRISC_estimation_spline.rds")
 weighted_logcounts <- t(w)*logcounts(spe)
 assay(spe, "weighted_logcounts") <- weighted_logcounts # assign a new entry to assays slot, nnSVG will use "logcounts" by default
 
