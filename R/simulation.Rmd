@@ -412,7 +412,7 @@ weighted_rank <- rank(-1*unlist(lapply(weighted_nnSVG_list, function (x) x[c('we
 #new value for change in rank
 rank_shift <- rowData(spe_unweighted)$rank - weighted_rank
 
-w <- readRDS(file = "simulation_BRISC_estimation_spline.rds")
+load(file = "simulation_BRISC_estimation_spline.rds")
 weighted_logcounts <- t(w)*logcounts(spe_unweighted)
 weighted_mean <- rowMeans(weighted_logcounts)
 
