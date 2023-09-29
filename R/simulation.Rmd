@@ -315,7 +315,7 @@ tmp_pred_sqrt_sg <- predict(
 
 w <- tmp_pred_sqrt_sg^(-4) 
 
-save(w, spline_fit, file = "simulation_BRISC_estimation_spline.rds")
+save(w, spline_fit, s_g, r_tilda, lambda_hat, file = "simulation_BRISC_estimation_spline.rds")
 ```
 
 ```{r}

@@ -11,15 +11,9 @@ dim(spe)
 spe <- logNormCounts(spe)
 
 #plot log counts vs weights
-data.frame(x = y_bar,
-           y = rowMeans(w)) |>
-  ggplot() +
-  aes(x=x, y=y) + 
-  scale_y_continuous(trans = "log10") +
-  geom_line(aes(x=x, y=y)) +
-  geom_point() +
-  labs(x="logcounts", y="mean weight")
-  
+mean_expr <- logcounts(spe)
+p <- ggplot(
+  dataset = data.frame(mean_expr, w), aes(x = mean_expr, y=w)) + geom_smooth(spline)
 
 fivenum(w)
 #[1] 9.639114e-03 1.254207e+00 2.158240e+00 3.157108e+00 5.869133e+17
@@ -73,3 +67,5 @@ fivenum(w)
 #[1] 1.282067e-02 1.360334e+00 2.183129e+00 3.128545e+00 5.183556e+14
 
 #plot log counts vs weights after constraining
+p + geom_point(data = per-gene-per-obs-data, aes(x, y))
+
