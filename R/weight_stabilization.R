@@ -86,6 +86,8 @@ w_new <- tmp_pred_sqrt_sg^(-4)
 fivenum(w_new)
 #[1] 0.7213785  1.6377358  2.1905490  3.2739918 32.2346907
 
+save(w_new, file = "mean_var_project/simulation/poisson_3/constrained_weights.rds")
+
 #plot log counts vs s_g after constraining
 #make matrix into one long vector to plot each observation as a point
 df <- data.frame(y = exec(c, tmp_pred_sqrt_sg, use.names = FALSE),
