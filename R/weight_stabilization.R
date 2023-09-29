@@ -1,71 +1,93 @@
-library(scuttle)
 library(ggplot2)
-
-#load spline_fit, w matrix, and spe
+library(ggformula)
+library(purrr)
+#load spline_fit, w matrix, r_tilda, s_g, lambda_hat
 load(file = "mean_var_project/simulation/poisson_3/simulation_BRISC_estimation_spline.rds")
+
+#get dimensions of spe
 spe <- readRDS(file = "mean_var_project/simulation/poisson_3/spe_simulation.rds")
+n <- dim(spe)[2] # Number of Cells
+G <- dim(spe)[1] # Number of Genes
 
-spe <- spe[, colSums(counts(spe)) > 0]
-dim(spe)
+#plot r_tilda vs sqrt(s_g)
+p <- data.frame(x = r_tilda, y = sqrt(s_g)) |>
+  ggplot() +
+  stat_spline(aes(x = x, y = y), color = "blue", linewidth = 3) +
+  labs(
+    x = "log2(count size)",
+    y = "Sqrt(s_g)"
+  )
 
-spe <- logNormCounts(spe)
-
-#plot log counts vs weights
-mean_expr <- logcounts(spe)
-p <- ggplot(
-  dataset = data.frame(mean_expr, w), aes(x = mean_expr, y=w)) + geom_smooth(spline)
+plot(new_y ~ new_x, xlim = c(0,2), ylim = c(0,5))
+plot.new()
+plot(sqrt(s_g) ~ r_tilda)
+lines(spline_fit, lty = 2, col = "red")
 
 fivenum(w)
-#[1] 9.639114e-03 1.254207e+00 2.158240e+00 3.157108e+00 5.869133e+17
+#[1] 6.458559e-03 1.189445e+00 2.189256e+00 3.267646e+00 1.581570e+19
 
-fivenum(logcounts(spe))
-#[1] 0.0000000 0.9467601 1.9281053 2.6885182 5.8868834
+fivenum(r_tilda)
+#[1] -0.08877544  0.11008756  1.26336581  2.38983768  2.95709919
 
-#get mean of logcounts per gene
-y_bar <- colMeans(logcounts(spe))
-
-fivenum(y_bar)
-#[1] 1.575665 1.668835 1.688914 1.707375 1.802108
+#find min and max 
+y_bar <- r_tilda
 
 max_ybar <- max(y_bar)
 min_ybar <- min(y_bar)
 
 max_ybar; min_ybar
-#[1] 1.802108
-#[1] 1.575665
+#2.957099
+#-0.08877544
 
-w_max_ybar <- predict(spline_fit, x=max_ybar)$y
-w_min_ybar <-predict(spline_fit, x=min_ybar)$y
+s_g_max_ybar <- predict(spline_fit, x=max_ybar)$y
+s_g_min_ybar <- predict(spline_fit, x=min_ybar)$y
 
-w_max_ybar; w_min_ybar
-#[1] 1.026443
-#[1] 0.9774143
+s_g_max_ybar; s_g_min_ybar #these values are very close to the actual sqrt(s_g) values corresponding to the max and min r_tilda values
+#0.6745045
+#0.8839731
 
-#constrain individual observations that are greater than the mean to the weight of the mean 
+#this matrix has same dimensions of lambda_hat
+tmp_pred_sqrt_sg <- predict(
+  spline_fit, 
+  x = c(lambda_hat)
+)$y |> 
+  matrix(
+    nrow = n, ncol = G
+  )
+
+#plot log counts vs s_g before constraining
+df <- data.frame(y = exec(c, tmp_pred_sqrt_sg, use.names = FALSE),
+                 x = exec(c, lambda_hat, use.names = FALSE))
+p + geom_point(data = df, aes(x, y), size = 0.2)
+
+#constrain individual observation weights that have lambda hat more extreme than range of r_tilda 
 count_changes <- 0
-for (i in 1:ncol(w)) {
+for (i in 1:nrow(lambda_hat)) {
   print(i)
-  for (j in nrow(w)) {
+  for (j in 1:ncol(lambda_hat)) {
     print(j)
-    #if this observation is greater than the max_ybar mean, change the weight matrix
-    if(logcounts(spe)[i,j] > max_ybar){
+    #if this observation is greater than the max_ybar, change the weight matrix
+    if(lambda_hat[i,j] > max_ybar){
       count_changes <- count_changes + 1
-      w[j,i] <- w_max_ybar
+      tmp_pred_sqrt_sg[i,j] <- s_g_max_ybar
     } 
-    #if this observation is less than the min_ybar mean, change the weight matrix
-    if(logcounts(spe)[i,j] < min_ybar){
+    #if this observation is less than the min_ybar, change the weight matrix
+    if(lambda_hat[i,j] < min_ybar){
       count_changes <- count_changes + 1
-      w[j,i] <- w_min_ybar
+      tmp_pred_sqrt_sg[i,j] <- s_g_min_ybar
     }
   }
 }
 
-count_changes
-#180
+count_changes/(n*G)
+#0.2540655
 
-fivenum(w)
-#[1] 1.282067e-02 1.360334e+00 2.183129e+00 3.128545e+00 5.183556e+14
+w_new <- tmp_pred_sqrt_sg^(-4) 
+fivenum(w_new)
+#[1] 0.7213785  1.6377358  2.1905490  3.2739918 32.2346907
 
-#plot log counts vs weights after constraining
-p + geom_point(data = per-gene-per-obs-data, aes(x, y))
-
+#plot log counts vs s_g after constraining
+#make matrix into one long vector to plot each observation as a point
+df <- data.frame(y = exec(c, tmp_pred_sqrt_sg, use.names = FALSE),
+                 x = exec(c, lambda_hat, use.names = FALSE))
+p + geom_point(data = df, aes(x, y), size = 0.2)
