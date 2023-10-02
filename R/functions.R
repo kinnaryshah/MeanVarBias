@@ -132,7 +132,7 @@ library(scuttle)
 #sub function for weighted_nnSVG()
 weighted_nnSVG_calc <- function(i){
   res = tryCatch({
-    weight_output_i <- nnSVG(input = matrix(assays(spe)$weighted_logcounts[i,],ncol=4992), spatial_coords = spatialCoords(spe), X = matrix(w[,i]))
+    weight_output_i <- nnSVG(input = matrix(assays(spe)$weighted_logcounts[i,],ncol=dim(spe)[2]), spatial_coords = spatialCoords(spe), X = matrix(w[,i]))
     list(weighted_LR_stat = rowData(weight_output_i)$LR_stat,
          weighted_sigma.sq = rowData(weight_output_i)$sigma.sq,
          weighted_tau.sq = rowData(weight_output_i)$tau.sq,
@@ -150,7 +150,7 @@ weighted_nnSVG_calc <- function(i){
 #assumes logcounts matrix is in spe already
 #assumes that we have not run regular nnSVG right before -- need to fix how it uses previous cols from nnSVG output to influence weighted_nnSVG output
 #would ideally be able to store nnSVG and weighted_nnSVG in the same spe??
-weighted_nnSVG <- function(input, w){
+weighted_nnSVG <- function(input, assay_name = "logcounts", w){
   if (is(input, "SpatialExperiment")) {
     spe <- input
     stopifnot(assay_name %in% assayNames(spe))
