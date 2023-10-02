@@ -405,14 +405,18 @@ library(patchwork)
 ### EXPLORING CHANGING RANKS
 #prop sv, sigma.sq, LR pre weighting, LR post weighting, etc.
 
-load(file = "mean_var_project/spe_simulation_weighted_nnSVG.Rdata")
+#load(file = "mean_var_project/spe_simulation_weighted_nnSVG.Rdata")
+load(file = "mean_var_project/simulation/poisson_3/spe_simulation_weighted_constrained_nnSVG.Rdata")
 
 weighted_rank <- rank(-1*unlist(lapply(weighted_nnSVG_list, function (x) x[c('weighted_LR_stat')])))
 
 #new value for change in rank
 rank_shift <- rowData(spe_unweighted)$rank - weighted_rank
 
-load(file = "simulation_BRISC_estimation_spline.rds")
+#load(file = "simulation_BRISC_estimation_spline.rds")
+load(file = "mean_var_project/simulation/poisson_3/constrained_weights.rds")
+w <- w_new
+
 weighted_logcounts <- t(w)*logcounts(spe_unweighted)
 weighted_mean <- rowMeans(weighted_logcounts)
 
@@ -434,7 +438,7 @@ rank_unw <- data.frame(
   ground_truth = rowData(spe_unweighted)$ground_truth
 ) |> 
   ggplot() +
-  xlim(0,10) +
+  xlim(0,20) +
   geom_point(aes(x = x, y = y, color = ground_truth)) +
   labs(
     x = "mean of logcounts",
@@ -449,7 +453,7 @@ rank_w <- data.frame(
   ground_truth = rowData(spe_unweighted)$ground_truth
 ) |> 
   ggplot() +
-  xlim(0,10) +
+  xlim(0,20) +
   geom_point(aes(x = x, y = y, color = ground_truth)) +
   labs(
     x = "mean of logcounts",
@@ -464,7 +468,7 @@ lrt_unw <- data.frame(
   ground_truth = rowData(spe_unweighted)$ground_truth
 ) |> 
   ggplot() +
-  xlim(0,10) +
+  xlim(0,20) +
   geom_point(aes(x = x, y = y, color = ground_truth)) +
   labs(
     x = "mean of logcounts",
@@ -478,7 +482,7 @@ lrt_w <- data.frame(
   ground_truth = rowData(spe_unweighted)$ground_truth
 ) |> 
   ggplot() +
-  xlim(0,10) +
+  xlim(0,20) +
   geom_point(aes(x = x, y = y, color = ground_truth)) +
   labs(
     x = "mean of logcounts",
@@ -492,7 +496,7 @@ prop_unw <- data.frame(
   ground_truth = rowData(spe_unweighted)$ground_truth
 ) |> 
   ggplot() +
-  xlim(0,10) +
+  xlim(0,20) +
   geom_point(aes(x = x, y = y, color = ground_truth)) +
   labs(
     x = "mean of logcounts",
@@ -506,7 +510,7 @@ prop_w <- data.frame(
   ground_truth = rowData(spe_unweighted)$ground_truth
 ) |> 
   ggplot() +
-  xlim(0,10) +
+  xlim(0,20) +
   geom_point(aes(x = x, y = y, color = ground_truth)) +
   labs(
     x = "mean of logcounts",
@@ -521,7 +525,7 @@ rank_sigma_unw <- data.frame(
   ground_truth = rowData(spe_unweighted)$ground_truth
 ) |> 
   ggplot() +
-  xlim(0,10) +
+  xlim(0,20) +
   geom_point(aes(x = x, y = y, color = ground_truth)) +
   labs(
     x = "mean of logcounts",
@@ -535,7 +539,7 @@ rank_sigma_w <- data.frame(
   ground_truth = rowData(spe_unweighted)$ground_truth
 ) |> 
   ggplot() +
-  xlim(0,10) +
+  xlim(0,20) +
   geom_point(aes(x = x, y = y, color = ground_truth)) +
   labs(
     x = "mean of logcounts",
@@ -570,11 +574,11 @@ sigma_w <- data.frame(
 ) |> 
   ggplot() +
   geom_point(aes(x = x, y = y, color = ground_truth)) +
-  scale_y_continuous(trans='log10') +
-  scale_x_continuous(trans='log10') +
+  #scale_y_continuous(trans='log10') +
+  #scale_x_continuous(trans='log10') +
   labs(
-    x = "log10(mean of logcounts)",
-    y = "log10(est sigma.sq)",
+    x = "mean of logcounts",
+    y = "est sigma.sq",
     title = "weighted nnSVG"
   )
 
