@@ -148,6 +148,8 @@ weighted_nnSVG_calc <- function(i){
 }
 
 #assumes logcounts matrix is in spe already
+#assumes that we have not run regular nnSVG right before -- need to fix how it uses previous cols from nnSVG output to influence weighted_nnSVG output
+#would ideally be able to store nnSVG and weighted_nnSVG in the same spe??
 weighted_nnSVG <- function(input, w){
   if (is(input, "SpatialExperiment")) {
     spe <- input
