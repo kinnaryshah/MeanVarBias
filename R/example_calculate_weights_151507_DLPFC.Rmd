@@ -1,0 +1,128 @@
+---
+title: "calculate_weights"
+output: html_document
+date: '2023-03-03'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r }
+
+library(ggplot2)
+library(spatialLIBD)
+library(nnSVG)
+library(BRISC)
+library(BiocParallel)
+
+source("mean_var_project/functions.R")
+spe <- fetch_data(type = "spe")
+spe_151507 <- spe[, spe$sample_id == "151507"]
+spe_151507 <- spe_151507[, !is.na(unfactor(colData(spe_151507)$spatialLIBD))]
+
+spe_151507 <- filter_genes(spe_151507)
+
+set.seed(1)
+w <- generate_weights(spe_151507)
+
+saveRDS(w, file = "DLPFC_151507_BRISC_estimation_spline.rds")
+
+```
+
+```{r}
+library(spatialLIBD)
+library(nnSVG)
+
+spe <- fetch_data(type = "spe")
+spe_151507 <- spe[, spe$sample_id == "151507"]
+spe_151507 <- spe_151507[, !is.na(unfactor(colData(spe_151507)$spatialLIBD))]
+
+hist(rowSums(counts(spe_151507)),xlim=c(0,25),breaks = 1000000,main='DLPFC 151507 counts per gene')
+
+n_umis <- 80
+ix_low_genes <- rowSums(counts(spe_151507)) < n_umis
+spe_151507_umi_filter <- spe_151507[!ix_low_genes, ]
+dim(spe_151507_umi_filter)
+is_mito <- grepl("(^MT-)|(^mt-)", rowData(spe_151507_umi_filter)$gene_name)
+count(is_mito) #umi filter does not remove any mito genes
+
+is_mito <- grepl("(^MT-)|(^mt-)", rowData(spe_151507)$gene_name)
+count(is_mito)
+spe_151507_filter_genes <- filter_genes(spe_151507)
+dim(spe_151507_filter_genes)
+filter_genes_ncounts = 3
+filter_genes_pcspots = 0.5
+nspots <- ceiling(filter_genes_pcspots / 100 * ncol(spe_151507))
+ix_remove <- rowSums(counts(spe_151507) >= filter_genes_ncounts) < nspots
+count(ix_remove)
+
+#all genes from filter_genes in umi filter
+length(intersect(rowData(spe_151507_umi_filter)$gene_name, rowData(spe_151507_filter_genes)$gene_name))
+```
+
+```{r}
+library(spatialLIBD)
+library(nnSVG)
+library(scuttle)
+library(ggplot2)
+
+spe <- fetch_data(type = "spe")
+spe_151507 <- spe[, spe$sample_id == "151507"]
+spe_151507 <- spe_151507[, !is.na(unfactor(colData(spe_151507)$spatialLIBD))]
+spe_151507 <- filter_genes(spe_151507)
+spe_151507 <- addPerFeatureQCMetrics(spe_151507)
+spe_151507 <- addPerCellQCMetrics(spe_151507)
+
+hist(colData(spe_151507)$sum, breaks = 20)
+
+objs_list <- readRDS(file = "mean_var_project/objs.rds") #contains r_tilda & s_g from running weight algorithm
+indices <- as.data.frame(objs_list[2]) > 1
+high_s_g_indices <- as.vector(indices)
+
+par(mfrow=c(2,2))
+hist(rowData(spe_151507)$detected, breaks = 20, xlim=c(0,100))
+hist(rowData(spe_151507)$mean, breaks = 20, xlim=c(0,14))
+hist(rowData(spe_151507)$detected[low_s_g_indices], breaks = 20, xlim=c(0,100))
+hist(rowData(spe_151507)$mean[low_s_g_indices], breaks = 20, xlim=c(0,14))
+
+
+ix = which(high_s_g_indices)[60]
+ix_name = rowData(spe_151507)$gene_name[ix]
+
+df <- as.data.frame(cbind(spatialCoords(spe_151507), expr = logcounts(spe_151507)[ix, ]))
+
+ggplot(df, aes(x = pxl_col_in_fullres, y = pxl_row_in_fullres, 
+               color = expr)) + 
+  geom_point(size = 0.8) + 
+  coord_fixed() + 
+  scale_y_reverse() + 
+  scale_color_gradient(low = "gray90", high = "blue", 
+                       trans = "sqrt", breaks = range(df$expr), 
+                       name = "logcounts") + 
+  ggtitle(paste(ix_name, "- in curve")) + 
+  theme_bw() + 
+  theme(plot.title = element_text(face = "italic"), 
+        panel.grid = element_blank(), 
+        axis.title = element_blank(), 
+        axis.text = element_blank(), 
+        axis.ticks = element_blank())
+
+r_tilda <- objs_list[[1]]
+s_g <- objs_list[[2]]
+library(ggformula)
+p1 <- data.frame(
+  y = sqrt(s_g),
+  x = r_tilda,
+  detected = rowData(spe_151507)$detected
+) %>% filter(detected > 50)
+
+ggplot(p1) +
+  geom_point(aes(x = x, y = y, color = detected)) +
+  geom_smooth(aes(x = x, y = y), method = "loess") +
+  stat_spline(aes(x = x, y = y), nknots=4) +
+  labs(
+    x = "log2(count size)",
+    y = "Sqrt(s_g)"
+  )
+```
