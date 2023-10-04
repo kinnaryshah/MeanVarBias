@@ -128,11 +128,14 @@ generate_weights <- function(spe){
 library(nnSVG)
 library(SpatialExperiment)
 library(scuttle)
+library(purrr)
 
 #sub function for weighted_nnSVG()
-weighted_nnSVG_calc <- function(i){
+#does not work for matrix inputs because using rowData function
+weighted_nnSVG_calc <- function(spe, i){
   res = tryCatch({
-    weight_output_i <- nnSVG(input = matrix(assays(spe)$weighted_logcounts[i,],ncol=dim(spe)[2]), spatial_coords = spatialCoords(spe), X = matrix(w[,i]))
+    print(i)
+    weight_output_i <- nnSVG(spe[i,], X=matrix(w[,i]), assay_name = "weighted_logcounts")
     list(weighted_LR_stat = rowData(weight_output_i)$LR_stat,
          weighted_sigma.sq = rowData(weight_output_i)$sigma.sq,
          weighted_tau.sq = rowData(weight_output_i)$tau.sq,
@@ -151,22 +154,23 @@ weighted_nnSVG_calc <- function(i){
 #assumes that we have not run regular nnSVG right before -- need to fix how it uses previous cols from nnSVG output to influence weighted_nnSVG output
 #would ideally be able to store nnSVG and weighted_nnSVG in the same spe??
 weighted_nnSVG <- function(input, assay_name = "logcounts", w){
+  print(assay_name)
   if (is(input, "SpatialExperiment")) {
     spe <- input
     stopifnot(assay_name %in% assayNames(spe))
   }
-  
+  print("before weighting")
   weighted_logcounts <- t(w)*logcounts(spe)
   assay(spe, "weighted_logcounts") <- weighted_logcounts # assign a new entry to assays slot, nnSVG will use "logcounts" by default
-  
+  print(assayNames(spe))
   # Make sure nnSVG fixed the interceptless model 
   stopifnot(
     "Please update your nnSVG to minimum v1.5.3 to have the correct result" = 
       packageVersion("nnSVG")>='1.5.3'
   )
-  
+  print("before running")
   #run nnSVG with covariate
-  weighted_nnSVG_list <- lapply(c(1:dim(spe)[1]), weighted_nnSVG_calc)
+  weighted_nnSVG_list <- map(.x=c(1:dim(spe)[1]), .f=~weighted_nnSVG_calc(spe,.x))
   
   #need to manually calculate mean for weighted nnSVG
   weighted_mean <- rowMeans(weighted_logcounts)
@@ -175,21 +179,21 @@ weighted_nnSVG <- function(input, assay_name = "logcounts", w){
   #can add more nnSVG output if desired
   res <- cbind(
     weighted_mean,
-    weighted_LR_stat,
-    weighted_sigma.sq,
-    weighted_tau.sq,
-    weighted_prop_sv
+    weighted_LR_stat = unlist(lapply(weighted_nnSVG_list, function (x) x[c('weighted_LR_stat')])),
+    weighted_sigma.sq = unlist(lapply(weighted_nnSVG_list, function (x) x[c('weighted_sigma.sq')])),
+    weighted_tau.sq = unlist(lapply(weighted_nnSVG_list, function (x) x[c('weighted_tau.sq')])),
+    weighted_prop_sv = unlist(lapply(weighted_nnSVG_list, function (x) x[c('weighted_prop_sv')]))
   )
   
   if (is(input, "SpatialExperiment")) {
     # return in rowData of spe object
-    stopifnot(nrow(spe) == nrow(mat_brisc))
-    rowData(spe) <- cbind(rowData(spe), mat_brisc)
+    stopifnot(nrow(spe) == nrow(res))
+    rowData(spe) <- cbind(rowData(spe), res)
     spe
   } else {
     # return as numeric matrix
-    stopifnot(nrow(input) == nrow(mat_brisc))
-    rownames(mat_brisc) <- row_names
-    mat_brisc
+    stopifnot(nrow(input) == nrow(res))
+    rownames(res) <- row_names
+    res
   }  
 }

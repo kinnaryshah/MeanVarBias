@@ -58,6 +58,7 @@ raw_fit <- lm(y ~ .-1, X)
 library(nnSVG)
 library(spatialLIBD)
 library(scran)
+library(purrr)
 
 source("mean_var_project/functions.R")
 
@@ -73,7 +74,7 @@ w <- readRDS(file = "mean_var_project/DLPFC_151507_BRISC_estimation_spline.rds")
 set.seed(2)
 spe_unweighted <- nnSVG(spe_151507, assay_name = "logcounts")
 
-spe_weighted <- weighted_nnSVG(spe_151507, w)
+spe_weighted <- weighted_nnSVG(spe_151507, assay_name = "logcounts", w)
 
 saveRDS(spe_unweighted, spe_weighted, file = "spe_151507_DLPFC_weighted_nnSVG.rds")
 
