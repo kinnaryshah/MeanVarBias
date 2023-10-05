@@ -76,7 +76,7 @@ spe_unweighted <- nnSVG(spe_151507, assay_name = "logcounts")
 
 spe_weighted <- weighted_nnSVG(spe_151507, assay_name = "logcounts", w)
 
-saveRDS(spe_unweighted, spe_weighted, file = "spe_151507_DLPFC_weighted_nnSVG.rds")
+save(spe_unweighted, spe_weighted, file = "spe_151507_DLPFC_weighted_nnSVG.rds")
 
 ```
 
