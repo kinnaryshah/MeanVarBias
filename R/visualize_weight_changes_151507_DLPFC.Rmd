@@ -117,3 +117,85 @@ wrap_plots(var, spat_var, nonspat_var, prop, guides="collect",
 
 ```
 
+```{r}
+library(ggplot2)
+library(SpatialExperiment)
+library(patchwork)
+### EXPLORING CHANGING RANKS
+#prop sv, sigma.sq, LR pre weighting, LR post weighting, etc.
+
+load(file = "spe_151507_DLPFC_weighted_nnSVG.rds")
+
+weighted_rank <- rank(-1*rowData(spe_weighted)$weighted_LR_stat)
+
+#new value for change in rank
+rank_shift <- rowData(spe_unweighted)$rank - weighted_rank
+
+#plot shift in rank against mean expression 
+data.frame(x = rowData(spe_unweighted)$mean,
+           y = rank_shift
+) |>
+  ggplot() +
+  geom_point(aes(x = x, y = y)) +
+  labs(title = "Rank Changes simulation",
+       x = "mean expression",
+       y = "unweighted rank - weighted rank")
+
+#check if genes with spatial variation ranked higher compared to genes without spatial variation
+rank_unw <- data.frame(
+  y = rowData(spe_unweighted)$rank,
+  x = rowData(spe_unweighted)$mean
+) |> 
+  ggplot() +
+  geom_point(aes(x = x, y = y)) +
+  labs(
+    x = "mean of logcounts",
+    y = "rank",
+    title = "unweighted nnSVG"
+  )
+
+rank_w <- data.frame(
+  y = weighted_rank,
+  x = rowData(spe_weighted)$weighted_mean
+) |> 
+  ggplot() +
+  xlim(0,150) +
+  geom_point(aes(x = x, y = y)) +
+  labs(
+    x = "mean of logcounts",
+    y = "rank",
+    title = "weighted nnSVG"
+  )
+
+wrap_plots(rank_unw, rank_w, 
+           guides = "collect",
+           nrow=1)
+
+sigma_unw <- data.frame(
+  y = rowData(spe_unweighted)$sigma.sq,
+  x = rowData(spe_unweighted)$mean
+) |> 
+  ggplot() +
+  geom_point(aes(x = x, y = y)) +
+  labs(
+    x = "mean of logcounts",
+    y = "est sigma.sq",
+    title = "unweighted nnSVG"
+  )
+
+sigma_w <- data.frame(
+  y = rowData(spe_weighted)$weighted_sigma.sq,
+  x =  rowData(spe_weighted)$weighted_mean
+) |> 
+  ggplot() +
+  geom_point(aes(x = x, y = y)) +
+  #scale_y_continuous(trans='log10') +
+  #scale_x_continuous(trans='log10') +
+  labs(
+    x = "mean of logcounts",
+    y = "est sigma.sq",
+    title = "weighted nnSVG"
+  )
+
+wrap_plots(sigma_unw, sigma_w, guides = "collect", nrow = 1)
+```
