@@ -9,52 +9,6 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r}
-
-library(spatialLIBD)
-library(nnSVG)
-library(BiocParallel)
-
-spe <- fetch_data(type = "spe")
-spe_151507 <- spe[, spe$sample_id == "151507"]
-spe_151507 <- spe_151507[, !is.na(unfactor(colData(spe_151507)$spatialLIBD))]
-spe_151507 <- filter_genes(spe_151507)
-
-# Count Matrix, transpose so each row is a spot, and each column is a gene
-y <- t(as.matrix(counts(spe_151507)))
-n = dim(spe_151507)[2]
-
-w <- readRDS(file = "mean_var_project/DLPFC_151507_BRISC_estimation_spline.rds")
-
-#ix <- seq_len(ncol(y))
-ix <- c(1,2,3)
-out_brisc <- bplapply(ix, function(i) {
-  
-  y_i = y[ ,i]
-  X = data.frame(intercept = rep(1, n))
-  #intercept only model
-  raw_fit <- lm(y_i ~ .-1, X)
-  print(summary(raw_fit))
-  
-  w_i <- w[ ,i]
-  wtd_X <- w_i*X
-  wtd_y_i <- w_i*y_i
-  wtd_fit <- lm(wtd_y_i ~ .-1, wtd_X)
-  print(summary(wtd_fit))
-  
-  #alternatively, use weighted least squares by squaring w_i
-  wtd_fit_lm_var <- lm(y_i ~ .-1, X, weights = w_i^2)
-  print(summary(wtd_fit_lm_var))
-  
-  #return both fits to compare
-}, BPPARAM = MulticoreParam(workers = 1)) #change to 20 on JHPCE
-
-
-#Note: this can fit all models at once instead of in loop
-raw_fit <- lm(y ~ .-1, X) 
-
-```
-
-```{r}
 library(nnSVG)
 library(spatialLIBD)
 library(scran)
@@ -81,51 +35,16 @@ save(spe_unweighted, spe_weighted, file = "spe_151507_DLPFC_weighted_nnSVG.rds")
 ```
 
 ```{r}
+###constrained weighting
+
+library(nnSVG)
+library(spatialLIBD)
+library(scran)
+library(purrr)
 library(ggplot2)
-library(nnSVG)
-library(spatialLIBD)
-library(scran)
+library(ggformula)
 
-spe <- fetch_data(type = "spe")
-spe_151507 <- spe[, spe$sample_id == "151507"]
-spe_151507 <- spe_151507[, !is.na(unfactor(colData(spe_151507)$spatialLIBD))]
-spe_151507 <- filter_genes(spe_151507)
-
-#offset indices after 972 because 928 and 972 were not included in the LR list
-LRs_DLPFC <- readRDS(file = "mean_var_project/spe_151507_DLPFC_weighted_nnSVG.rds")
-#hist(LRs_DLPFC, breaks = 100)
-negative_LR_indices <- which(LRs_DLPFC < -1)
-negative_LR_indices[11:24] <- negative_LR_indices[11:24] + 2
-
-#ix <- 928 and 972 gave c++ errors so could not calculate LRs
-ix <- negative_LR_indices[10]
-ix_name <- rowData(spe_151507)$gene_name[ix]
-
-df <- as.data.frame(cbind(spatialCoords(spe_151507), expr = logcounts(spe_151507)[ix, ]))
-
-ggplot(df, aes(x = pxl_col_in_fullres, y = pxl_row_in_fullres, 
-               color = expr)) + 
-  geom_point(size = 0.8) + 
-  coord_fixed() + 
-  scale_y_reverse() + 
-  scale_color_gradient(low = "gray90", high = "blue", 
-                       trans = "sqrt", breaks = range(df$expr), 
-                       name = "logcounts") + 
-  ggtitle(ix_name) + 
-  theme_bw() + 
-  theme(plot.title = element_text(face = "italic"), 
-        panel.grid = element_blank(), 
-        axis.title = element_blank(), 
-        axis.text = element_blank(), 
-        axis.ticks = element_blank())
-
-```
-
-```{r}
-#check if subsetting to reasonable weight values fixes c++ error for DLPFC genes
-library(nnSVG)
-library(spatialLIBD)
-library(scran)
+source("mean_var_project/functions.R")
 
 spe <- fetch_data(type = "spe")
 spe_151507 <- spe[, spe$sample_id == "151507"]
@@ -133,26 +52,119 @@ spe_151507 <- spe_151507[, !is.na(unfactor(colData(spe_151507)$spatialLIBD))]
 spe_151507 <- filter_genes(spe_151507)
 spe_151507 <- logNormCounts(spe_151507)
 
-#multiply by weights after log transf.
-w <- readRDS(file = "mean_var_project/DLPFC_151507_BRISC_estimation_spline.rds")
+n <- dim(spe_151507)[2] # Number of Cells
+G <- dim(spe_151507)[1] # Number of Genes
 
-weighted_counts <- t(w)*logcounts(spe_151507)
-assays(spe_151507) <- assays(spe_151507)[1]
-assay(spe_151507, "weighted_logcounts") <- weighted_counts # assign a new entry to assays slot, nnSVG will use "logcounts"
+objs <- readRDS(file = "mean_var_project/DLPFC_151507_BRISC_estimation_spline.rds")
+s_g <- objs[[1]]
+r_tilda <- objs[[2]]
+lambda_hat <- objs[[3]]
+w <- objs[[4]]
 
-# Make sure nnSVG fixed the interceptless model 
-stopifnot(
-  "Please update your nnSVG to minimumly v1.5.3 to have the correct result" = 
-    packageVersion("nnSVG")>='1.5.3'
-)
 
-#total 4221 obs
-sum(matrix(w[,928]) > 1000) #58 obs out of range
-include_indices <- which(matrix(w[,928]) < 1000)
+#plot r_tilda vs sqrt(s_g)
+p <- data.frame(x = r_tilda, y = sqrt(s_g)) |>
+  ggplot() +
+  stat_spline(aes(x = x, y = y), color = "blue", linewidth = 3) +
+  labs(
+    x = "log2(count size)",
+    y = "Sqrt(s_g)"
+  )
 
-weight_output_i <- nnSVG(spe_151507[928,include_indices], X=matrix(w[include_indices,928]), assay_name = "weighted_logcounts")
+fivenum(w)
+#[1] 3.583517e-03 1.345929e+00 1.643472e+00 2.576065e+00 8.400060e+21
 
-max(apply(t(w), 1, max, na.rm=TRUE))
-hist(log(apply(t(w), 1, max, na.rm=TRUE)), breaks=50)
+fivenum(r_tilda)
+#[1] -0.849045332 -0.552243032 -0.386195633  0.006002243  3.573671752
+
+#find min and max 
+y_bar <- r_tilda
+
+max_ybar <- max(y_bar)
+min_ybar <- min(y_bar)
+
+max_ybar; min_ybar
+#[1] 3.573672
+#[1] -0.8490453
+
+spline_fit <- smooth.spline(y=sqrt(s_g), x=r_tilda)
+s_g_max_ybar <- predict(spline_fit, x=max_ybar)$y
+s_g_min_ybar <- predict(spline_fit, x=min_ybar)$y
+
+s_g_max_ybar; s_g_min_ybar 
+#[1] 0.6892536
+#[1] 0.7042156
+
+#this matrix has same dimensions of lambda_hat
+tmp_pred_sqrt_sg <- predict(
+  spline_fit, 
+  x = c(lambda_hat)
+)$y |> 
+  matrix(
+    nrow = n, ncol = G
+  )
+
+df <- data.frame(y = exec(c, tmp_pred_sqrt_sg, use.names = FALSE),
+                 x = exec(c, lambda_hat, use.names = FALSE))
+p + geom_point(data = df, aes(x, y), size = 0.2)
+
+#constrain individual observation weights that have lambda hat more extreme than range of r_tilda 
+count_changes <- 0
+for (i in 1:nrow(lambda_hat)) {
+  print(i)
+  for (j in 1:ncol(lambda_hat)) {
+    print(j)
+    #if this observation is greater than the max_ybar, change the weight matrix
+    if(lambda_hat[i,j] > max_ybar){
+      count_changes <- count_changes + 1
+      tmp_pred_sqrt_sg[i,j] <- s_g_max_ybar
+    } 
+    #if this observation is less than the min_ybar, change the weight matrix
+    if(lambda_hat[i,j] < min_ybar){
+      count_changes <- count_changes + 1
+      tmp_pred_sqrt_sg[i,j] <- s_g_min_ybar
+    }
+  }
+}
+
+count_changes/(n*G)
+#0.2002095
+
+#plot log counts vs s_g after constraining
+#make matrix into one long vector to plot each observation as a point
+df <- data.frame(y = exec(c, tmp_pred_sqrt_sg, use.names = FALSE),
+                 x = exec(c, lambda_hat, use.names = FALSE))
+p + geom_point(data = df, aes(x, y), size = 0.2)
+
+w_new <- tmp_pred_sqrt_sg^(-4) 
+fivenum(w_new)
+#[1] 0.9332717 1.3484973 1.6464746 2.6092957 4.6168455
+
+save(w_new, file = "mean_var_project/DLPFC_151507_BRISC_estimation_spline_constrained.rds")
+
 ```
 
+```{r}
+library(nnSVG)
+library(spatialLIBD)
+library(scran)
+library(purrr)
+
+source("functions.R")
+
+spe <- fetch_data(type = "spe")
+spe_151507 <- spe[, spe$sample_id == "151507"]
+spe_151507 <- spe_151507[, !is.na(unfactor(colData(spe_151507)$spatialLIBD))]
+spe_151507 <- filter_genes(spe_151507)
+spe_151507 <- logNormCounts(spe_151507)
+
+load(file = "DLPFC_151507_BRISC_estimation_spline_constrained.rds")
+w <- w_new
+
+# set seed for reproducibility
+set.seed(2)
+
+spe_constrained_weighted <- weighted_nnSVG(spe_151507, assay_name = "logcounts", w)
+
+save(spe_constrained_weighted, file = "spe_151507_DLPFC_constrained_weighted_nnSVG.rds")
+```
