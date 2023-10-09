@@ -124,22 +124,41 @@ library(patchwork)
 ### EXPLORING CHANGING RANKS
 #prop sv, sigma.sq, LR pre weighting, LR post weighting, etc.
 
-load(file = "spe_151507_DLPFC_weighted_nnSVG.rds")
+load(file = "mean_var_project/spe_151507_DLPFC_weighted_nnSVG.rds")
+load(file = "mean_var_project/spe_151507_DLPFC_constrained_weighted_nnSVG.rds")
 
 weighted_rank <- rank(-1*rowData(spe_weighted)$weighted_LR_stat)
+constrained_weighted_rank <- rank(-1*rowData(spe_constrained_weighted)$weighted_LR_stat)
 
 #new value for change in rank
 rank_shift <- rowData(spe_unweighted)$rank - weighted_rank
 
 #plot shift in rank against mean expression 
-data.frame(x = rowData(spe_unweighted)$mean,
+rank1 <- data.frame(x = rowData(spe_unweighted)$mean,
            y = rank_shift
 ) |>
   ggplot() +
-  geom_point(aes(x = x, y = y)) +
-  labs(title = "Rank Changes simulation",
+  geom_point(aes(x = x, y = y), size=0.5) +
+  ylim(c(-1600,1600)) +
+  labs(title = "Rank Changes simulation: unweighted vs weighted",
        x = "mean expression",
        y = "unweighted rank - weighted rank")
+
+#new value for change in rank
+constrained_rank_shift <- rowData(spe_unweighted)$rank - constrained_weighted_rank
+
+#plot shift in rank against mean expression 
+rank2 <- data.frame(x = rowData(spe_unweighted)$mean,
+           y = constrained_rank_shift
+) |>
+  ggplot() +
+  geom_point(aes(x = x, y = y), size = 0.5) +
+  ylim(c(-1600,1600)) +
+  labs(title = "Rank Changes simulation: unweighted vs constrained weighted",
+       x = "mean expression",
+       y = "unweighted rank - constrained weighted rank")
+
+wrap_plots(rank1, rank2, guides = "collect", nrow = 1)
 
 #check if genes with spatial variation ranked higher compared to genes without spatial variation
 rank_unw <- data.frame(
@@ -171,6 +190,22 @@ wrap_plots(rank_unw, rank_w,
            guides = "collect",
            nrow=1)
 
+rank_cw <- data.frame(
+  y = constrained_weighted_rank,
+  x = rowData(spe_constrained_weighted)$weighted_mean
+) |> 
+  ggplot() +
+  geom_point(aes(x = x, y = y)) +
+  labs(
+    x = "mean of logcounts",
+    y = "rank",
+    title = "constrained weighted nnSVG"
+  )
+
+wrap_plots(rank_unw, rank_w, rank_cw,
+           guides = "collect",
+           nrow=1)
+
 sigma_unw <- data.frame(
   y = rowData(spe_unweighted)$sigma.sq,
   x = rowData(spe_unweighted)$mean
@@ -197,5 +232,20 @@ sigma_w <- data.frame(
     title = "weighted nnSVG"
   )
 
-wrap_plots(sigma_unw, sigma_w, guides = "collect", nrow = 1)
+
+sigma_cw <- data.frame(
+  y = rowData(spe_constrained_weighted)$weighted_sigma.sq,
+  x =  rowData(spe_constrained_weighted)$weighted_mean
+) |> 
+  ggplot() +
+  geom_point(aes(x = x, y = y)) +
+  #scale_y_continuous(trans='log10') +
+  #scale_x_continuous(trans='log10') +
+  labs(
+    x = "mean of logcounts",
+    y = "est sigma.sq",
+    title = "constrained weighted nnSVG"
+  )
+
+wrap_plots(sigma_unw, sigma_w, sigma_cw, guides = "collect", nrow = 1)
 ```
