@@ -13,51 +13,25 @@ library(viridis)
 library(ggpubr)
 library(purrr)
 
-spe <- readRDS(file = "mean_var_project/spe_151507_DLPFC_nnSVG.rds")
+load(file = "mean_var_project/spe_151507_DLPFC_constrained_weighted_nnSVG.rds")
 
-weighted_output <- readRDS(file = "mean_var_project/spe_151507_DLPFC_weighted_nnSVG.rds")
+weighted_logcounts <- assay(spe_constrained_weighted, "weighted_logcounts")
+weighted_var <- rowVars(weighted_logcounts)
 
-#add LR list as another col in spe_151507
-LR_list <- unlist(lapply(weighted_output, function (x) x[c('weighted_LR_stat')]))
-rowData(spe)$weighted_LR_stat <- unlist(LR_list)
-
-#remove genes with NA in weighted_LR_stat
-NA_indices <- is.na(rowData(spe)$weighted_LR_stat)
-spe <- spe[!NA_indices,]
-
-#remove genes with < -1 values in weighted_LR_stat 
-neg_indices <- rowData(spe)$weighted_LR_stat < -1
-spe <- spe[!neg_indices,]
-
-#rerank genes both unweighted and weighted since we removed genes 
-rowData(spe)$un_weighted_rank <- rank(-1 * rowData(spe)$LR_stat)
-rowData(spe)$weighted_rank <- rank(-1 * rowData(spe)$weighted_LR_stat)
-
-#new value for change in rank
-rowData(spe)$rank_shift <- rowData(spe)$un_weighted_rank - rowData(spe)$weighted_rank
-
-#plot shift in rank against mean expression 
-plot(rowData(spe)$mean, rowData(spe)$rank_shift, main = "Rank Changes DLPFC 151507",
-     xlab = "mean expression", ylab = "unweighted rank - weighted rank",
-     pch = 20, frame = FALSE)
-
-df <- data.frame(LR_stat = unlist(lapply(weighted_output, function (x) x[c('weighted_LR_stat')])),
-                mean = unlist(lapply(weighted_output, function (x) x[c('weighted_mean')])),
-                var = unlist(lapply(weighted_output, function (x) x[c('weighted_var')])),
-                sigma.sq = unlist(lapply(weighted_output, function (x) x[c('weighted_sigma.sq')])),
-                tau.sq = unlist(lapply(weighted_output, function (x) x[c('weighted_tau.sq')])),
-                prop_sv = unlist(lapply(weighted_output, function (x) x[c('weighted_prop_sv')])),
-                phi = unlist(lapply(weighted_output, function (x) x[c('weighted_phi')])))
+df <- data.frame(LR_stat = rowData(spe_constrained_weighted)$weighted_LR_stat,
+                mean = rowData(spe_constrained_weighted)$weighted_mean,
+                var = weighted_var,
+                sigma.sq = rowData(spe_constrained_weighted)$weighted_sigma.sq,
+                tau.sq = rowData(spe_constrained_weighted)$weighted_tau.sq,
+                prop_sv = rowData(spe_constrained_weighted)$weighted_prop_sv)
 
 region <- "DLPFC"
-
-df <- subset(df, mean < 5e+12) #removes 1 outlier and 2 NA
 
 # variance vs. mean
 var <- ggplot(df, 
        aes(x = mean, y = var, color = LR_stat)) + 
-  scale_x_continuous(trans = "log10") + 
-  scale_y_continuous(trans = "log10") + 
+  #scale_x_continuous(trans = "log10") + 
+  #scale_y_continuous(trans = "log10") + 
   geom_point(size = 2) + 
   geom_smooth(method="loess", color="black", size=0.5) +
   scale_color_viridis(trans = "log10") +
@@ -72,8 +46,8 @@ var <- ggplot(df,
 # spatial variance vs. mean
 spat_var <- ggplot(df, 
        aes(x = mean, y = sigma.sq, color = LR_stat)) + 
-  scale_x_continuous(trans = "log10") + 
-  scale_y_continuous(trans = "log10") + 
+  #scale_x_continuous(trans = "log10") + 
+  #scale_y_continuous(trans = "log10") + 
   geom_point(size = 2) + 
   scale_color_viridis(trans = "log10") +
   scale_color_gradient(low = "blue", high = "red") +
@@ -86,8 +60,8 @@ spat_var <- ggplot(df,
 
 nonspat_var <- ggplot(df, 
        aes(x = mean, y = tau.sq, color = LR_stat)) + 
-  scale_x_continuous(trans = "log10") + 
-  scale_y_continuous(trans = "log10") + 
+  #scale_x_continuous(trans = "log10") + 
+  #scale_y_continuous(trans = "log10") + 
   geom_point(size = 2) + 
   scale_color_viridis(trans = "log10") +
   scale_color_gradient(low = "blue", high = "red") +
@@ -100,7 +74,7 @@ nonspat_var <- ggplot(df,
 
 prop <- ggplot(df, 
        aes(x = mean, y = prop_sv, color = LR_stat)) + 
-  scale_x_continuous(trans = "log10") + 
+  #scale_x_continuous(trans = "log10") + 
   geom_point(size = 2) + 
   scale_color_viridis(trans = "log10") +
   scale_color_gradient(low = "blue", high = "red") +
@@ -166,7 +140,7 @@ rank_unw <- data.frame(
   x = rowData(spe_unweighted)$mean
 ) |> 
   ggplot() +
-  geom_point(aes(x = x, y = y)) +
+  geom_point(aes(x = x, y = y), size = 0.5) +
   labs(
     x = "mean of logcounts",
     y = "rank",
@@ -178,40 +152,32 @@ rank_w <- data.frame(
   x = rowData(spe_weighted)$weighted_mean
 ) |> 
   ggplot() +
-  xlim(0,150) +
-  geom_point(aes(x = x, y = y)) +
+  xlim(0,5000) +
+  geom_point(aes(x = x, y = y), size = 0.5) +
   labs(
     x = "mean of logcounts",
     y = "rank",
     title = "weighted nnSVG"
   )
 
-wrap_plots(rank_unw, rank_w, 
-           guides = "collect",
-           nrow=1)
-
 rank_cw <- data.frame(
   y = constrained_weighted_rank,
   x = rowData(spe_constrained_weighted)$weighted_mean
 ) |> 
   ggplot() +
-  geom_point(aes(x = x, y = y)) +
+  geom_point(aes(x = x, y = y), size = 0.5) +
   labs(
     x = "mean of logcounts",
     y = "rank",
     title = "constrained weighted nnSVG"
   )
 
-wrap_plots(rank_unw, rank_w, rank_cw,
-           guides = "collect",
-           nrow=1)
-
 sigma_unw <- data.frame(
   y = rowData(spe_unweighted)$sigma.sq,
   x = rowData(spe_unweighted)$mean
 ) |> 
   ggplot() +
-  geom_point(aes(x = x, y = y)) +
+  geom_point(aes(x = x, y = y), size = 0.5) +
   labs(
     x = "mean of logcounts",
     y = "est sigma.sq",
@@ -223,12 +189,13 @@ sigma_w <- data.frame(
   x =  rowData(spe_weighted)$weighted_mean
 ) |> 
   ggplot() +
-  geom_point(aes(x = x, y = y)) +
-  #scale_y_continuous(trans='log10') +
+  geom_point(aes(x = x, y = y), size = 0.5) +
+  xlim(0,5000) +
+  scale_y_continuous(trans='log10') +
   #scale_x_continuous(trans='log10') +
   labs(
     x = "mean of logcounts",
-    y = "est sigma.sq",
+    y = "log(est sigma.sq)",
     title = "weighted nnSVG"
   )
 
@@ -238,7 +205,8 @@ sigma_cw <- data.frame(
   x =  rowData(spe_constrained_weighted)$weighted_mean
 ) |> 
   ggplot() +
-  geom_point(aes(x = x, y = y)) +
+  geom_point(aes(x = x, y = y), size = 0.5) +
+  ylim(c(0,10)) +
   #scale_y_continuous(trans='log10') +
   #scale_x_continuous(trans='log10') +
   labs(
@@ -247,5 +215,5 @@ sigma_cw <- data.frame(
     title = "constrained weighted nnSVG"
   )
 
-wrap_plots(sigma_unw, sigma_w, sigma_cw, guides = "collect", nrow = 1)
+wrap_plots(rank_unw, rank_w, rank_cw, sigma_unw, sigma_w, sigma_cw, guides = "collect", nrow = 2)
 ```
