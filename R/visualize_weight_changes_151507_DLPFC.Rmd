@@ -12,6 +12,7 @@ library(ggrepel)
 library(viridis)
 library(ggpubr)
 library(purrr)
+library(patchwork)
 
 load(file = "mean_var_project/spe_151507_DLPFC_constrained_weighted_nnSVG.rds")
 
@@ -25,7 +26,7 @@ df <- data.frame(LR_stat = rowData(spe_constrained_weighted)$weighted_LR_stat,
                 tau.sq = rowData(spe_constrained_weighted)$weighted_tau.sq,
                 prop_sv = rowData(spe_constrained_weighted)$weighted_prop_sv)
 
-region <- "DLPFC"
+region <- "DLPFC: constrained weighted"
 
 # variance vs. mean
 var <- ggplot(df, 
@@ -92,12 +93,7 @@ library(patchwork)
 wrap_plots(var, spat_var, nonspat_var, prop, guides="collect",
            ncol=4, nrow=1)
 
-```
 
-```{r}
-library(ggplot2)
-library(SpatialExperiment)
-library(patchwork)
 ### EXPLORING CHANGING RANKS
 #prop sv, sigma.sq, LR pre weighting, LR post weighting, etc.
 
@@ -107,43 +103,101 @@ load(file = "mean_var_project/spe_151507_DLPFC_constrained_weighted_nnSVG.rds")
 weighted_rank <- rank(-1*rowData(spe_weighted)$weighted_LR_stat)
 constrained_weighted_rank <- rank(-1*rowData(spe_constrained_weighted)$weighted_LR_stat)
 
-#new value for change in rank
+#new value for change in weighted rank
 rank_shift <- rowData(spe_unweighted)$rank - weighted_rank
+#new value for change in con. weighted rank
+constrained_rank_shift <- rowData(spe_unweighted)$rank - constrained_weighted_rank
 
-#plot shift in rank against mean expression 
+#make true false vector for top 10 and negative top 10 change in ranks
+top_20_weighted <- append(order(rank_shift, decreasing=TRUE)[1:10], order(rank_shift, decreasing=FALSE)[1:10])
+top_20_weighted_tf <- rep(F, length(rank_shift))
+top_20_weighted_tf[top_20_weighted] <- T
+
+rowData(spe_weighted)$gene_name[top_20_weighted_tf]
+
+top_20_constrained_weighted <- append(order(constrained_rank_shift, decreasing=TRUE)[1:10], order(constrained_rank_shift, decreasing=FALSE)[1:10])
+top_20_constrained_weighted_tf <- rep(F, length(constrained_rank_shift))
+top_20_constrained_weighted_tf[top_20_constrained_weighted] <- T
+
+rowData(spe_constrained_weighted)$gene_name[top_20_constrained_weighted_tf]
+
+#plot shift in rank against unw mean expression 
 rank1 <- data.frame(x = rowData(spe_unweighted)$mean,
-           y = rank_shift
+           y = rank_shift,
+           top_change = top_20_weighted_tf
 ) |>
   ggplot() +
-  geom_point(aes(x = x, y = y), size=0.5) +
-  ylim(c(-1600,1600)) +
-  labs(title = "Rank Changes simulation: unweighted vs weighted",
+  geom_point(aes(x = x, y = y, color = top_change), size=0.5) +
+  ylim(c(-1700,1700)) +
+  labs(title = "unweighted vs weighted",
        x = "mean expression",
        y = "unweighted rank - weighted rank")
 
-#new value for change in rank
-constrained_rank_shift <- rowData(spe_unweighted)$rank - constrained_weighted_rank
-
-#plot shift in rank against mean expression 
+#plot shift in rank against unw mean expression 
 rank2 <- data.frame(x = rowData(spe_unweighted)$mean,
-           y = constrained_rank_shift
+           y = constrained_rank_shift,
+           top_change = top_20_constrained_weighted_tf
 ) |>
   ggplot() +
-  geom_point(aes(x = x, y = y), size = 0.5) +
-  ylim(c(-1600,1600)) +
-  labs(title = "Rank Changes simulation: unweighted vs constrained weighted",
+  geom_point(aes(x = x, y = y, color = top_change), size = 0.5) +
+  ylim(c(-1700,1700)) +
+  labs(title = "unweighted vs constrained weighted",
        x = "mean expression",
        y = "unweighted rank - constrained weighted rank")
 
-wrap_plots(rank1, rank2, guides = "collect", nrow = 1)
+#plot shift in rank against w mean expression 
+rank3 <- data.frame(x = rowData(spe_weighted)$weighted_mean,
+           y = rank_shift,
+           top_change = top_20_weighted_tf
+) |>
+  ggplot() +
+  geom_point(aes(x = x, y = y, color = top_change), size=0.5) +
+  ylim(c(-1700,1700)) +
+  xlim(0,5000) +
+  labs(title = "unweighted vs weighted",
+       x = "weighted mean expression",
+       y = "unweighted rank - weighted rank")
+
+#plot shift in rank against cw mean expression 
+rank4 <- data.frame(x = rowData(spe_constrained_weighted)$weighted_mean,
+           y = constrained_rank_shift,
+           top_change = top_20_constrained_weighted_tf
+) |>
+  ggplot() +
+  geom_point(aes(x = x, y = y, color = top_change), size = 0.5) +
+  ylim(c(-1700,1700)) +
+  labs(title = "unweighted vs constrained weighted",
+       x = "con. weighted mean expression",
+       y = "unweighted rank - constrained weighted rank")
+
+wrap_plots(rank1, rank2, 
+           rank3, rank4, 
+           guides = "collect", nrow = 2) +
+  plot_annotation(title = "Rank changes between unweighted and weighted nnSVG",
+                  caption = "third plot is cut off at x=5000, cutting off 452 genes")
 
 #check if genes with spatial variation ranked higher compared to genes without spatial variation
 rank_unw <- data.frame(
   y = rowData(spe_unweighted)$rank,
-  x = rowData(spe_unweighted)$mean
+  x = rowData(spe_unweighted)$mean,
+  top_change_w = top_20_weighted_tf
+  
 ) |> 
   ggplot() +
-  geom_point(aes(x = x, y = y), size = 0.5) +
+  geom_point(aes(x = x, y = y, col = top_change_w, size = top_change_w)) +
+  labs(
+    x = "mean of logcounts",
+    y = "rank",
+    title = "unweighted nnSVG"
+  )
+
+rank_unw2 <- data.frame(
+  y = rowData(spe_unweighted)$rank,
+  x = rowData(spe_unweighted)$mean,
+  top_change_cw = top_20_constrained_weighted_tf
+) |> 
+  ggplot() +
+  geom_point(aes(x = x, y = y, col = top_change_cw, size = top_change_cw)) +
   labs(
     x = "mean of logcounts",
     y = "rank",
@@ -152,11 +206,12 @@ rank_unw <- data.frame(
 
 rank_w <- data.frame(
   y = weighted_rank,
-  x = rowData(spe_weighted)$weighted_mean
+  x = rowData(spe_weighted)$weighted_mean,
+  top_change_w = top_20_weighted_tf
 ) |> 
   ggplot() +
   xlim(0,5000) +
-  geom_point(aes(x = x, y = y), size = 0.5) +
+  geom_point(aes(x = x, y = y, col = top_change_w, size = top_change_w)) +
   labs(
     x = "mean of logcounts",
     y = "rank",
@@ -165,22 +220,75 @@ rank_w <- data.frame(
 
 rank_cw <- data.frame(
   y = constrained_weighted_rank,
-  x = rowData(spe_constrained_weighted)$weighted_mean
+  x = rowData(spe_constrained_weighted)$weighted_mean,
+  top_change_cw = top_20_constrained_weighted_tf
 ) |> 
   ggplot() +
-  geom_point(aes(x = x, y = y), size = 0.5) +
+  geom_point(aes(x = x, y = y, col = top_change_cw, size = top_change_cw)) +
   labs(
     x = "mean of logcounts",
     y = "rank",
     title = "constrained weighted nnSVG"
   )
 
-sigma_unw <- data.frame(
-  y = rowData(spe_unweighted)$sigma.sq,
-  x = rowData(spe_unweighted)$mean
+wrap_plots(rank_unw, rank_unw2, rank_w, rank_cw, nrow=2, guides = "collect") +
+  plot_annotation(title = "ranks colored by top 20 changed ranks",
+                  caption = "third plot is cut off at x=5000, cutting off 452 genes")
+
+#check if genes with spatial variation ranked higher compared to genes without spatial variation
+#colored by estimated sigma.sq
+rank_unw <- data.frame(
+  y = rowData(spe_unweighted)$rank,
+  x = rowData(spe_unweighted)$mean,
+  est_sigma.sq = rowData(spe_unweighted)$sigma.sq
+  
+) %>% filter(est_sigma.sq < 6) |> 
+  ggplot() +
+  geom_point(aes(x = x, y = y, col = est_sigma.sq)) +
+  labs(
+    x = "mean of logcounts",
+    y = "rank",
+    title = "unweighted nnSVG"
+  )
+
+rank_w <- data.frame(
+  y = weighted_rank,
+  x = rowData(spe_weighted)$weighted_mean,
+  est_sigma.sq = rowData(spe_weighted)$weighted_sigma.sq
 ) |> 
   ggplot() +
-  geom_point(aes(x = x, y = y), size = 0.5) +
+  xlim(0,5000) +
+  geom_point(aes(x = x, y = y, col = est_sigma.sq)) +
+  labs(
+    x = "mean of logcounts",
+    y = "rank",
+    title = "weighted nnSVG"
+  )
+
+rank_cw <- data.frame(
+  y = constrained_weighted_rank,
+  x = rowData(spe_constrained_weighted)$weighted_mean,
+  est_sigma.sq = rowData(spe_constrained_weighted)$weighted_sigma.sq
+) %>% filter(est_sigma.sq < 10) |> 
+  ggplot() +
+  geom_point(aes(x = x, y = y, col = est_sigma.sq)) +
+  labs(
+    x = "mean of logcounts",
+    y = "rank",
+    title = "constrained weighted nnSVG"
+  )
+
+wrap_plots(rank_unw, rank_w, rank_cw, nrow=2) +
+  plot_annotation(title = "ranks colored by estimated sigma.sq",
+                  caption = "third plot is cut off at x=5000, cutting off 452 genes; 1 gene with est sigma.sq = 6 filtered out from unw; 2 genes with est sigma.sq > 10 filtered out from cs")
+
+sigma_unw <- data.frame(
+  y = rowData(spe_unweighted)$sigma.sq,
+  x = rowData(spe_unweighted)$mean,
+  rank = rowData(spe_unweighted)$rank
+) %>% filter(y < 6) |> 
+  ggplot() +
+  geom_point(aes(x = x, y = y, col = rank)) +
   labs(
     x = "mean of logcounts",
     y = "est sigma.sq",
@@ -189,10 +297,11 @@ sigma_unw <- data.frame(
 
 sigma_w <- data.frame(
   y = rowData(spe_weighted)$weighted_sigma.sq,
-  x =  rowData(spe_weighted)$weighted_mean
+  x =  rowData(spe_weighted)$weighted_mean,
+  rank = weighted_rank
 ) |> 
   ggplot() +
-  geom_point(aes(x = x, y = y), size = 0.5) +
+  geom_point(aes(x = x, y = y, col = rank)) +
   xlim(0,5000) +
   scale_y_continuous(trans='log10') +
   #scale_x_continuous(trans='log10') +
@@ -202,21 +311,21 @@ sigma_w <- data.frame(
     title = "weighted nnSVG"
   )
 
-
 sigma_cw <- data.frame(
   y = rowData(spe_constrained_weighted)$weighted_sigma.sq,
-  x =  rowData(spe_constrained_weighted)$weighted_mean
+  x =  rowData(spe_constrained_weighted)$weighted_mean,
+  rank = constrained_weighted_rank
 ) |> 
   ggplot() +
-  geom_point(aes(x = x, y = y), size = 0.5) +
+  geom_point(aes(x = x, y = y, col = rank)) +
   ylim(c(0,10)) +
-  #scale_y_continuous(trans='log10') +
-  #scale_x_continuous(trans='log10') +
   labs(
     x = "mean of logcounts",
     y = "est sigma.sq",
     title = "constrained weighted nnSVG"
   )
 
-wrap_plots(rank_unw, rank_w, rank_cw, sigma_unw, sigma_w, sigma_cw, guides = "collect", nrow = 2)
+wrap_plots(sigma_unw, sigma_w, sigma_cw, guides = "collect", nrow = 2) +
+    plot_annotation(title = "est sigma.sq colored by ranks",
+                  caption = "second plot is cut off at x=5000, cutting off 452 genes; 1 gene with est sigma.sq = 6 filtered out from unw; 2 genes with est sigma.sq > 10 filtered out from cs")
 ```
