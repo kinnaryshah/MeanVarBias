@@ -2,10 +2,10 @@ library(ggplot2)
 library(ggformula)
 library(purrr)
 #load spline_fit, w matrix, r_tilda, s_g, lambda_hat
-load(file = "mean_var_project/simulation/poisson_3/simulation_BRISC_estimation_spline.rds")
+load(file = "mean_var_project/simulation/poisson_5/simulation_BRISC_estimation_spline.rds")
 
 #get dimensions of spe
-spe <- readRDS(file = "mean_var_project/simulation/poisson_3/spe_simulation.rds")
+spe <- readRDS(file = "mean_var_project/simulation/poisson_5/spe_simulation.rds")
 n <- dim(spe)[2] # Number of Cells
 G <- dim(spe)[1] # Number of Genes
 
@@ -18,7 +18,6 @@ p <- data.frame(x = r_tilda, y = sqrt(s_g)) |>
     y = "Sqrt(s_g)"
   )
 
-plot(new_y ~ new_x, xlim = c(0,2), ylim = c(0,5))
 plot.new()
 plot(sqrt(s_g) ~ r_tilda)
 lines(spline_fit, lty = 2, col = "red")
@@ -86,7 +85,7 @@ w_new <- tmp_pred_sqrt_sg^(-4)
 fivenum(w_new)
 #[1] 0.7213785  1.6377358  2.1905490  3.2739918 32.2346907
 
-save(w_new, file = "mean_var_project/simulation/poisson_3/constrained_weights.rds")
+save(w_new, file = "mean_var_project/simulation/poisson_5/constrained_weights.rds")
 
 #plot log counts vs s_g after constraining
 #make matrix into one long vector to plot each observation as a point
