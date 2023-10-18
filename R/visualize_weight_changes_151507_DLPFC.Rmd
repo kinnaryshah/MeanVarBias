@@ -14,6 +14,7 @@ library(ggpubr)
 library(purrr)
 library(patchwork)
 library(ggridges)
+library(ggformula)
 
 load(file = "mean_var_project/spe_151507_DLPFC_constrained_weighted_nnSVG.rds")
 
@@ -381,7 +382,65 @@ rank_cw <- data.frame(
 
 wrap_plots(rank_unw, rank_w, rank_cw, nrow=2) +
   plot_annotation(title = "ranks ridge plots",
-                  caption = "no data filtered out")
+                  caption = "quantile 1 = lowest means, no data filtered out")
+
+#weight estimation figure for DLPFC
+
+objs <- readRDS(file = "mean_var_project/DLPFC_151507_BRISC_estimation_spline.rds")
+s_g <- objs[[1]]
+r_tilda <- objs[[2]]
+
+dat <- data.frame(
+  y = sqrt(s_g),
+  x = r_tilda
+) 
+
+p1 <- ggplot(dat, aes(x=x, y=y)) +
+  geom_point(size=0.5) +
+  ylim(c(0, 1.05)) + xlim(c(-1,4)) + 
+  labs(
+    x = "average log2(count size)",
+    y = "sqrt(std dev)"
+  ) +
+  theme_bw()
+
+#add trend label
+
+p2 <- ggplot(dat, aes(x=x, y=y)) +
+  geom_point(size=0.5, alpha = 0.2) +
+  geom_smooth(method = 'lm', formula = y ~ splines::bs(x, knots = 10),
+              aes(fill = after_scale(color)), alpha = 0.2) +
+  ylim(c(0, 1.05)) + xlim(c(-1,4)) + 
+  labs(
+    x = "average log2(count size)",
+    y = "sqrt(std dev)"
+  )  +
+  annotate("text", x=2.9, y=0.96, label= "gene-wise mean-var trend") +
+  theme_bw() 
+
+#add lines?
+
+p3 <- ggplot(dat, aes(x=x, y=y)) +
+  geom_smooth(method = 'lm', formula = y ~ splines::bs(x, knots = 10),
+              aes(fill = after_scale(color)), alpha = 0.2) +
+  ylim(c(0, 1.05)) + xlim(c(-1,4)) + 
+  labs(
+    x = "fitted log2(count size)",
+    y = "sqrt(std dev)"
+  )  +
+  annotate("text", x=2.9, y=0.96, label= "gene-wise mean-var trend") +
+  theme_bw() 
+
+wrap_plots(p1, p2, p3, ncol=3, nrow=1)
+
+p4 <- ggplot(dat, aes(x=x)) +
+  geom_density() +
+  geom_point(aes(y=y)) +
+  labs(
+    x = "fitted log2(count size)",
+    y = "sqrt(std dev) or density"
+  )
+
 
 dev.off()
 ```
