@@ -17,11 +17,82 @@ library(ggridges)
 library(ggformula)
 
 load(file = "mean_var_project/spe_151507_DLPFC_constrained_weighted_nnSVG.rds")
+load(file = "mean_var_project/spe_151507_DLPFC_weighted_nnSVG.rds")
 
 pdf(file="mean_var_project/151507_DLPFC_vis.pdf")
 
 weighted_logcounts <- assay(spe_constrained_weighted, "weighted_logcounts")
 weighted_var <- rowVars(weighted_logcounts)
+
+df <- data.frame(LR_stat = rowData(spe_unweighted)$LR_stat,
+                mean = rowData(spe_unweighted)$mean,
+                var = rowData(spe_unweighted)$var,
+                sigma.sq = rowData(spe_unweighted)$sigma.sq,
+                tau.sq = rowData(spe_unweighted)$tau.sq,
+                prop_sv = rowData(spe_unweighted)$prop_sv)
+
+region <- "DLPFC: unweighted"
+
+# variance vs. mean
+var1 <- ggplot(df, 
+       aes(x = mean, y = var, color = LR_stat)) + 
+  #scale_x_continuous(trans = "log10") + 
+  #scale_y_continuous(trans = "log10") + 
+  geom_point(size = 0.5) + 
+  ylim(c(0,3)) +
+  geom_smooth(method="loess", color="black", size=0.5) +
+  scale_color_viridis(trans = "log10") +
+  scale_color_gradient(low = "blue", high = "red") +
+  labs(x = "mean logcounts", 
+       y = "variance", 
+       color = "LR stat",
+       title = region) + 
+  theme_bw() + 
+  theme(strip.text.y.left = element_text(angle = 0))
+
+# spatial variance vs. mean
+spat_var1 <- ggplot(df, 
+       aes(x = mean, y = sigma.sq, color = LR_stat)) + 
+  #scale_x_continuous(trans = "log10") + 
+  #scale_y_continuous(trans = "log10") + 
+  geom_point(size = 0.5) + 
+  ylim(c(0,3)) +
+  scale_color_viridis(trans = "log10") +
+  scale_color_gradient(low = "blue", high = "red") +
+  labs(x = "mean logcounts", 
+       y = expression(paste("spatial variance ", sigma^{2})), 
+       color = "LR stat",
+       title = region) + 
+  theme_bw() + 
+  theme(strip.background = element_blank(), strip.text.y = element_blank())
+
+nonspat_var1 <- ggplot(df, 
+       aes(x = mean, y = tau.sq, color = LR_stat)) + 
+  #scale_x_continuous(trans = "log10") + 
+  #scale_y_continuous(trans = "log10") + 
+  geom_point(size = 0.5) + 
+  ylim(c(0,3)) +
+  scale_color_viridis(trans = "log10") +
+  scale_color_gradient(low = "blue", high = "red") +
+  labs(x = "mean logcounts", 
+       y = expression(paste("nonspatial variance ", tau^{2})), 
+       color = "LR stat",
+       title = region) + 
+  theme_bw() + 
+  theme(strip.background = element_blank(), strip.text.y = element_blank())
+
+prop1 <- ggplot(df, 
+       aes(x = mean, y = prop_sv, color = LR_stat)) + 
+  #scale_x_continuous(trans = "log10") + 
+  geom_point(size = 0.5) + 
+  scale_color_viridis(trans = "log10") +
+  scale_color_gradient(low = "blue", high = "red") +
+  labs(x = "mean logcounts", 
+       y = expression(paste("prop. spatial variance ", sigma^{2}/(sigma^{2}+tau^{2}))), 
+       color = "LR stat",
+       title = region) + 
+  theme_bw() + 
+  theme(strip.background = element_blank(), strip.text.y = element_blank())
 
 df <- data.frame(LR_stat = rowData(spe_constrained_weighted)$weighted_LR_stat,
                 mean = rowData(spe_constrained_weighted)$weighted_mean,
@@ -94,8 +165,11 @@ prop <- ggplot(df,
   theme(strip.background = element_blank(), strip.text.y = element_blank())
 
 library(patchwork)
-wrap_plots(var, spat_var, nonspat_var, prop, guides="collect",
-           ncol=4, nrow=1)
+wrap_plots(var1, spat_var1, nonspat_var1, prop1,
+           var, spat_var, nonspat_var, prop, guides="collect",
+           ncol=4, nrow=2) +
+  plot_annotation(title = "mean vs. components of variance",
+                  caption = "constrained weighted cut off at y=10, cutting off 18 genes from var and 2 sigma.sq")
 
 
 ### EXPLORING CHANGING RANKS
@@ -396,7 +470,7 @@ dat <- data.frame(
 ) 
 
 p1 <- ggplot(dat, aes(x=x, y=y)) +
-  geom_point(size=0.5) +
+  geom_point(size=0.5, alpha = 0.2) +
   ylim(c(0, 1.05)) + xlim(c(-1,4)) + 
   labs(
     x = "average log2(count size)",
@@ -440,7 +514,7 @@ p4 <- ggplot(dat, aes(x=x)) +
     x = "fitted log2(count size)",
     y = "sqrt(std dev) or density"
   )
-
+p4
 
 dev.off()
 ```
