@@ -407,7 +407,8 @@ wrap_plots(sigma_unw, sigma_w, sigma_cw, guides = "collect", nrow = 2) +
                   caption = "second plot is cut off at x=5000, cutting off 452 genes; 1 gene with est sigma.sq = 6 filtered out from unw; 2 genes with est sigma.sq > 10 filtered out from cs")
 
 #ridge plots of mean log counts vs rank
-#quantiles by means
+#quantiles by means 
+#https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1009954
 rank_unw <- data.frame(
   rank = rowData(spe_unweighted)$rank,
   mean = rowData(spe_unweighted)$mean
@@ -458,21 +459,23 @@ wrap_plots(rank_unw, rank_w, rank_cw, nrow=2) +
                   caption = "quantile 1 = lowest means, no data filtered out")
 
 #overlay unweighted and constrained weighted
-df1 <- data.frame(
+df_unw <- data.frame(
   rank = rowData(spe_unweighted)$rank,
   mean = rowData(spe_unweighted)$mean,
   method = rep("unw", 1695) 
 ) %>% mutate(quantile = findInterval(mean, 
-                quantile(mean, probs=0:9/10)))
+                quantile(mean, probs=0:9/10))) %>%
+  tibble::rownames_to_column()
 
-df2 <- data.frame(
+df_cw <- data.frame(
   rank = constrained_weighted_rank,
   mean = rowData(spe_constrained_weighted)$weighted_mean,
   method = rep("cw", 1695) 
 ) %>% mutate(quantile = findInterval(mean, 
-                quantile(mean, probs=0:9/10))) 
+                quantile(mean, probs=0:9/10))) %>%
+  tibble::rownames_to_column()
 
-df <- rbind(df1, df2) %>% 
+df <- rbind(df_unw, df_cw) %>% 
   mutate(quantile = as.factor(quantile))
 
 rank_overlay <- ggplot(df, aes(x = rank, y = quantile)) +
@@ -483,6 +486,61 @@ rank_overlay <- ggplot(df, aes(x = rank, y = quantile)) +
     x = "rank",
     title = "overlayed unw and constrained w nnSVG"
   )
+
+print(rank_overlay)
+
+#ridge plots separated by noise and signal for unw and constrained
+
+frac <- round(dim(spe_unweighted)[1]*0.1)*0.1
+
+df_unw_signal <- df_unw %>%
+  mutate(quantile = as.factor(quantile)) %>%
+  group_by(quantile) %>%
+  slice_min(order_by = rank, n = frac) %>%
+  mutate(grp = "signal")
+
+indices <- as.integer(df_unw_signal$rowname)
+
+df_unw_background <- df_unw[-indices,] %>%
+  mutate(quantile = as.factor(quantile)) %>%
+  mutate(grp = "background")
+
+df <- rbind(df_unw_signal, df_unw_background)
+
+rank_separated_unw <- ggplot(df, aes(x = rank, y = quantile)) +
+  geom_density_ridges2(aes(fill = grp), rel_min_height = 0.02) +
+  theme_ridges(grid = TRUE) +
+  labs(
+    y = "quantile - mean of logcounts",
+    x = "rank",
+    title = "unweighted nnSVG"
+  )
+
+df_cw_signal <- df_cw %>%
+  mutate(quantile = as.factor(quantile)) %>%
+  group_by(quantile) %>%
+  slice_min(order_by = rank, n = frac) %>%
+  mutate(grp = "signal")
+
+indices <- as.integer(df_cw_signal$rowname)
+
+df_cw_background <- df_cw[-indices,] %>%
+  mutate(quantile = as.factor(quantile)) %>%
+  mutate(grp = "background")
+
+df <- rbind(df_cw_signal, df_cw_background)
+
+rank_separated_cw <- ggplot(df, aes(x = rank, y = quantile)) +
+  geom_density_ridges2(aes(fill = grp), rel_min_height = 0.02) +
+  theme_ridges(grid = TRUE) +
+  labs(
+    y = "quantile - mean of logcounts",
+    x = "rank",
+    title = "constrained weighted nnSVG"
+  )
+
+wrap_plots(rank_separated_unw, rank_separated_cw, nrow=1, guides = "collect") +
+  plot_annotation(caption = "quantile 1 = lowest means, used top 10% ranks per q")
 
 #weight estimation figure for DLPFC
 
