@@ -164,7 +164,6 @@ prop <- ggplot(df,
   theme_bw() + 
   theme(strip.background = element_blank(), strip.text.y = element_blank())
 
-library(patchwork)
 wrap_plots(var1, spat_var1, nonspat_var1, prop1,
            var, spat_var, nonspat_var, prop, guides="collect",
            ncol=4, nrow=2) +
@@ -416,7 +415,7 @@ rank_unw <- data.frame(
                 quantile(mean, probs=0:9/10))) %>% 
   mutate(quantile = as.factor(quantile)) |> 
   ggplot() +
-  geom_density_ridges2(aes(x = rank, y = quantile)) +
+  geom_density_ridges2(aes(x = rank, y = quantile), rel_min_height = 0.02) +
   theme_ridges(grid = TRUE) +
   labs(
     y = "quantile - mean of logcounts",
@@ -431,7 +430,7 @@ rank_w <- data.frame(
                 quantile(mean, probs=0:9/10))) %>% 
   mutate(quantile = as.factor(quantile)) |> 
   ggplot() +
-  geom_density_ridges2(aes(x = rank, y = quantile)) +
+  geom_density_ridges2(aes(x = rank, y = quantile), rel_min_height = 0.02) +
   theme_ridges(grid = TRUE) +
   labs(
     y = "quantile - mean of logcounts",
@@ -446,7 +445,7 @@ rank_cw <- data.frame(
                 quantile(mean, probs=0:9/10))) %>% 
   mutate(quantile = as.factor(quantile)) |> 
   ggplot() +
-  geom_density_ridges2(aes(x = rank, y = quantile)) +
+  geom_density_ridges2(aes(x = rank, y = quantile), rel_min_height = 0.02) +
   theme_ridges(grid = TRUE) +
   labs(
     y = "quantile - mean of logcounts",
@@ -457,6 +456,33 @@ rank_cw <- data.frame(
 wrap_plots(rank_unw, rank_w, rank_cw, nrow=2) +
   plot_annotation(title = "ranks ridge plots",
                   caption = "quantile 1 = lowest means, no data filtered out")
+
+#overlay unweighted and constrained weighted
+df1 <- data.frame(
+  rank = rowData(spe_unweighted)$rank,
+  mean = rowData(spe_unweighted)$mean,
+  method = rep("unw", 1695) 
+) %>% mutate(quantile = findInterval(mean, 
+                quantile(mean, probs=0:9/10)))
+
+df2 <- data.frame(
+  rank = constrained_weighted_rank,
+  mean = rowData(spe_constrained_weighted)$weighted_mean,
+  method = rep("cw", 1695) 
+) %>% mutate(quantile = findInterval(mean, 
+                quantile(mean, probs=0:9/10))) 
+
+df <- rbind(df1, df2) %>% 
+  mutate(quantile = as.factor(quantile))
+
+rank_overlay <- ggplot(df, aes(x = rank, y = quantile)) +
+  geom_density_ridges2(aes(fill = method), rel_min_height = 0.02) +
+  theme_ridges(grid = TRUE) +
+  labs(
+    y = "quantile - mean of logcounts",
+    x = "rank",
+    title = "overlayed unw and constrained w nnSVG"
+  )
 
 #weight estimation figure for DLPFC
 
