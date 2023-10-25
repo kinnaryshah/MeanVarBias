@@ -543,7 +543,7 @@ df <- rbind(df_unw, df_cw) %>%
   mutate(quantile = as.factor(quantile))
 
 rank_overlay <- ggplot(df, aes(x = rank, y = quantile)) +
-  geom_density_ridges2(aes(fill = method), rel_min_height = 0.02) +
+  geom_density_ridges2(aes(fill = method), rel_min_height = 0.02, alpha = 0.3) +
   theme_ridges(grid = TRUE) +
   labs(
     y = "quantile - mean of logcounts",
