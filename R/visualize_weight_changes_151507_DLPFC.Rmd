@@ -15,6 +15,7 @@ library(purrr)
 library(patchwork)
 library(ggridges)
 library(ggformula)
+library(GGally)
 
 load(file = "mean_var_project/spe_151507_DLPFC_constrained_weighted_nnSVG.rds")
 load(file = "mean_var_project/spe_151507_DLPFC_weighted_nnSVG.rds")
@@ -599,6 +600,16 @@ p4 <- ggplot(dat, aes(x=x)) +
     y = "sqrt(std dev) or density"
   )
 p4
+
+mean_data <- data.frame(unweighted = rowData(spe_unweighted)$mean,
+                        weighted = rowData(spe_weighted)$weighted_mean,
+                        constrained_weighted = rowData(spe_constrained_weighted)$weighted_mean,
+                        raw = rowMeans(logcounts(spe_unweighted)))
+
+
+ggpairs(mean_data, aes(alpha = 0.4)) +
+  theme(axis.text.x = element_text(angle=90))
+
 
 dev.off()
 ```
