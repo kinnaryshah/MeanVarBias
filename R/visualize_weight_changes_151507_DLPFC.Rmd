@@ -324,24 +324,11 @@ rank_unw <- data.frame(
 ) %>% filter(est_sigma.sq < 6) |> 
   ggplot() +
   geom_point(aes(x = x, y = y, col = est_sigma.sq)) +
+  scale_color_viridis() +
   labs(
     x = "mean of logcounts",
     y = "rank",
     title = "unweighted nnSVG"
-  )
-
-rank_w <- data.frame(
-  y = weighted_rank,
-  x = rowData(spe_weighted)$weighted_mean,
-  est_sigma.sq = rowData(spe_weighted)$weighted_sigma.sq
-) |> 
-  ggplot() +
-  xlim(0,5000) +
-  geom_point(aes(x = x, y = y, col = est_sigma.sq)) +
-  labs(
-    x = "mean of logcounts",
-    y = "rank",
-    title = "weighted nnSVG"
   )
 
 rank_cw <- data.frame(
@@ -351,13 +338,14 @@ rank_cw <- data.frame(
 ) %>% filter(est_sigma.sq < 10) |> 
   ggplot() +
   geom_point(aes(x = x, y = y, col = est_sigma.sq)) +
+  scale_color_viridis() +
   labs(
     x = "mean of logcounts",
     y = "rank",
     title = "constrained weighted nnSVG"
   )
 
-wrap_plots(rank_unw, rank_w, rank_cw, nrow=2) +
+wrap_plots(rank_unw, rank_cw, nrow=2) +
   plot_annotation(title = "ranks colored by estimated sigma.sq",
                   caption = "third plot is cut off at x=5000, cutting off 452 genes; 1 gene with est sigma.sq = 6 filtered out from unw; 2 genes with est sigma.sq > 10 filtered out from cs")
 
@@ -368,6 +356,7 @@ sigma_unw <- data.frame(
 ) %>% filter(y < 6) |> 
   ggplot() +
   geom_point(aes(x = x, y = y, col = rank)) +
+  scale_color_viridis() +
   labs(
     x = "mean of logcounts",
     y = "est sigma.sq",
@@ -381,6 +370,7 @@ sigma_w <- data.frame(
 ) |> 
   ggplot() +
   geom_point(aes(x = x, y = y, col = rank)) +
+  scale_color_viridis() +
   xlim(0,5000) +
   scale_y_continuous(trans='log10') +
   #scale_x_continuous(trans='log10') +
@@ -397,6 +387,7 @@ sigma_cw <- data.frame(
 ) |> 
   ggplot() +
   geom_point(aes(x = x, y = y, col = rank)) +
+  scale_color_viridis() +
   ylim(c(0,10)) +
   labs(
     x = "mean of logcounts",
