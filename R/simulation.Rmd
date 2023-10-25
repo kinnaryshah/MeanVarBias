@@ -391,11 +391,17 @@ save(spe_unweighted, weighted_nnSVG_list, file = "spe_simulation_weighted_nnSVG.
 library(ggplot2)
 library(SpatialExperiment)
 library(patchwork)
+library(GGally)
+library(dplyr)
+library(ggridges)
+
 ### EXPLORING CHANGING RANKS
 #prop sv, sigma.sq, LR pre weighting, LR post weighting, etc.
 
 #load(file = "mean_var_project/spe_simulation_weighted_nnSVG.Rdata")
-load(file = "mean_var_project/simulation/poisson_3/spe_simulation_weighted_constrained_nnSVG.Rdata")
+load(file = "mean_var_project/simulation/poisson_5/spe_simulation_weighted_constrained_nnSVG.Rdata")
+
+pdf(file="mean_var_project/simulation/poisson_5/simulation_vis.pdf")
 
 weighted_rank <- rank(-1*unlist(lapply(weighted_nnSVG_list, function (x) x[c('weighted_LR_stat')])))
 
@@ -403,32 +409,20 @@ weighted_rank <- rank(-1*unlist(lapply(weighted_nnSVG_list, function (x) x[c('we
 rank_shift <- rowData(spe_unweighted)$rank - weighted_rank
 
 #load(file = "simulation_BRISC_estimation_spline.rds")
-load(file = "mean_var_project/simulation/poisson_3/constrained_weights.rds")
+load(file = "mean_var_project/simulation/poisson_5/constrained_weights.rds")
 w <- w_new
 
 weighted_logcounts <- t(w)*logcounts(spe_unweighted)
 weighted_mean <- rowMeans(weighted_logcounts)
 
-#plot shift in rank against mean expression 
-data.frame(x = rowData(spe_unweighted)$mean,
-           y = rank_shift,
-           ground_truth = rowData(spe_unweighted)$ground_truth
-) |>
-  ggplot() +
-  geom_point(aes(x = x, y = y, color = ground_truth)) +
-  labs(title = "Rank Changes simulation",
-       x = "mean expression",
-       y = "unweighted rank - weighted rank")
-
 #check if genes with spatial variation ranked higher compared to genes without spatial variation
 rank_unw <- data.frame(
   y = rowData(spe_unweighted)$rank,
   x = rowData(spe_unweighted)$mean,
-  ground_truth = rowData(spe_unweighted)$ground_truth
+  ground_truth_sigma.sq = rowData(spe_unweighted)$ground_truth_sigma.sq
 ) |> 
   ggplot() +
-  xlim(0,20) +
-  geom_point(aes(x = x, y = y, color = ground_truth)) +
+  geom_point(aes(x = x, y = y, col = ground_truth_sigma.sq)) +
   labs(
     x = "mean of logcounts",
     y = "rank",
@@ -439,139 +433,152 @@ rank_unw <- data.frame(
 rank_w <- data.frame(
   y = rank(-1*unlist(lapply(weighted_nnSVG_list, function (x) x[c('weighted_LR_stat')]))),
   x = weighted_mean,
-  ground_truth = rowData(spe_unweighted)$ground_truth
+  ground_truth_sigma.sq = rowData(spe_unweighted)$ground_truth_sigma.sq
 ) |> 
   ggplot() +
-  xlim(0,20) +
-  geom_point(aes(x = x, y = y, color = ground_truth)) +
+  geom_point(aes(x = x, y = y, col = ground_truth_sigma.sq)) +
   labs(
     x = "mean of logcounts",
     y = "rank",
-    title = "weighted nnSVG",
+    title = "constrained weighted nnSVG",
     caption = cor.test(rank(-1*unlist(lapply(weighted_nnSVG_list, function (x) x[c('weighted_LR_stat')]))), rowData(spe_unweighted)$ground_truth_rank, method = 'spearman')[4]
   )
 
-lrt_unw <- data.frame(
-  y = rank(-rowData(spe_unweighted)$LR_stat),
-  x = rowData(spe_unweighted)$mean,
-  ground_truth = rowData(spe_unweighted)$ground_truth
-) |> 
-  ggplot() +
-  xlim(0,20) +
-  geom_point(aes(x = x, y = y, color = ground_truth)) +
-  labs(
-    x = "mean of logcounts",
-    y = "rank(-LR stat)",
-    title = "unweighted nnSVG"
-  )
-
-lrt_w <- data.frame(
-  y = rank(-1*unlist(lapply(weighted_nnSVG_list, function (x) x[c('weighted_LR_stat')]))),
-  x = weighted_mean,
-  ground_truth = rowData(spe_unweighted)$ground_truth
-) |> 
-  ggplot() +
-  xlim(0,20) +
-  geom_point(aes(x = x, y = y, color = ground_truth)) +
-  labs(
-    x = "mean of logcounts",
-    y = "rank(-LR stat)",
-    title = "weighted nnSVG"
-  )
-
-prop_unw <- data.frame(
-  y = rank(-rowData(spe_unweighted)$prop_sv),
-  x = rowData(spe_unweighted)$mean,
-  ground_truth = rowData(spe_unweighted)$ground_truth
-) |> 
-  ggplot() +
-  xlim(0,20) +
-  geom_point(aes(x = x, y = y, color = ground_truth)) +
-  labs(
-    x = "mean of logcounts",
-    y = "rank(-prop. spatial var.)",
-    title = "unweighted nnSVG"
-  )
-
-prop_w <- data.frame(
-  y = rank(-1*unlist(lapply(weighted_nnSVG_list, function (x) x[c('weighted_prop_sv')]))),
-  x = weighted_mean,
-  ground_truth = rowData(spe_unweighted)$ground_truth
-) |> 
-  ggplot() +
-  xlim(0,20) +
-  geom_point(aes(x = x, y = y, color = ground_truth)) +
-  labs(
-    x = "mean of logcounts",
-    y = "rank(-prop. spatial var.)",
-    title = "weighted nnSVG"
-  )
-
-
-rank_sigma_unw <- data.frame(
-  y = rank(-rowData(spe_unweighted)$sigma.sq),
-  x = rowData(spe_unweighted)$mean,
-  ground_truth = rowData(spe_unweighted)$ground_truth
-) |> 
-  ggplot() +
-  xlim(0,20) +
-  geom_point(aes(x = x, y = y, color = ground_truth)) +
-  labs(
-    x = "mean of logcounts",
-    y = "rank(-est sigma.sq)",
-    title = "unweighted nnSVG"
-  )
-
-rank_sigma_w <- data.frame(
-  y = rank(-1*unlist(lapply(weighted_nnSVG_list, function (x) x[c('weighted_sigma.sq')]))),
-  x = weighted_mean,
-  ground_truth = rowData(spe_unweighted)$ground_truth
-) |> 
-  ggplot() +
-  xlim(0,20) +
-  geom_point(aes(x = x, y = y, color = ground_truth)) +
-  labs(
-    x = "mean of logcounts",
-    y = "rank(-est sigma.sq)",
-    title = "weighted nnSVG"
-  )
-
 wrap_plots(rank_unw, rank_w, 
-           lrt_unw, lrt_w,
-           prop_unw, prop_w,
-           rank_sigma_unw, rank_sigma_w,
            guides = "collect",
-           ncol=2, nrow=4)
+           ncol=2, nrow=1)
 
-sigma_unw <- data.frame(
-  y = rowData(spe_unweighted)$sigma.sq,
-  x = rowData(spe_unweighted)$mean,
-  ground_truth = rowData(spe_unweighted)$ground_truth
-) |> 
+#ridge plots for simulation
+rank_unw <- data.frame(
+  rank = rowData(spe_unweighted)$rank,
+  mean = rowData(spe_unweighted)$mean
+) %>% mutate(quantile = findInterval(mean, 
+                quantile(mean, probs=0:9/10))) %>% 
+  mutate(quantile = as.factor(quantile)) |> 
   ggplot() +
-  geom_point(aes(x = x, y = y, color = ground_truth)) +
+  geom_density_ridges2(aes(x = rank, y = quantile), rel_min_height = 0.02) +
+  theme_ridges(grid = TRUE) +
   labs(
-    x = "mean of logcounts",
-    y = "est sigma.sq",
+    y = "quantile - mean of logcounts",
+    x = "rank",
     title = "unweighted nnSVG"
   )
 
-sigma_w <- data.frame(
-  y = unlist(lapply(weighted_nnSVG_list, function (x) x[c('weighted_sigma.sq')])),
-  x = weighted_mean,
-  ground_truth = rowData(spe_unweighted)$ground_truth
-) |> 
+rank_cw <- data.frame(
+  rank = rank(-1*unlist(lapply(weighted_nnSVG_list, function (x) x[c('weighted_LR_stat')]))),
+  mean = weighted_mean
+) %>% mutate(quantile = findInterval(mean, 
+                quantile(mean, probs=0:9/10))) %>% 
+  mutate(quantile = as.factor(quantile)) |> 
   ggplot() +
-  geom_point(aes(x = x, y = y, color = ground_truth)) +
-  #scale_y_continuous(trans='log10') +
-  #scale_x_continuous(trans='log10') +
+  geom_density_ridges2(aes(x = rank, y = quantile), rel_min_height = 0.02) +
+  theme_ridges(grid = TRUE) +
   labs(
-    x = "mean of logcounts",
-    y = "est sigma.sq",
-    title = "weighted nnSVG"
+    y = "quantile - mean of logcounts",
+    x = "rank",
+    title = "constrained weighted nnSVG"
   )
 
-wrap_plots(sigma_unw, sigma_w, guides = "collect", nrow = 1)
+wrap_plots(rank_unw, rank_cw, nrow=1) +
+  plot_annotation(title = "ranks ridge plots",
+                  caption = "quantile 1 = lowest means, no data filtered out")
+
+#overlay unweighted and constrained weighted
+df_unw <- data.frame(
+  rank = rowData(spe_unweighted)$rank,
+  mean = rowData(spe_unweighted)$mean,
+  method = rep("unw", 300) 
+) %>% mutate(quantile = findInterval(mean, 
+                quantile(mean, probs=0:9/10))) %>%
+  tibble::rownames_to_column()
+
+df_cw <- data.frame(
+  rank = rank(-1*unlist(lapply(weighted_nnSVG_list, function (x) x[c('weighted_LR_stat')]))),
+  mean = weighted_mean,
+  method = rep("cw", 300) 
+) %>% mutate(quantile = findInterval(mean, 
+                quantile(mean, probs=0:9/10))) %>%
+  tibble::rownames_to_column()
+
+df <- rbind(df_unw, df_cw) %>% 
+  mutate(quantile = as.factor(quantile))
+
+rank_overlay <- ggplot(df, aes(x = rank, y = quantile)) +
+  geom_density_ridges2(aes(fill = method), rel_min_height = 0.02, alpha = 0.3) +
+  theme_ridges(grid = TRUE) +
+  labs(
+    y = "quantile - mean of logcounts",
+    x = "rank",
+    title = "overlayed unw and constrained w nnSVG"
+  )
+
+print(rank_overlay)
+
+#ridge plots separated by noise and signal for unw and constrained
+
+frac <- round(dim(spe_unweighted)[1]*0.1)*0.1
+
+df_unw_signal <- df_unw %>%
+  mutate(quantile = as.factor(quantile)) %>%
+  group_by(quantile) %>%
+  slice_min(order_by = rank, n = frac) %>%
+  mutate(grp = "signal")
+
+indices <- as.integer(df_unw_signal$rowname)
+
+df_unw_background <- df_unw[-indices,] %>%
+  mutate(quantile = as.factor(quantile)) %>%
+  mutate(grp = "background")
+
+df <- rbind(df_unw_signal, df_unw_background)
+
+rank_separated_unw <- ggplot(df, aes(x = rank, y = quantile)) +
+  geom_density_ridges2(aes(fill = grp), rel_min_height = 0.02) +
+  theme_ridges(grid = TRUE) +
+  labs(
+    y = "quantile - mean of logcounts",
+    x = "rank",
+    title = "unweighted nnSVG"
+  )
+
+df_cw_signal <- df_cw %>%
+  mutate(quantile = as.factor(quantile)) %>%
+  group_by(quantile) %>%
+  slice_min(order_by = rank, n = frac) %>%
+  mutate(grp = "signal")
+
+indices <- as.integer(df_cw_signal$rowname)
+
+df_cw_background <- df_cw[-indices,] %>%
+  mutate(quantile = as.factor(quantile)) %>%
+  mutate(grp = "background")
+
+df <- rbind(df_cw_signal, df_cw_background)
+
+rank_separated_cw <- ggplot(df, aes(x = rank, y = quantile)) +
+  geom_density_ridges2(aes(fill = grp), rel_min_height = 0.02) +
+  theme_ridges(grid = TRUE) +
+  labs(
+    y = "quantile - mean of logcounts",
+    x = "rank",
+    title = "constrained weighted nnSVG"
+  )
+
+wrap_plots(rank_separated_unw, rank_separated_cw, nrow=1, guides = "collect") +
+  plot_annotation(caption = "quantile 1 = lowest means, used top 3 ranks per q")
+
+
+#compare all means 
+mean_data <- data.frame(unweighted_mean = rowData(spe_unweighted)$mean,
+                        con_weighted_mean = unlist(lapply(weighted_nnSVG_list, function (x) x[c('weighted_mean')])),
+                        beta = rowData(spe_unweighted)$ground_truth_beta,
+                        raw_mean = rowMeans(logcounts(spe_unweighted)))
+
+ggpairs(mean_data, aes(alpha = 0.4))
+
+dev.off()
+
+#trying out different correlations
 
 all_data <- data.frame(
   ground_truth_sigma.sq = rowData(spe_unweighted)$ground_truth_sigma.sq,
@@ -613,17 +620,6 @@ rcorr(all_data$ground_truth_rank, all_data$weighted_rank, type="spearman")
 library(dplyr)
 cor.test(filter(all_data, ground_truth == TRUE)$ground_truth_rank, rank(-1*filter(all_data, ground_truth == TRUE)$unweighted_LR_stat))
 cor.test(filter(all_data, ground_truth == TRUE)$ground_truth_rank,rank(-1*filter(all_data, ground_truth == TRUE)$weighted_LR_stat))
-
-#compare all means 
-
-mean_data <- data.frame(unweighted_mean = rowData(spe_unweighted)$mean,
-                        weighted_mean = unlist(lapply(weighted_nnSVG_list, function (x) x[c('weighted_mean')])),
-                        beta = rowData(spe_unweighted)$ground_truth_beta,
-                        raw_mean = rowMeans(logcounts(spe_unweighted)))
-
-
-library(GGally)
-ggpairs(mean_data, aes(alpha = 0.4))
 
 ```
 
