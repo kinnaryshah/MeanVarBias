@@ -16,6 +16,7 @@ library(patchwork)
 library(ggridges)
 library(ggformula)
 library(GGally)
+library(ggblend)
 
 load(file = "mean_var_project/spe_151507_DLPFC_constrained_weighted_nnSVG.rds")
 load(file = "mean_var_project/spe_151507_DLPFC_weighted_nnSVG.rds")
@@ -186,14 +187,14 @@ rank_shift <- rowData(spe_unweighted)$rank - weighted_rank
 #new value for change in con. weighted rank
 constrained_rank_shift <- rowData(spe_unweighted)$rank - constrained_weighted_rank
 
-#make true false vector for top 10 and negative top 10 change in ranks
-top_20_weighted <- append(order(rank_shift, decreasing=TRUE)[1:10], order(rank_shift, decreasing=FALSE)[1:10])
+#only use positive direction of rank changes
+top_20_weighted <- order(rank_shift, decreasing=TRUE)[1:20]
 top_20_weighted_tf <- rep(F, length(rank_shift))
 top_20_weighted_tf[top_20_weighted] <- T
 
 rowData(spe_weighted)$gene_name[top_20_weighted_tf]
 
-top_20_constrained_weighted <- append(order(constrained_rank_shift, decreasing=TRUE)[1:10], order(constrained_rank_shift, decreasing=FALSE)[1:10])
+top_20_constrained_weighted <- order(constrained_rank_shift, decreasing=TRUE)[1:20]
 top_20_constrained_weighted_tf <- rep(F, length(constrained_rank_shift))
 top_20_constrained_weighted_tf[top_20_constrained_weighted] <- T
 
@@ -262,7 +263,7 @@ rank_unw <- data.frame(
   
 ) |> 
   ggplot() +
-  geom_point(aes(x = x, y = y, col = top_change_w, size = top_change_w)) +
+  geom_point(aes(x = x, y = y, col = top_change_w)) * (blend("lighten") + blend("multiply", alpha = 0.5)) +
   labs(
     x = "mean of logcounts",
     y = "rank",
@@ -275,7 +276,7 @@ rank_unw2 <- data.frame(
   top_change_cw = top_20_constrained_weighted_tf
 ) |> 
   ggplot() +
-  geom_point(aes(x = x, y = y, col = top_change_cw, size = top_change_cw)) +
+  geom_point(aes(x = x, y = y, col = top_change_cw)) * (blend("lighten") + blend("multiply", alpha = 0.5)) +
   labs(
     x = "mean of logcounts",
     y = "rank",
@@ -289,7 +290,7 @@ rank_w <- data.frame(
 ) |> 
   ggplot() +
   xlim(0,5000) +
-  geom_point(aes(x = x, y = y, col = top_change_w, size = top_change_w)) +
+  geom_point(aes(x = x, y = y, col = top_change_w)) * (blend("lighten") + blend("multiply", alpha = 0.5)) +
   labs(
     x = "mean of logcounts",
     y = "rank",
@@ -302,7 +303,7 @@ rank_cw <- data.frame(
   top_change_cw = top_20_constrained_weighted_tf
 ) |> 
   ggplot() +
-  geom_point(aes(x = x, y = y, col = top_change_cw, size = top_change_cw)) +
+  geom_point(aes(x = x, y = y, col = top_change_cw)) * (blend("lighten") + blend("multiply", alpha = 0.5)) +
   labs(
     x = "mean of logcounts",
     y = "rank",
