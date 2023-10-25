@@ -172,6 +172,77 @@ wrap_plots(var1, spat_var1, nonspat_var1, prop1,
   plot_annotation(title = "mean vs. components of variance",
                   caption = "constrained weighted cut off at y=10, cutting off 18 genes from var and 2 sigma.sq")
 
+# variance vs. mean
+var <- ggplot(df, 
+       aes(x = mean, y = var, color = LR_stat)) + 
+  #scale_x_continuous(trans = "log10") + 
+  #scale_y_continuous(trans = "log10") + 
+  geom_point(size = 0.5) + 
+  ylim(c(0,10)) +
+  xlim(c(0,5)) +
+  geom_smooth(method="loess", color="black", size=0.5) +
+  scale_color_viridis(trans = "log10") +
+  scale_color_gradient(low = "blue", high = "red") +
+  labs(x = "mean logcounts", 
+       y = "variance", 
+       color = "LR stat",
+       title = region) + 
+  theme_bw() + 
+  theme(strip.text.y.left = element_text(angle = 0))
+
+# spatial variance vs. mean
+spat_var <- ggplot(df, 
+       aes(x = mean, y = sigma.sq, color = LR_stat)) + 
+  #scale_x_continuous(trans = "log10") + 
+  #scale_y_continuous(trans = "log10") + 
+  geom_point(size = 0.5) + 
+  ylim(c(0,10)) +
+  xlim(c(0,5)) +
+  scale_color_viridis(trans = "log10") +
+  scale_color_gradient(low = "blue", high = "red") +
+  labs(x = "mean logcounts", 
+       y = expression(paste("spatial variance ", sigma^{2})), 
+       color = "LR stat",
+       title = region) + 
+  theme_bw() + 
+  theme(strip.background = element_blank(), strip.text.y = element_blank())
+
+nonspat_var <- ggplot(df, 
+       aes(x = mean, y = tau.sq, color = LR_stat)) + 
+  #scale_x_continuous(trans = "log10") + 
+  #scale_y_continuous(trans = "log10") + 
+  geom_point(size = 0.5) + 
+  ylim(c(0,10)) +
+  xlim(c(0,5)) +
+  scale_color_viridis(trans = "log10") +
+  scale_color_gradient(low = "blue", high = "red") +
+  labs(x = "mean logcounts", 
+       y = expression(paste("nonspatial variance ", tau^{2})), 
+       color = "LR stat",
+       title = region) + 
+  theme_bw() + 
+  theme(strip.background = element_blank(), strip.text.y = element_blank())
+
+prop <- ggplot(df, 
+       aes(x = mean, y = prop_sv, color = LR_stat)) + 
+  #scale_x_continuous(trans = "log10") + 
+  geom_point(size = 0.5) + 
+  xlim(c(0,5)) +
+  scale_color_viridis(trans = "log10") +
+  scale_color_gradient(low = "blue", high = "red") +
+  labs(x = "mean logcounts", 
+       y = expression(paste("prop. spatial variance ", sigma^{2}/(sigma^{2}+tau^{2}))), 
+       color = "LR stat",
+       title = region) + 
+  theme_bw() + 
+  theme(strip.background = element_blank(), strip.text.y = element_blank())
+
+
+wrap_plots(var1, spat_var1, nonspat_var1, prop1,
+           var, spat_var, nonspat_var, prop, guides="collect",
+           ncol=4, nrow=2) +
+  plot_annotation(title = "mean vs. components of variance",
+                  caption = "constrained weighted cut off at y=5 and x=5")
 
 ### EXPLORING CHANGING RANKS
 #prop sv, sigma.sq, LR pre weighting, LR post weighting, etc.
