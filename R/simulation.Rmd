@@ -507,10 +507,12 @@ rank_overlay <- ggplot(df, aes(x = rank, y = quantile)) +
   geom_density_ridges2(aes(fill = method), rel_min_height = 0.02, alpha = 0.3) +
   theme_ridges(grid = TRUE) +
   labs(
-    y = "quantile - mean of logcounts",
+    y = "decile - mean of logcounts",
     x = "rank",
-    title = "overlayed unw and constrained w nnSVG"
-  )
+    title = "Ridge plots: effect of weighting on rank"
+  ) +
+  scale_fill_manual(labels = c("weighted", "unweighted"), values = c("blue", "red")) +
+  theme_bw()
 
 print(rank_overlay)
 
@@ -533,13 +535,16 @@ df_unw_background <- df_unw[-indices,] %>%
 df <- rbind(df_unw_signal, df_unw_background)
 
 rank_separated_unw <- ggplot(df, aes(x = rank, y = quantile)) +
-  geom_density_ridges2(aes(fill = grp), rel_min_height = 0.02) +
+  geom_density_ridges2(aes(fill = grp), rel_min_height = 0.02, alpha = 0.3) +
   theme_ridges(grid = TRUE) +
   labs(
-    y = "quantile - mean of logcounts",
+    y = "",
     x = "rank",
-    title = "unweighted nnSVG"
-  )
+    title = "Signal unweighted"
+  ) +
+  guides(fill=guide_legend(title="group")) +
+  theme_bw() 
+  
 
 df_cw_signal <- df_cw %>%
   mutate(quantile = as.factor(quantile)) %>%
@@ -556,16 +561,17 @@ df_cw_background <- df_cw[-indices,] %>%
 df <- rbind(df_cw_signal, df_cw_background)
 
 rank_separated_cw <- ggplot(df, aes(x = rank, y = quantile)) +
-  geom_density_ridges2(aes(fill = grp), rel_min_height = 0.02) +
+  geom_density_ridges2(aes(fill = grp), rel_min_height = 0.02, alpha = 0.3) +
   theme_ridges(grid = TRUE) +
   labs(
-    y = "quantile - mean of logcounts",
+    y = "",
     x = "rank",
-    title = "constrained weighted nnSVG"
-  )
+    title = "Signal weighted"
+  )  +
+  guides(fill=guide_legend(title="group")) +
+  theme_bw() 
 
-wrap_plots(rank_separated_unw, rank_separated_cw, nrow=1, guides = "collect") +
-  plot_annotation(caption = "quantile 1 = lowest means, used top 3 ranks per q")
+ggsave("proposal/fig4b.png",wrap_plots(rank_separated_unw, rank_separated_cw, nrow=1, guides = "collect") )
 
 
 #compare all means 
