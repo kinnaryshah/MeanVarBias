@@ -21,6 +21,7 @@ library(ggrepel)
 library(viridis)
 library(ggpubr)
 library(purrr)
+library(patchwork)
 
 df_fxn <- function(file_name, dataset) {
   
@@ -59,61 +60,68 @@ all_files_df <- Reduce(rbind,file_df)
 # variance vs. mean
 var <- ggplot(all_files_df, 
        aes(x = mean, y = var, color = LR_stat_scaled)) + 
-  geom_point(size = 2) + 
+  geom_point(size = 1) + 
   geom_smooth(method="loess", color="black", size=0.5) +
   facet_grid(dataset_val~., switch = "y") +
   scale_color_viridis(trans = "log10") +
   scale_color_gradient(low = "blue", high = "red") +
   labs(x = "mean logcounts", 
        y = "", 
-       color = "LR stat scaled by max",
-       title = "variance") + 
+       color = "LR stat",
+       title = expression(sigma^{2}+tau^{2})) + 
   theme_bw() + 
-  theme(strip.text.y.left = element_text(angle = 0))
+  theme(strip.text.y.left = element_text(angle = 0)) +
+  theme(legend.key = element_blank(), strip.background = element_rect(colour="black", fill="white") ) +
+  theme(axis.title.x = element_text(size = 7))
+
 
 # spatial variance vs. mean
 spat_var <- ggplot(all_files_df, 
        aes(x = mean, y = sigma.sq, color = LR_stat_scaled)) + 
-  geom_point(size = 2) + 
+  geom_point(size = 1) + 
   facet_grid(dataset_val~., switch = "y") +
   scale_color_viridis(trans = "log10") +
   scale_color_gradient(low = "blue", high = "red") +
   labs(x = "mean logcounts", 
        y = "", 
-       color = "LR stat scaled by max",
-       title = expression(paste("spatial variance ", sigma^{2}))) + 
+       color = "LR stat",
+       title = expression(sigma^{2})) + 
   theme_bw() + 
-  theme(strip.background = element_blank(), strip.text.y = element_blank())
+  theme(strip.background = element_blank(), strip.text.y = element_blank()) +
+  theme(axis.title.x = element_text(size = 7))
 
 nonspat_var <- ggplot(all_files_df, 
        aes(x = mean, y = tau.sq, color = LR_stat_scaled)) + 
-  geom_point(size = 2) + 
+  geom_point(size = 1) + 
   facet_grid(dataset_val~., switch = "y") +
   scale_color_viridis(trans = "log10") +
   scale_color_gradient(low = "blue", high = "red") +
   labs(x = "mean logcounts", 
        y = "", 
-       color = "LR stat scaled by max",
-       title = expression(paste("nonspatial variance ", tau^{2}))) + 
+       color = "LR stat",
+       title = expression(tau^{2})) + 
   theme_bw() + 
-  theme(strip.background = element_blank(), strip.text.y = element_blank())
+  theme(strip.background = element_blank(), strip.text.y = element_blank()) +
+  theme(axis.title.x = element_text(size = 7))
 
 prop <- ggplot(all_files_df, 
        aes(x = mean, y = prop_sv, color = LR_stat_scaled)) + 
-  geom_point(size = 2) + 
+  geom_point(size = 1) + 
   facet_grid(dataset_val~., switch = "y") +
   scale_color_viridis(trans = "log10") +
   scale_color_gradient(low = "blue", high = "red") +
   labs(x = "mean logcounts", 
        y = "", 
-       color = "LR stat scaled by max",
-       title = expression(paste("prop. spatial variance ", sigma^{2}/(sigma^{2}+tau^{2})))) + 
+       color = "LR stat",
+       title = expression(sigma^{2}/(sigma^{2}+tau^{2}))) + 
   theme_bw() + 
-  theme(strip.background = element_blank(), strip.text.y = element_blank())
+  theme(strip.background = element_blank(), strip.text.y = element_blank()) +
+  theme(axis.title.x = element_text(size = 7))
 
-library(patchwork)
+pdf("proposal/fig2.pdf")
 wrap_plots(var, spat_var, nonspat_var, prop, guides="collect",
            ncol=4, nrow=1)
+dev.off()
 ```
 
 
