@@ -10,4 +10,4 @@ load(file = "weights.Rdata")
 weighted_sp_count <- t(weights)*sp_count
 sparkX_weighted <- sparkx(weighted_sp_count,location,X_in=weights,numCores=2,option="mixture")
 
-save(sparkX_unweighted, sparkX_weighted, "spe_simulation_weighted_SPARKX.Rdata")
+save(sparkX_unweighted, sparkX_weighted, file="simulation_weighted_SPARKX.Rdata")
