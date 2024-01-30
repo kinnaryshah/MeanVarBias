@@ -6,13 +6,13 @@ library(dplyr)
 library(ggridges)
 library(here)
 
-load("R/simulations/all_SVGs_2000/spe_simulation_weighted_nnSVG.Rdata")
+load("MeanVarBias/R/simulations/all_SVGs_2000/spe_simulation_weighted_nnSVG.Rdata")
 
 #overlay unweighted and weighted ridge plots
 df_unw <- data.frame(
   rank = rowData(spe_unweighted)$rank,
   mean = rowData(spe_unweighted)$mean,
-  method = rep("unw", 2000) 
+  method = rep("unw", 1000) 
 ) %>% mutate(quantile = findInterval(mean, 
                                      quantile(mean, probs=0:9/10))) %>%
   tibble::rownames_to_column()
@@ -20,7 +20,7 @@ df_unw <- data.frame(
 df_w <- data.frame(
   rank = rowData(spe_weighted)$weighted_rank,
   mean = rowData(spe_weighted)$weighted_mean,
-  method = rep("w", 2000) 
+  method = rep("w", 1000) 
 ) %>% mutate(quantile = findInterval(mean, 
                                      quantile(mean, probs=0:9/10))) %>%
   tibble::rownames_to_column()
@@ -37,10 +37,10 @@ ridge_overlay <- ggplot(df, aes(x = rank, y = quantile)) +
     title = "Ridge plots: effect of weighting on rank"
   ) +
   scale_fill_manual(labels = c("unweighted", "weighted"), values = c("red", "blue")) +
-  coord_cartesian(xlim = c(1, 300)) +
+  coord_cartesian(xlim = c(1, 1000)) +
   theme_bw()
 
-ggsave(here("R", "simulations", "all_SVGs_2000", "ridge_overlay.png"), ridge_overlay)
+ggsave(here("MeanVarBias", "R", "simulations", "all_SVGs_2000", "ridge_overlay.png"), ridge_overlay)
 
 #ridge plots separated by noise and signal for unweighted and weighted
 frac <- round(dim(spe_unweighted)[1]*0.1)*0.1
@@ -68,7 +68,7 @@ rank_separated_unw <- ggplot(df, aes(x = rank, y = quantile)) +
     title = "Signal unweighted"
   ) +
   guides(fill=guide_legend(title="group")) +
-  coord_cartesian(xlim = c(1, 300)) +
+  coord_cartesian(xlim = c(1, 1000)) +
   theme_bw() 
 
 df_w_signal <- df_w %>%
@@ -94,9 +94,9 @@ rank_separated_w <- ggplot(df, aes(x = rank, y = quantile)) +
     title = "Signal weighted"
   )  +
   guides(fill=guide_legend(title="group")) +
-  coord_cartesian(xlim = c(1, 300)) +
+  coord_cartesian(xlim = c(1, 1000)) +
   theme_bw() 
 
 ridge_signal <- wrap_plots(rank_separated_unw, rank_separated_w, nrow=1, guides = "collect") 
 
-ggsave(here("R", "simulations", "all_SVGs_2000", "ridge_signal.png"), ridge_signal)
+ggsave(here("MeanVarBias", "R", "simulations", "all_SVGs_2000", "ridge_signal.png"), ridge_signal)
