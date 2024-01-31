@@ -7,7 +7,7 @@ set.seed(1)
 
 ### GENERATING DATA
 
-#4992 spots and 2000 genes
+#4992 spots and 1000 genes
 
 n_genes <- 1000
 fraction <- 0.5

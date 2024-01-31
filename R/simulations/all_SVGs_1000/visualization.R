@@ -6,7 +6,7 @@ library(dplyr)
 library(ggridges)
 library(here)
 
-load("MeanVarBias/R/simulations/all_SVGs_2000/spe_simulation_weighted_nnSVG.Rdata")
+load("MeanVarBias/R/simulations/all_SVGs_1000/spe_simulation_weighted_nnSVG.Rdata")
 
 #overlay unweighted and weighted ridge plots
 df_unw <- data.frame(
@@ -40,7 +40,7 @@ ridge_overlay <- ggplot(df, aes(x = rank, y = quantile)) +
   coord_cartesian(xlim = c(1, 1000)) +
   theme_bw()
 
-ggsave(here("MeanVarBias", "R", "simulations", "all_SVGs_2000", "ridge_overlay.png"), ridge_overlay)
+ggsave(here("MeanVarBias", "R", "simulations", "all_SVGs_1000", "ridge_overlay.png"), ridge_overlay)
 
 #ridge plots separated by noise and signal for unweighted and weighted
 frac <- round(dim(spe_unweighted)[1]*0.1)*0.1
@@ -99,4 +99,4 @@ rank_separated_w <- ggplot(df, aes(x = rank, y = quantile)) +
 
 ridge_signal <- wrap_plots(rank_separated_unw, rank_separated_w, nrow=1, guides = "collect") 
 
-ggsave(here("MeanVarBias", "R", "simulations", "all_SVGs_2000", "ridge_signal.png"), ridge_signal)
+ggsave(here("MeanVarBias", "R", "simulations", "all_SVGs_1000", "ridge_signal.png"), ridge_signal)
