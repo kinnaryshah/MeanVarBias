@@ -25,21 +25,22 @@ ground_truth_rank <- rank(-sigma.sq)
 #all genes will have nonzero beta values
 #sampled from DLPFC dataset to get more realistic distribution of marginal means
 
+#normalizing (not log) transformation
+spe_demo <- logNormCounts(spe_demo, transform = "none")
+
 #calculate the marginal means of all genes
-marginal_means <- rowMeans(counts(spe_demo))
+marginal_means <- rowMeans(normcounts(spe_demo))
 
 #remove outliers
-marginal_means <- marginal_means[rowMeans(counts(spe_demo)) < 15]
+marginal_means <- marginal_means[rowMeans(normcounts(spe_demo)) < 10]
 
-beta <- sample(log(marginal_means+1), 2000)
+beta <- sample(log(marginal_means+1), n_genes)
 
 #choose fixed length scale parameter (~medium from nnSVG paper)
 
 scale_length <- 200
 
 params <- data.frame(sigma.sq, beta)
-
-plot(beta, sigma.sq)
 
 #sampling from a poisson distribution - mean controls variance, so we don't specify tau.sq:
 #step 1: use ST example distance matrix instead of creating a new one (Euclidean distance)
