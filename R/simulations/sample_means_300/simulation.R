@@ -25,11 +25,14 @@ ground_truth_rank <- rank(-sigma.sq)
 #all genes will have nonzero beta values
 #sampled from DLPFC dataset to get more realistic distribution of marginal means
 
+#normalizing (not log) transformation
+norm_counts <- normalizeCounts(spe_demo)
+
 #calculate the marginal means of all genes
-marginal_means <- rowMeans(counts(spe_demo))
+marginal_means <- rowMeans(norm_counts)
 
 #remove outliers
-marginal_means <- marginal_means[rowMeans(counts(spe_demo)) < 15]
+marginal_means <- marginal_means[rowMeans(counts(spe_demo)) < 6]
 
 beta <- sample(log(marginal_means+1), n_genes)
 
