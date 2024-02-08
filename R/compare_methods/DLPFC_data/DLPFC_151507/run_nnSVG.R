@@ -19,15 +19,19 @@ dim(spe)
 
 set.seed(123)
 runtime <- system.time({
-  spe <- nnSVG(
-    spe,
-    X = NULL,
-    assay_name = "logcounts",
-    n_neighbors = 10,
-    order = "AMMD",
-    n_threads = 10,
-    verbose = FALSE
-  )
+  tryCatch({
+    spe <- nnSVG(
+      spe,
+      X = NULL,
+      assay_name = "logcounts",
+      n_neighbors = 10,
+      order = "AMMD",
+      n_threads = 10,
+      verbose = FALSE
+    )
+  }, error = function(e) {
+    print(paste("Error:", e$message))
+  })
 })
 
 file = "spe_nnSVG.rds"
