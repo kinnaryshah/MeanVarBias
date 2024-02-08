@@ -1,6 +1,9 @@
 library(scran)
 library(spatialDE)
 library(SpatialExperiment)
+library(reticulate)
+
+use_virtualenv("~/myenv")
 
 fn <- ("../../../simulations/sample_means_300/spe_simulation.rds") 
 
