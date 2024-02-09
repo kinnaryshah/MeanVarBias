@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --cpus-per-task=10
-#SBATCH --mem-per-cpu=10G
+#SBATCH --mem-per-cpu=5G
 #SBATCH --mail-type=END
 #SBATCH --mail-user=kinnaryshahh@gmail.com
 
