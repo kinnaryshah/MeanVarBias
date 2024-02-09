@@ -10,11 +10,9 @@ spe <- spe[, spe$sample_id == "151507"]
 spe <- spe[, !is.na(unfactor(colData(spe)$spatialLIBD))]
 dim(spe)
 
-## Remove genes with no data
-no_expr <- which(rowSums(counts(spe)) <=5)
-length(no_expr)
-length(no_expr) / nrow(spe) * 100
-spe <- spe[-no_expr, ]
+## Remove genes without enough data
+spe <- filter_genes(spe, 2, 0.2)
+
 dim(spe)
 
 set.seed(123)
