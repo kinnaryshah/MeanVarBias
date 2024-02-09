@@ -2,10 +2,17 @@ library(SpatialExperiment)
 library(Rfast2)
 library(BiocParallel)
 library(scran)
+library(spatialLIBD)
+library(nnSVG)
 
-fn <- ("../../../simulations/sample_means_300/spe_simulation.rds") 
+#already contains logcounts
+spe <- fetch_data(type = "spe")
 
-spe <- readRDS(fn)
+spe <- spe[, spe$sample_id == "151507"]
+spe <- spe[, !is.na(unfactor(colData(spe)$spatialLIBD))]
+
+## Remove genes without enough data
+spe <- filter_genes(spe, 2, 0.2)
 
 dim(spe)
 

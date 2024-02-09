@@ -8,7 +8,9 @@ spe <- fetch_data(type = "spe")
 
 spe <- spe[, spe$sample_id == "151507"]
 spe <- spe[, !is.na(unfactor(colData(spe)$spatialLIBD))]
-#spe <- filter_genes(spe)
+
+## Remove genes without enough data
+spe <- filter_genes(spe, 2, 0.2)
 
 dim(spe)
 
