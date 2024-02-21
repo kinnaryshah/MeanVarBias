@@ -6,7 +6,7 @@ library(scuttle)
 library(Matrix)
 library(spoon)
 
-fn <- (file = "mean_var_project/spe_V10B01_086_B1_HPC.rds")
+fn <- (file = "~/mean_var_project/spe_V10B01_086_B1_HPC.rds")
 
 spe <- readRDS(fn)
 
