@@ -6,12 +6,7 @@ library(scuttle)
 library(Matrix)
 library(spoon)
 
-spe <- readVisium("~/ovarian_cancer_forrest/outs")
-
-dim(spe)
-
-## Remove genes without enough data
-spe <- filter_genes(spe, 2, 0.2)
+spe <- read10xVisium("~/ovarian_cancer_forrest/outs")
 
 dim(spe)
 
