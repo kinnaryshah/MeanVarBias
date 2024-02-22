@@ -8,6 +8,16 @@ library(spoon)
 
 spe <- read10xVisium("~/ovarian_cancer_forrest/outs")
 
+#row data did not load in the proper format
+rowData(spe)$gene_id <- rownames(spe)
+rowData(spe)$gene_name <- rowData(spe)$symbol
+rowData(spe)$symbol <- NULL
+
+dim(spe)
+
+## Remove genes without enough data
+spe <- filter_genes(spe, 2, 0.2)
+
 dim(spe)
 
 spe <- logNormCounts(spe)
