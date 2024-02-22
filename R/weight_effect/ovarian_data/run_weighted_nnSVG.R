@@ -26,6 +26,8 @@ weights <- generate_weights(input = spe,
                             stabilize = TRUE,
                             BPPARAM = MulticoreParam(workers = 10,
                                                      RNGseed = 4))
+print(dim(weights))
+saveRDS(weights, file = "weights.rds")
 
 spe <- weighted_nnSVG(input = spe,
                       w = weights,
