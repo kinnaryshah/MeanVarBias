@@ -15,6 +15,10 @@ rowData(spe)$symbol <- NULL
 
 dim(spe)
 
+#convert counts matrix from DelayedArray to matrix
+#weighted_nnSVG requires a matrix for calculating weighted_logcounts matrix
+counts(spe) <- as.matrix(counts(spe))
+
 ## Remove genes without enough data
 spe <- filter_genes(spe, 2, 0.2)
 
