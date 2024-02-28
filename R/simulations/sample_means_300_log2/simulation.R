@@ -12,13 +12,14 @@ set.seed(1)
 #4992 spots and 300 genes
 
 n_genes <- 300
-fraction <- 0.6
+fraction <- 0.5
 max_sigma.sq <- 1
 
-#some genes have some nonzero sigma.sq
-#most genes have zero sigma.sq
+#check if integer
+stopifnot(n_genes*fraction*0.5 == round(n_genes*fraction*0.5))
+
+#all genes have some nonzero sigma.sq
 sigma.sq <- runif(n_genes, 0.2, max_sigma.sq)
-sigma.sq[sample(1:n_genes, round(n_genes*fraction))] <- 0
 ground_truth_rank <- rank(-sigma.sq)
 
 #all genes will have nonzero beta values
