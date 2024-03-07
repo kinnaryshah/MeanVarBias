@@ -111,6 +111,14 @@ df_background <- df[-indices,] %>%
 
 df <- rbind(df_signal, df_background)
 
+# summarize the means of the ranks of "signal" groups within each "quantile"
+# and the means of the ranks of "background" groups within each "quantile"
+# and store the results in a new data frame
+df_rank_means_weighted <- df %>%
+  group_by(quantile, grp) %>%
+  summarize(mean = mean(rank)) %>%
+  ungroup()
+
 weighted_ridge_unw_mean <- ggplot(df, aes(x = rank, y = range)) +
   geom_density_ridges2(aes(fill = grp), rel_min_height = 0.02, alpha = 0.3,
                        stat = "binline", bins = 75, draw_baseline = FALSE) +
@@ -166,6 +174,14 @@ df_background <- df[-indices,] %>%
 
 df <- rbind(df_signal, df_background)
 
+# summarize the means of the ranks of "signal" groups within each "quantile"
+# and the means of the ranks of "background" groups within each "quantile"
+# and store the results in a new data frame
+df_rank_means_unweighted <- df %>%
+  group_by(quantile, grp) %>%
+  summarize(mean = mean(rank)) %>%
+  ungroup()
+
 unweighted_ridge <- ggplot(df, aes(x = rank, y = range)) +
   geom_density_ridges2(aes(fill = grp), rel_min_height = 0.02, alpha = 0.3,
                        stat = "binline", bins = 75, draw_baseline = FALSE) +
@@ -185,3 +201,22 @@ wrap_plots(list(weighted_ridge_combined_w_mean, unweighted_ridge_combined), ncol
 wrap_plots(list(weighted_ridge_unw_mean, unweighted_ridge), ncol = 2, guides = 'collect')
 wrap_plots(list(weighted_ridge_combined_unw_mean, unweighted_ridge_combined), ncol = 2, guides = 'collect')
 dev.off()
+
+# make the "mean" columns of "df_rank_means_weighted" change to  "rank_mean_weighted
+# make the "mean" columns of "df_rank_means_unweighted" change to and "rank_mean_unweighted
+df_rank_means_weighted <- df_rank_means_weighted %>% 
+  rename(rank_mean_weighted = mean)
+
+df_rank_means_unweighted <- df_rank_means_unweighted %>%
+  rename(rank_mean_unweighted = mean)
+
+df_rank_means <- df_rank_means_weighted
+df_rank_means$rank_mean_unweighted <- df_rank_means_unweighted$rank_mean_unweighted
+
+# create a new column called "diff" with numeric values
+# this new column contains the difference between "rank_mean_weighted" and "rank_mean_unweighted" values
+df_rank_means <- df_rank_means %>% 
+  mutate(diff = rank_mean_weighted - rank_mean_unweighted)
+
+
+
