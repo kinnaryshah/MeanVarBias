@@ -20,6 +20,11 @@ rowData(spe)$symbol <- NULL
 
 dim(spe)
 
+#removes 94 spots not in tissue
+spe <- spe[, colData(spe)$in_tissue == 1]
+
+dim(spe)
+
 #convert counts matrix from sparse matrix to matrix
 #weighted_nnSVG requires a matrix for calculating weighted_logcounts matrix
 counts(spe) <- as.matrix(counts(spe))
