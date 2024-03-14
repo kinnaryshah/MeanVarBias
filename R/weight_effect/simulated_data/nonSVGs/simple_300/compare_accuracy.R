@@ -51,18 +51,18 @@ mean(subset_ranks)
 # [1] 60.5
 
 # define false positives and false negatives
-false_positives_unweighted <- sum(unweighted_rank > true_rank)
-false_negatives_unweighted <- sum(unweighted_rank < true_rank)
+false_positives_unweighted <- sum(unweighted_rank < true_rank)
+false_negatives_unweighted <- sum(unweighted_rank > true_rank)
 
-false_positives_weighted <- sum(weighted_rank > true_rank)
-false_negatives_weighted <- sum(weighted_rank < true_rank)
+false_positives_weighted <- sum(weighted_rank < true_rank)
+false_negatives_weighted <- sum(weighted_rank > true_rank)
 
 false_positives_unweighted; false_positives_weighted
-# [1] 153
-# [1] 166
-false_negatives_unweighted; false_negatives_weighted
 # [1] 141
 # [1] 131
+false_negatives_unweighted; false_negatives_weighted
+# [1] 153
+# [1] 166
 
 # define false positives as the number of genes with sigma.sq = 0 that are ranked lower than the 300 - number of genes with sigma.sq = 0
 
