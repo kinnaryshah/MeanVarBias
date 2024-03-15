@@ -9,18 +9,14 @@ set.seed(1)
 
 ### GENERATING DATA
 
-#4992 spots and 300 genes
+#4992 spots and 1000 genes
 
-n_genes <- 300
-fraction <- 0.6
+n_genes <- 1000
 max_sigma.sq <- 1
 low_range_beta <- c(0.5,1)
 
-#some genes have some nonzero sigma.sq
-#most genes have zero sigma.sq
-sigma.sq <- runif(n_genes, 0.2, max_sigma.sq)
-sigma.sq[sample(1:n_genes, round(n_genes*fraction))] <- 0
-ground_truth_rank <- rank(-sigma.sq)
+#all genes have zero sigma.sq
+sigma.sq <- rep(0, n_genes)
 
 #all genes will have nonzero beta values
 beta <- runif(n_genes, log(low_range_beta[1]), log(low_range_beta[2]))
@@ -91,7 +87,6 @@ spe <- SpatialExperiment(
   assays = list(counts = counts),
   spatialCoords = points_coord)
 
-rowData(spe)$ground_truth_rank <- ground_truth_rank
 rowData(spe)$ground_truth_sigma.sq <- sigma.sq
 rowData(spe)$ground_truth_beta <- beta
 
