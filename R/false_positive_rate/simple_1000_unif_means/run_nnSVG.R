@@ -6,7 +6,7 @@ library(scuttle)
 library(Matrix)
 library(spoon)
 
-fn <- ("../../../../simulations/nonSVGs/simple_1000_unif_means/spe_simulation.rds")
+fn <- ("../../simulations/nonSVGs/simple_1000_unif_means/spe_simulation.rds")
 
 spe <- readRDS(fn)
 
