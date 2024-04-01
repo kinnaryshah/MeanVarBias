@@ -27,7 +27,6 @@ rowData(spe)$norm_mean <- rowMeans(normcounts(spe))
 rowData(spe)$log_mean <- rowMeans(logcounts(spe))
 
 # use ggplot to plot densities of the marginal distributions of the logcounts
-# for the HPC and ovarian datasets on the same plot
 df <- data.frame(
   means <- c(rowData(spe)$norm_mean, rowData(spe_sim)$norm_mean),
   dataset <- c(rep("DLPFC", dim(spe)[1]), rep("simulated", dim(spe_sim)[1]))
@@ -38,7 +37,7 @@ p1 <- ggplot(df, aes(x = means, fill = dataset)) +
   theme_minimal() +
   labs(
     title = "Marginal distributions of norm counts",
-    x = "mean of logcounts",
+    x = "mean of normcounts",
     y = "density"
   )
 
@@ -89,7 +88,7 @@ p4 <- ggplot(df, aes(x = pxl_col_in_fullres, y = pxl_row_in_fullres,
   scale_y_reverse() + 
   scale_color_gradient(low = "gray90", high = "blue", 
                        trans = "sqrt", breaks = range(df$expr), 
-                       name = "counts") + 
+                       name = "logcounts") + 
   ggtitle("example of length scale = 200") + 
   theme_bw() + 
   theme(plot.title = element_text(face = "italic"), 
@@ -97,9 +96,6 @@ p4 <- ggplot(df, aes(x = pxl_col_in_fullres, y = pxl_row_in_fullres,
         axis.title = element_blank(), 
         axis.text = element_blank(), 
         axis.ticks = element_blank())
-
-# plot the gene expression of the gene in spe_sim and spe
-p3 <- plot_gene_expression(spe_sim, gene, "simulated")
 
 pdf("vis_marginal_distributions.pdf", width = 21, height = 20)
 p1
