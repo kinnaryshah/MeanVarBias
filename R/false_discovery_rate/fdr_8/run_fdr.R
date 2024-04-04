@@ -190,6 +190,7 @@ for (i in 1:length(alpha_levels)) {
 df <- data.frame(alpha = alpha_levels, fdr_unweighted = fdr_unweighted, fdr_weighted = fdr_weighted)
 df <- tidyr::gather(df, model, FDR, -alpha)
 
+library(ggplot2)
 ggplot(df, aes(x = alpha, y = FDR, color = model)) +
   geom_line() +
   geom_point() +
