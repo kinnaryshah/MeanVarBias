@@ -181,9 +181,9 @@ for (i in 1:length(alpha_levels)) {
   rowData(spe_weighted)$SVG = rowData(spe_weighted)$ground_truth_sigma.sq != 0
   
   total_genes_weighted <- dim(spe_weighted)[1]
-  false_positives_weighted <- sum(rowData(spe_weighted)$pos_test & !rowData(spe_weighted)$SVG)
+  false_positives_weighted <- sum(rowData(spe_weighted)$pos_test & !rowData(spe_weighted)$SVG,na.rm=T)
   
-  fdr_weighted[i] <- false_positives_weighted / sum(rowData(spe_weighted)$pos_test)
+  fdr_weighted[i] <- false_positives_weighted / sum(rowData(spe_weighted)$pos_test,na.rm=T)
 }
 
 # plot using ggplot2
@@ -199,4 +199,5 @@ ggplot(df, aes(x = alpha, y = FDR, color = model)) +
        color = "Model") +
   theme_bw()
 
+library(ggplot2)
 ggsave("FDR_vs_alpha.png")
