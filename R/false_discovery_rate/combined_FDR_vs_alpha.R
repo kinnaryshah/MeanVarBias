@@ -80,7 +80,9 @@ p <- ggplot(df, aes(x = alpha)) +
   facet_wrap(~fdr) +
   theme_minimal() +
   theme(axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0))) +
-  scale_y_continuous(limits = c(0, 0.2)) 
+  scale_y_continuous(limits = c(0, 0.2)) +
+  scale_y_continuous(sec.axis = sec_axis(~ . , name = "increasing beta range -->", breaks = NULL, labels = NULL)) +
+  scale_x_continuous(sec.axis = sec_axis(~ . , name = "increasing sigma.sq range -->", breaks = NULL, labels = NULL))
 
 # save the plot
 ggsave("combined_FDR_vs_alpha.png", p, width = 10, height = 10)
