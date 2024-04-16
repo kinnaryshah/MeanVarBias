@@ -197,16 +197,15 @@ create_p_val_df <- function(spe_unweighted, spe_weighted) {
   # UNWEIGHTED
   
   # Sort unadjusted p-values and calculate FDR
-  sorted_p_values_unweighted <- sort(rowData(spe_unweighted)$pval)
+  p_values_unweighted <- rowData(spe_unweighted)$pval
   
   # WEIGHTED
   
   # Sort unadjusted p-values and calculate FDR
-  pvalues_weighted <- 1 - pchisq(rowData(spe_weighted)$weighted_LR_stat, df = 2)
-  sorted_p_values_weighted <- sort(pvalues_weighted, na.last = TRUE)
+  p_values_weighted <- 1 - pchisq(rowData(spe_weighted)$weighted_LR_stat, df = 2)
   
-  df <- data.frame(sorted_p_values_weighted = sorted_p_values_weighted,
-                   sorted_p_values_unweighted = sorted_p_values_unweighted)
+  df <- data.frame(p_values_weighted = p_values_weighted,
+                   p_values_unweighted = p_values_unweighted)
   
   return(df)
 }
@@ -241,43 +240,16 @@ df <- rbind(df, df_temp)
 # x axis is the p value
 # y axis is the density
 # color the lines by the model type (unweighted or weighted)
-sub_df <- df[df$sim == 1, ]
-
-p1 <- ggplot(sub_df, aes(x = sorted_p_values_unweighted)) +
-  geom_histogram(aes(y = ..density..), bins = 50, color = "black", fill = "blue", alpha = 0.5) +
-  labs(title = "P-value distribution for unweighted model",
-       x = "P-value",
-       y = "Density") +
-  theme_bw()
-
-p2 <- ggplot(sub_df, aes(x = sorted_p_values_weighted)) +
-  geom_histogram(aes(y = ..density..), bins = 50, color = "black", fill = "blue", alpha = 0.5) +
-  labs(title = "P-value distribution for weighted model",
-       x = "P-value",
-       y = "Density") +
-  theme_bw()
-
-# save the plots together
-pdf("p_val_distributions_sim1.pdf")
-print(p1)
-print(p2)
-dev.off()
-
-# plot p value distributions for sim 9 only
-# two separate plots for weighted and unweighted
-# x axis is the p value
-# y axis is the density
-# color the lines by the model type (unweighted or weighted)
 sub_df <- df[df$sim == 9, ]
 
-p1 <- ggplot(sub_df, aes(x = sorted_p_values_unweighted)) +
+p1 <- ggplot(sub_df, aes(x = p_values_unweighted)) +
   geom_histogram(aes(y = ..density..), bins = 50, color = "black", fill = "blue", alpha = 0.5) +
   labs(title = "P-value distribution for unweighted model",
        x = "P-value",
        y = "Density") +
   theme_bw()
 
-p2 <- ggplot(sub_df, aes(x = sorted_p_values_weighted)) +
+p2 <- ggplot(sub_df, aes(x = p_values_weighted)) +
   geom_histogram(aes(y = ..density..), bins = 50, color = "black", fill = "blue", alpha = 0.5) +
   labs(title = "P-value distribution for weighted model",
        x = "P-value",
@@ -285,10 +257,11 @@ p2 <- ggplot(sub_df, aes(x = sorted_p_values_weighted)) +
   theme_bw()
 
 # save the plots together
-pdf("p_val_distributions_sim9.pdf")
+pdf("p_val_distributions_unfiltered_sim9.pdf")
 print(p1)
 print(p2)
 dev.off()
+
 
 create_filtered_p_val_df <- function(spe_unweighted, spe_weighted) {
   
@@ -363,33 +336,4 @@ pdf("p_val_distributions_sim1_filtered.pdf")
 print(p1)
 print(p2)
 dev.off()
-
-# plot p value distributions for sim 9 only
-# two separate plots for weighted and unweighted
-# x axis is the p value
-# y axis is the density
-# color the lines by the model type (unweighted or weighted)
-sub_df <- df[df$sim == 9, ]
-
-p1 <- ggplot(sub_df, aes(x = sorted_p_values_unweighted)) +
-  geom_histogram(aes(y = ..density..), bins = 50, color = "black", fill = "blue", alpha = 0.5) +
-  labs(title = "P-value distribution for unweighted model",
-       x = "P-value",
-       y = "Density") +
-  theme_bw()
-
-p2 <- ggplot(sub_df, aes(x = sorted_p_values_weighted)) +
-  geom_histogram(aes(y = ..density..), bins = 50, color = "black", fill = "blue", alpha = 0.5) +
-  labs(title = "P-value distribution for weighted model",
-       x = "P-value",
-       y = "Density") +
-  theme_bw()
-
-# save the plots together
-pdf("p_val_distributions_sim9_filtered.pdf")
-print(p1)
-print(p2)
-dev.off()
-
-
 
