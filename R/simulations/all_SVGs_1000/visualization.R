@@ -6,7 +6,7 @@ library(dplyr)
 library(ggridges)
 library(here)
 
-load("MeanVarBias/R/simulations/all_SVGs_1000/spe_simulation_weighted_nnSVG.Rdata")
+load("spe_simulation_weighted_nnSVG.Rdata")
 
 #overlay unweighted and weighted ridge plots
 df_unw <- data.frame(
@@ -17,6 +17,27 @@ df_unw <- data.frame(
                                      quantile(mean, probs=0:9/10))) %>%
   tibble::rownames_to_column()
 
+# test if rank is uniformly distributed in each quantile using qqplot
+
+qqplot_positive <- function(df, quantile){
+  df <- data.frame(observed = sort(df$rank[df$quantile == quantile]),
+                   expected = sort(qunif(ppoints(length(df$rank[df$quantile == quantile])), min = 0, max = 1000)))
+  
+  ggplot(df, aes(x = expected, y = observed)) +
+    geom_point() +
+    geom_abline(intercept = 0, slope = 1, color = "red") +
+    labs(x = "Theoretical Quantiles (Uniform Distribution)",
+         y = "Sample Quantiles",
+         title = paste("QQ Plot Quantile", quantile)) +
+    ylim(0, 1000) 
+}
+
+pdf("qqplot_positive_sim_unweighted.pdf", width = 21, height = 20)
+for (i in 1:10){
+  print(qqplot_positive(df_unw, i))
+}
+dev.off()
+
 df_w <- data.frame(
   rank = rowData(spe_weighted)$weighted_rank,
   mean = rowData(spe_weighted)$weighted_mean,
@@ -24,6 +45,12 @@ df_w <- data.frame(
 ) %>% mutate(quantile = findInterval(mean, 
                                      quantile(mean, probs=0:9/10))) %>%
   tibble::rownames_to_column()
+
+pdf("qqplot_positive_sim_weighted.pdf", width = 21, height = 20)
+for (i in 1:10){
+  print(qqplot_positive(df_w, i))
+}
+dev.off()
 
 df <- rbind(df_unw, df_w) %>% 
   mutate(quantile = as.factor(quantile))

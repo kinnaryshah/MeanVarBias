@@ -20,6 +20,27 @@ df <- data.frame(
                                      quantile(mean, probs=0:9/10))) %>%
   tibble::rownames_to_column()
 
+# test if rank is uniformly distributed in each quantile using qqplot
+
+qqplot_positive <- function(df, quantile){
+  df <- data.frame(observed = sort(df$rank[df$quantile == quantile]),
+                   expected = sort(qunif(ppoints(length(df$rank[df$quantile == quantile])), min = 0, max = 1000)))
+  
+  ggplot(df, aes(x = expected, y = observed)) +
+    geom_point() +
+    geom_abline(intercept = 0, slope = 1, color = "red") +
+    labs(x = "Theoretical Quantiles (Uniform Distribution)",
+         y = "Sample Quantiles",
+         title = paste("QQ Plot Quantile", quantile)) +
+    ylim(0, 1000) 
+}
+
+pdf("qqplot_negative_sim_weighted.pdf", width = 21, height = 20)
+for (i in 1:10){
+  print(qqplot_positive(df, i))
+}
+dev.off()
+
 # create a new column called "range" with string values
 # this new column contains the range of "mean" values for each "quantile" value
 df <- df %>% 
@@ -76,6 +97,13 @@ df <- data.frame(
 ) %>% mutate(quantile = findInterval(mean, 
                                      quantile(mean, probs=0:9/10))) %>%
   tibble::rownames_to_column()
+
+# test if rank is uniformly distributed in each quantile using qqplot
+pdf("qqplot_negative_sim_unweighted.pdf", width = 21, height = 20)
+for (i in 1:10){
+  print(qqplot_positive(df, i))
+}
+dev.off()
 
 # create a new column called "range" with string values
 # this new column contains the range of "mean" values for each "quantile" value
