@@ -1,0 +1,136 @@
+Loading conda_R/4.3.x
+Loading required package: SingleCellExperiment
+Loading required package: SummarizedExperiment
+Loading required package: MatrixGenerics
+Loading required package: matrixStats
+
+Attaching package: ‘MatrixGenerics’
+
+The following objects are masked from ‘package:matrixStats’:
+
+    colAlls, colAnyNAs, colAnys, colAvgsPerRowSet, colCollapse,
+    colCounts, colCummaxs, colCummins, colCumprods, colCumsums,
+    colDiffs, colIQRDiffs, colIQRs, colLogSumExps, colMadDiffs,
+    colMads, colMaxs, colMeans2, colMedians, colMins, colOrderStats,
+    colProds, colQuantiles, colRanges, colRanks, colSdDiffs, colSds,
+    colSums2, colTabulates, colVarDiffs, colVars, colWeightedMads,
+    colWeightedMeans, colWeightedMedians, colWeightedSds,
+    colWeightedVars, rowAlls, rowAnyNAs, rowAnys, rowAvgsPerColSet,
+    rowCollapse, rowCounts, rowCummaxs, rowCummins, rowCumprods,
+    rowCumsums, rowDiffs, rowIQRDiffs, rowIQRs, rowLogSumExps,
+    rowMadDiffs, rowMads, rowMaxs, rowMeans2, rowMedians, rowMins,
+    rowOrderStats, rowProds, rowQuantiles, rowRanges, rowRanks,
+    rowSdDiffs, rowSds, rowSums2, rowTabulates, rowVarDiffs, rowVars,
+    rowWeightedMads, rowWeightedMeans, rowWeightedMedians,
+    rowWeightedSds, rowWeightedVars
+
+Loading required package: GenomicRanges
+Loading required package: stats4
+Loading required package: BiocGenerics
+
+Attaching package: ‘BiocGenerics’
+
+The following objects are masked from ‘package:stats’:
+
+    IQR, mad, sd, var, xtabs
+
+The following objects are masked from ‘package:base’:
+
+    anyDuplicated, aperm, append, as.data.frame, basename, cbind,
+    colnames, dirname, do.call, duplicated, eval, evalq, Filter, Find,
+    get, grep, grepl, intersect, is.unsorted, lapply, Map, mapply,
+    match, mget, order, paste, pmax, pmax.int, pmin, pmin.int,
+    Position, rank, rbind, Reduce, rownames, sapply, setdiff, sort,
+    table, tapply, union, unique, unsplit, which.max, which.min
+
+Loading required package: S4Vectors
+
+Attaching package: ‘S4Vectors’
+
+The following object is masked from ‘package:utils’:
+
+    findMatches
+
+The following objects are masked from ‘package:base’:
+
+    expand.grid, I, unname
+
+Loading required package: IRanges
+Loading required package: GenomeInfoDb
+Loading required package: Biobase
+Welcome to Bioconductor
+
+    Vignettes contain introductory material; view with
+    'browseVignettes()'. To cite Bioconductor, see
+    'citation("Biobase")', and for packages 'citation("pkgname")'.
+
+
+Attaching package: ‘Biobase’
+
+The following object is masked from ‘package:MatrixGenerics’:
+
+    rowMedians
+
+The following objects are masked from ‘package:matrixStats’:
+
+    anyMissing, rowMedians
+
+Loading required package: ExperimentHub
+Loading required package: AnnotationHub
+Loading required package: BiocFileCache
+Loading required package: dbplyr
+
+Attaching package: ‘AnnotationHub’
+
+The following object is masked from ‘package:Biobase’:
+
+    cache
+
+see ?STexampleData and browseVignettes('STexampleData') for documentation
+loading from cache
+[1] 1
+[1] "2.21253659529611 -0.661111302896995"
+[1] 2
+[1] "2.8752839458175 0.0519541444243946"
+[1] 3
+[1] "0 0.0035012616975999"
+[1] 4
+[1] "0 -0.0530989410772551"
+[1] 5
+[1] "0 0.613934273262055"
+[1] 6
+[1] "0 1.06294919279919"
+[1] 7
+[1] "0 0.409690773547937"
+[1] 8
+[1] "0 0.313540074652463"
+[1] 9
+[1] "0 -0.187264025652264"
+[1] 10
+[1] "1.12895359052345 -0.332841385162591"
+[1] 11
+[1] "2.28714553033933 0.707153019715657"
+[1] 12
+[1] "0 0.067253734229757"
+[1] 13
+[1] "1.19046516157687 0.437107190730963"
+[1] 14
+[1] "0 -0.271186711753588"
+[1] 15
+[1] "0 -0.41592947297193"
+[1] 16
+[1] "1.51178705180064 0.396424929232073"
+[1] 17
+[1] "2.03579145204276 0.555398670522945"
+[1] 18
+[1] "0 -0.0488531616409585"
+[1] 19
+[1] "0 -0.0130857976736646"
+[1] 20
+[1] "2.4010520898737 0.442848930616896"
+[1] 21
+[1] "2.91598506970331 -0.427770883342128"
+[1] 22
+[1] "0 0.906004475992293"
+[1] 23
+[1] "1.23855760600418 0.991643707585926"
