@@ -1,0 +1,201 @@
+```{r}
+
+library(SpatialExperiment)
+library(spatialLIBD)
+library(ggplot2)
+
+spe_weighted <- readRDS("reps_high_range_sigma.sq_high_beta_1000_genes_SVG_percentages_subset/50_percent_nonSVGs/spe_weighted_nnSVG_3.rds")
+spe_unweighted <- readRDS("reps_high_range_sigma.sq_high_beta_1000_genes_SVG_percentages_subset/50_percent_nonSVGs/spe_nnSVG_3.rds")
+
+adj_p_values_weighted <- p.adjust(1 - pchisq(rowData(spe_weighted)$weighted_LR_stat, df=2), method = "BH")
+rowData(spe_weighted)$weighted_padj <- adj_p_values_weighted
+# guiding question: understanding the difference between the weighted and unweighted simulations. why is the weighted simulation more conservative and lower TNR? why does the unweighted simulation capture the SVGs perfectly?
+
+```
+
+```{r}
+# make a 2x2 table of SVGs with high and low mean and high and low sigma.sq
+
+# find mean of ground_truth_sigma.sq for nonzero values
+nonzero_mean <- mean(rowData(spe_unweighted)$ground_truth_sigma.sq[rowData(spe_unweighted)$ground_truth_sigma.sq > 0], na.rm = TRUE)
+
+# find mean of mean  
+mean_mean <- mean(rowData(spe_unweighted)$mean, na.rm = TRUE)
+
+svg_high_mean_high_sigma_sq <- sum(rowData(spe_unweighted)$ground_truth_sigma.sq > 0 & rowData(spe_unweighted)$ground_truth_sigma.sq > nonzero_mean & rowData(spe_unweighted)$mean > mean_mean, na.rm = TRUE)
+svg_high_mean_low_sigma_sq <- sum(rowData(spe_unweighted)$ground_truth_sigma.sq > 0 & rowData(spe_unweighted)$ground_truth_sigma.sq < nonzero_mean & rowData(spe_unweighted)$mean > mean_mean, na.rm = TRUE)
+svg_low_mean_high_sigma_sq <- sum(rowData(spe_unweighted)$ground_truth_sigma.sq > 0 & rowData(spe_unweighted)$ground_truth_sigma.sq > nonzero_mean & rowData(spe_unweighted)$mean < mean_mean, na.rm = TRUE)
+svg_low_mean_low_sigma_sq <- sum(rowData(spe_unweighted)$ground_truth_sigma.sq > 0 & rowData(spe_unweighted)$ground_truth_sigma.sq < nonzero_mean & rowData(spe_unweighted)$mean < mean_mean, na.rm = TRUE)
+
+svg_table <- matrix(c(svg_high_mean_high_sigma_sq, svg_high_mean_low_sigma_sq, svg_low_mean_high_sigma_sq, svg_low_mean_low_sigma_sq), nrow = 2, byrow = TRUE)
+
+svg_table
+
+```
+
+```{r}
+# are the weighted and unweighted simulations capturing the same SVGs?
+tp_unweighted <- which(rowData(spe_unweighted)$ground_truth_sigma.sq != 0 & rowData(spe_unweighted)$padj <= 0.05)
+tp_weighted <- which(rowData(spe_weighted)$ground_truth_sigma.sq != 0 & rowData(spe_weighted)$weighted_padj <= 0.05)
+
+# are the indices the same? check which indices in tp_unweighted are not in tp_weighted
+length(tp_unweighted)
+length(tp_weighted)
+length(intersect(tp_unweighted, tp_weighted)) # one more TP in weighted
+
+
+# can we investigate the true positives that both are missing?
+```
+
+```{r}
+# are the weighted and unweighted simulations capturing the same non-SVGs?
+tn_unweighted <- rowData(spe_unweighted)$ground_truth_sigma.sq == 0 & rowData(spe_unweighted)$padj > 0.05
+tn_weighted <- rowData(spe_weighted)$ground_truth_sigma.sq == 0 & rowData(spe_weighted)$weighted_padj > 0.05
+    
+sum(tn_unweighted)
+sum(tn_weighted)
+length(intersect(which(tn_unweighted), which(tn_weighted)))
+
+```
+
+```{r}
+# dig more into the differences in true negatives between the weighted and unweighted simulations
+
+# find the gene indices of the true negatives that are not getting captured by the weighted simulation
+tn_unweighted_not_weighted <- which(tn_unweighted & !tn_weighted)
+length(tn_unweighted_not_weighted) # = 52
+
+# find the gene indices of the true negatives that are not getting captured by the unweighted simulation
+tn_weighted_not_unweighted <- which(tn_weighted & !tn_unweighted)
+length(tn_weighted_not_unweighted) # = 2
+
+# find the gene indices of the true negatives that are getting captured by both simulations
+tn_both <- which(tn_weighted & tn_unweighted)
+length(tn_both) # = 444
+
+```
+
+```{r}
+# find the dist of the mean of the true negatives that are not getting captured by the weighted simulation
+fivenum(rowData(spe_unweighted)$mean[tn_unweighted_not_weighted], na.rm = TRUE)
+
+# find the dist of the mean of the true negatives that are not getting captured by the unweighted simulation
+fivenum(rowData(spe_unweighted)$mean[tn_weighted_not_unweighted], na.rm = TRUE)
+
+# find the dist of the mean of the true negatives that are getting captured by both simulations
+fivenum(rowData(spe_unweighted)$mean[tn_both], na.rm = TRUE)
+
+```
+
+```{r}
+# find the distribution of mean weights for the true negatives that are not getting captured by the weighted simulation
+# weights is spots x genes
+weights <- readRDS("reps_high_range_sigma.sq_high_beta_1000_genes_SVG_percentages_subset/50_percent_nonSVGs/weights_3.rds")
+
+fivenum(weights[,tn_unweighted_not_weighted])
+fivenum(weights[,tn_weighted_not_unweighted])
+fivenum(weights[,tn_both])
+
+fivenum(colMeans(weights[,tn_unweighted_not_weighted]))
+colMeans(weights[,tn_weighted_not_unweighted]) # there are only 2 genes
+fivenum(colMeans(weights[,tn_both]))
+
+```
+
+
+```{r}
+# create some spot plots to visualize the differences 
+for (ix in tn_weighted_not_unweighted) {
+ df <- as.data.frame(cbind(spatialCoords(spe_unweighted), expr = logcounts(spe_unweighted)[ix, ]))
+ print(ggplot(df, aes(x = pxl_col_in_fullres, y = pxl_row_in_fullres, 
+                color = expr)) + 
+   geom_point(size = 2) + 
+   coord_fixed() + 
+   scale_y_reverse() + 
+   scale_color_viridis_c(name = "logcounts") + 
+   ggtitle("") + 
+   theme_bw() + 
+   theme(plot.title = element_text(face = "italic"), 
+         panel.grid = element_blank(), 
+         axis.title = element_blank(), 
+         axis.text = element_blank(), 
+         axis.ticks = element_blank())
+ )
+}
+
+```
+```{r}
+# create some spot plots to visualize the differences 
+for (ix in tn_unweighted_not_weighted) {
+ df <- as.data.frame(cbind(spatialCoords(spe_unweighted), expr = logcounts(spe_unweighted)[ix, ]))
+ print(ggplot(df, aes(x = pxl_col_in_fullres, y = pxl_row_in_fullres, 
+                color = expr)) + 
+   geom_point(size = 2) + 
+   coord_fixed() + 
+   scale_y_reverse() + 
+   scale_color_viridis_c(name = "logcounts") + 
+   ggtitle("") + 
+   theme_bw() + 
+   theme(plot.title = element_text(face = "italic"), 
+         panel.grid = element_blank(), 
+         axis.title = element_blank(), 
+         axis.text = element_blank(), 
+         axis.ticks = element_blank())
+ )
+}
+
+```
+
+
+```{r}
+# create some spot plots to visualize the differences 
+# sample 20 genes that are getting captured by both simulations
+set.seed(1)
+ixs <- sample(tn_both, 20)
+
+for (ix in ixs) {
+ df <- as.data.frame(cbind(spatialCoords(spe_unweighted), expr = logcounts(spe_unweighted)[ix, ]))
+ print(ggplot(df, aes(x = pxl_col_in_fullres, y = pxl_row_in_fullres, 
+                color = expr)) + 
+   geom_point(size = 2) + 
+   coord_fixed() + 
+   scale_y_reverse() + 
+   scale_color_viridis_c(name = "logcounts") + 
+   ggtitle("") + 
+   theme_bw() + 
+   theme(plot.title = element_text(face = "italic"), 
+         panel.grid = element_blank(), 
+         axis.title = element_blank(), 
+         axis.text = element_blank(), 
+         axis.ticks = element_blank())
+ )
+}
+
+```
+
+```{r}
+# create some spot plots to visualize the differences 
+# sample 20 genes that are true positives
+# all true positives are getting captured by both simulations
+set.seed(1)
+ixs <- sample(tp_unweighted, 20)
+
+for (ix in ixs) {
+ df <- as.data.frame(cbind(spatialCoords(spe_unweighted), expr = logcounts(spe_unweighted)[ix, ]))
+ print(ggplot(df, aes(x = pxl_col_in_fullres, y = pxl_row_in_fullres, 
+                color = expr)) + 
+   geom_point(size = 2) + 
+   coord_fixed() + 
+   scale_y_reverse() + 
+   scale_color_viridis_c(name = "logcounts") + 
+   ggtitle("") + 
+   theme_bw() + 
+   theme(plot.title = element_text(face = "italic"), 
+         panel.grid = element_blank(), 
+         axis.title = element_blank(), 
+         axis.text = element_blank(), 
+         axis.ticks = element_blank())
+ )
+}
+
+```
