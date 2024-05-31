@@ -58,6 +58,8 @@ create_TNR_TPR_df <- function(spe_unweighted, spe_weighted) {
   tnr_levels_unweighted <- numeric(length(fdr_levels))
   tpr_levels_weighted <- numeric(length(fdr_levels))
   tnr_levels_weighted <- numeric(length(fdr_levels))
+  fpr_levels_unweighted <- numeric(length(fdr_levels))
+  fpr_levels_weighted <- numeric(length(fdr_levels))
   
   # UNWEIGHTED
   
@@ -69,6 +71,7 @@ create_TNR_TPR_df <- function(spe_unweighted, spe_weighted) {
     
     tpr_levels_unweighted[k] <- tp / (tp + fn)
     tnr_levels_unweighted[k] <- tn / (tn + fp)
+    fpr_levels_unweighted[k] <- fp / (fp + tn)
   }
   
   # WEIGHTED
@@ -84,12 +87,15 @@ create_TNR_TPR_df <- function(spe_unweighted, spe_weighted) {
     
     tpr_levels_weighted[k] <- tp / (tp + fn)
     tnr_levels_weighted[k] <- tn / (tn + fp)
+    fpr_levels_weighted[k] <- fp / (fp + tn)
   }
   
   df <- data.frame(tpr_levels_unweighted = tpr_levels_unweighted,
                    tnr_levels_unweighted = tnr_levels_unweighted,
                    tpr_levels_weighted = tpr_levels_weighted,
                    tnr_levels_weighted = tnr_levels_weighted,
+                   fpr_levels_unweighted = fpr_levels_unweighted,
+                   fpr_levels_weighted = fpr_levels_weighted,
                    fdr_levels = fdr_levels)
   
   return(df)
@@ -243,7 +249,7 @@ create_col_plots <- function(file_dir) {
   
   # FDR for unweighted and weighted
   df <- data.frame()
-  for (i in 1:10) {
+  for (i in 1:5) {
     print(i)
     spe_unweighted <- readRDS(paste0(file_dir, "/spe_nnSVG_", i, ".rds"))
     spe_weighted <- readRDS(paste0(file_dir, "/spe_weighted_nnSVG_", i, ".rds"))
@@ -267,14 +273,14 @@ create_col_plots <- function(file_dir) {
     geom_line(aes(y = fdr_percent_weighted), color = "red") +
     geom_ribbon(aes(ymin = fdr_percent_unweighted - fdr_percent_unweighted_sd, ymax = fdr_percent_unweighted + fdr_percent_unweighted_sd), fill = "blue") +
     geom_ribbon(aes(ymin = fdr_percent_weighted - fdr_percent_weighted_sd, ymax = fdr_percent_weighted + fdr_percent_weighted_sd), fill = "red") +
-    ylim(0, 0.4) +
+    ylim(0, 1) +
     labs(title = "", x = "alpha", y = "FDR") +
     theme(legend.position="none") +
     theme_bw() 
   
   # TPR and TNR for unweighted and weighted
   df <- data.frame()
-  for (i in 1:10) {
+  for (i in 1:5) {
     print(i)
     spe_unweighted <- readRDS(paste0(file_dir, "/spe_nnSVG_", i, ".rds"))
     spe_weighted <- readRDS(paste0(file_dir, "/spe_weighted_nnSVG_", i, ".rds"))
@@ -291,10 +297,14 @@ create_col_plots <- function(file_dir) {
               tnr_levels_unweighted_sd = sd(tnr_levels_unweighted),
               tpr_levels_weighted_sd = sd(tpr_levels_weighted),
               tnr_levels_weighted_sd = sd(tnr_levels_weighted),
+              fpr_levels_unweighted_sd = sd(fpr_levels_unweighted),
+              fpr_levels_weighted_sd = sd(fpr_levels_weighted),
               tpr_levels_unweighted = mean(tpr_levels_unweighted),
               tnr_levels_unweighted = mean(tnr_levels_unweighted),
               tpr_levels_weighted = mean(tpr_levels_weighted),
-              tnr_levels_weighted = mean(tnr_levels_weighted))
+              tnr_levels_weighted = mean(tnr_levels_weighted),
+              fpr_levels_unweighted = mean(fpr_levels_unweighted),
+              fpr_levels_weighted = mean(fpr_levels_weighted))
   
   p_TNR <- df_avg %>%
     ggplot(aes(x = fdr_levels)) +
@@ -318,7 +328,20 @@ create_col_plots <- function(file_dir) {
     ylim(0, 1) +
     theme_bw()
   
-  return(list(p_ridge_unweighted, p_ridge_weighted, p_FDR, p_TNR, p_TPR))
+  p_FPR <- df_avg %>%
+    ggplot(aes(x = fdr_levels)) +
+    geom_line(aes(y = fpr_levels_unweighted), color = "blue") +
+    geom_line(aes(y = fpr_levels_weighted), color = "red") +
+    geom_ribbon(aes(ymin = fpr_levels_unweighted - fpr_levels_unweighted_sd, ymax = fpr_levels_unweighted + fpr_levels_unweighted_sd), fill = "blue") +
+    geom_ribbon(aes(ymin = fpr_levels_weighted - fpr_levels_weighted_sd, ymax = fpr_levels_weighted + fpr_levels_weighted_sd), fill = "red") +
+    labs(title = "", x = "FDR", y = "FPR") +
+    scale_linetype_manual(values = c("dashed", "solid")) +
+    ylim(0, 1) +
+    theme_bw()
+    
+    
+  
+  return(list(p_ridge_unweighted, p_ridge_weighted, p_FDR, p_TNR, p_TPR, p_FPR))
 }
 
 
@@ -353,5 +376,59 @@ plot <- ggarrange(plotlist = c(best_list, high_genes_list, high_spots_list),
 pdf(paste0(percent,"_percent_plots.pdf"), width = 10, height = 15)
 annotate_figure(plot, top = text_grob(paste0(percent, "% Non-SVGs"), face = "bold", size = 14),
 left = "Increase Spots                                                                                               Increase Genes                                                                                                 Best")
+dev.off()
+
+l5 <- "reps_968_5_50per_1000_0.2_to_3_0.5_to_9"
+l5_list <- create_col_plots(l5)
+
+l10 <- "reps_968_10_50per_1000_0.2_to_3_0.5_to_9"
+l10_list <- create_col_plots(l10)
+
+l20 <- "reps_968_20_50per_1000_0.2_to_3_0.5_to_9"
+l20_list <- create_col_plots(l20)
+
+l30 <- "reps_968_30_50per_1000_0.2_to_3_0.5_to_9"
+l30_list <- create_col_plots(l30)
+
+l40 <- "reps_968_40_50per_1000_0.2_to_3_0.5_to_9"
+l40_list <- create_col_plots(l40)
+
+l50 <- "reps_968_50_50per_1000_0.2_to_3_0.5_to_9"
+l50_list <- create_col_plots(l50)
+
+l60 <- "reps_968_60_50per_1000_0.2_to_3_0.5_to_9"
+l60_list <- create_col_plots(l60)
+
+l70 <- "reps_968_70_50per_1000_0.2_to_3_0.5_to_9"
+l70_list <- create_col_plots(l70)
+
+l80 <- "reps_968_80_50per_1000_0.2_to_3_0.5_to_9"
+l80_list <- create_col_plots(l80)
+
+l90 <- "reps_968_90_50per_1000_0.2_to_3_0.5_to_9"
+l90_list <- create_col_plots(l90)
+
+l100 <- "reps_968_100_50per_1000_0.2_to_3_0.5_to_9"
+l100_list <- create_col_plots(l100)
+
+l200 <- "reps_968_200_varying_1000_0.2_to_3_0.5_to_7/50_percent_nonSVGs"
+l200_list <- create_col_plots(l200)
+
+pdf(paste0("lengthscale_metrics_plots.pdf"), width = 10, height = 15)
+plot <- ggarrange(plotlist = c(l5_list, l10_list, l20_list, l30_list),
+                  ncol = 6, nrow = 4)
+annotate_figure(plot, top = text_grob("varying length scale parameters", face = "bold", size = 14),
+                left = "              Lengthscale 30                                                              Lengthscale 20                                                            Lengthscale 10                                                             Lengthscale 5")
+
+plot <- ggarrange(plotlist = c(l40_list, l50_list, l60_list, l70_list),
+                  ncol = 6, nrow = 4)
+annotate_figure(plot, top = text_grob("varying length scale parameters", face = "bold", size = 14),
+                left = "              Lengthscale 70                                                              Lengthscale 60                                                            Lengthscale 50                                                             Lengthscale 40")
+
+plot <- ggarrange(plotlist = c(l80_list, l90_list, l100_list, l200_list),
+                  ncol = 6, nrow = 4)
+annotate_figure(plot, top = text_grob("varying length scale parameters", face = "bold", size = 14),
+                left = "              Lengthscale 200                                                              Lengthscale 100                                                            Lengthscale 90                                                             Lengthscale 80")
+
 dev.off()
 
