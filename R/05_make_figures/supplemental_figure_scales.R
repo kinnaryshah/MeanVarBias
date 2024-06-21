@@ -21,7 +21,7 @@ p1 <- data.frame(x=emp_mean, y=emp_var) %>%
        title = "Using raw counts")
 
 # voom plot
-sim <- logNormCounts(sim)
+sim <- logNormCounts(sim, pseudo.count = 0.5)
 emp_var_log <- rowVars(logcounts(sim)) # sample variance of log-counts
 emp_mean_log <- rowMeans(logcounts(sim)) # sample mean of log-counts
 
@@ -31,11 +31,12 @@ p2 <- data.frame(x=emp_mean_log,
   geom_point(aes(x=x, y=y)) +
   theme_bw() +
   labs(x = "sample mean", y="standard variance", 
-       title = "Using log2-transformed counts")
+       title = "Using log2(counts + 1)")
 
-fig1 <- wrap_plots(p1, p2, nrow=1)
+fig1 <- wrap_plots(A = p1, B = p2, nrow=1) + 
+          plot_annotation(tag_levels = 'A') 
 ggsave(filename=here("plots", "supplementary", "scales.png"), 
        plot = fig1, 
-       width = 10, 
+       width = 12, 
        height = 5,
        units = "in")
