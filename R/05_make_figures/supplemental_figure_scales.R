@@ -31,7 +31,11 @@ p2 <- data.frame(x=emp_mean_log,
   geom_point(aes(x=x, y=y)) +
   theme_bw() +
   labs(x = "sample mean", y="standard variance", 
-       title = "Using log-counts")
+       title = "Using log2-transformed counts")
 
 fig1 <- wrap_plots(p1, p2, nrow=1)
-ggsave(here("plots", "supplementary", "scales.png"), fig1)
+ggsave(filename=here("plots", "supplementary", "scales.png"), 
+       plot = fig1, 
+       width = 10, 
+       height = 5,
+       units = "in")
