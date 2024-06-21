@@ -5,7 +5,7 @@ library(scuttle)
 K <- as.numeric(Sys.getenv("SLURM_ARRAY_TASK_ID"))
 set.seed(K)
 
-spe <- readRDS(spe, file = glue::glue('spe_{num_de}.rds'))
+spe <- readRDS(paste0("spe_",K,".rds"))
 
 ### RUN NNSVG
 
@@ -44,7 +44,7 @@ spe_unweighted <- spe
 
 ### RUN WEIGHTED NNSVG
 
-spe <- readRDS(spe, file = glue::glue('spe_{num_de}.rds'))
+spe <- readRDS(paste0("spe_",K,".rds"))
 
 spe <- logNormCounts(spe)
 
@@ -59,6 +59,4 @@ spe <- weighted_nnSVG(input = spe,
 
 file = paste0("spe_weighted_nnSVG_",K,".rds")
 saveRDS(spe, file = file)
-
-spe_weighted <- spe
 
