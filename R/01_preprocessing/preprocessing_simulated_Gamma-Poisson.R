@@ -1,6 +1,8 @@
 library(splatter)
 library(here)
 
+set.seed(100)
+
 params <- newSplatParams()
 sim <- splatSimulate(params)
 
