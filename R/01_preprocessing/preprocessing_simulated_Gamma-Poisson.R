@@ -3,6 +3,7 @@ library(here)
 
 set.seed(100)
 
+# use default parameters from splatter: 10k genes, 100 cells
 params <- newSplatParams()
 sim <- splatSimulate(params)
 
