@@ -21,7 +21,7 @@ p1 <- data.frame(x=emp_mean, y=emp_var) %>%
        title = "Using raw counts")
 
 # voom plot
-sim <- logNormCounts(sim, pseudo.count = 0.5)
+sim <- logNormCounts(sim, pseudo.count = 1)
 emp_var_log <- rowVars(logcounts(sim)) # sample variance of log-counts
 emp_mean_log <- rowMeans(logcounts(sim)) # sample mean of log-counts
 
