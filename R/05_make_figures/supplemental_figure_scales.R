@@ -1,5 +1,3 @@
-setwd("/Users/Kinnary/Desktop/Research/MeanVarBias/")
-
 library(splatter)
 library(ggplot2)
 library(dplyr)
