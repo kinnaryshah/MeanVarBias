@@ -19,14 +19,15 @@ The following datasets are included in this folder:
     - Paper: [Weber and Divecha et al. 2024](https://elifesciences.org/articles/84628)
     - Script: `preprocessing_humanLC.R`
 - Human hippocampus (HPC): 
-    - Source: 
-    - Paper: 
+    - Source: https://github.com/LieberInstitute/spatial_hpc
+    - Paper: [Nelson et al. 2024](https://doi.org/10.1101/2024.04.26.590643)
     - Script: `preprocessing_humanHPC.R`
 - Human ovarian cancer tissue: 
     - Source: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE211956
         - Tissue sample selected: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM6506111
     - Paper: [Denisenko et al. 2024](https://pubmed.ncbi.nlm.nih.gov/38570491/)
-    - Script: `preprocessing_humanOvarian.R`
+    - Script 1: `preprocessing_humanOvarian.sh` (run in cmd to download files from GEO)
+    - Script 2: `preprocessing_humanOvarian.R` (run in R to create RDS object)
 - Simulated data from a gamma-Poisson distribution (using `splatter`): 
     - Source: https://bioconductor.org/packages/splatter
     - Script: `preprocesing_simulated_Gamma-Poisson.R`
