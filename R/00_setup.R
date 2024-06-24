@@ -35,3 +35,17 @@ if(!file.exists(here("outputs", "results"))){
 if(!file.exists(here("plots", "supplementary"))){
   dir.create(here("plots", "supplementary"))
 }
+
+# create `/outputs/logs` folder
+if(!file.exists(here("outputs", "logs"))){
+  dir.create(here("outputs", "logs"))
+}
+
+###############################
+##### 3rd-level folders #######
+###############################
+
+# create `/outputs/logs/02_run_methods` folder
+if(!file.exists(here("outputs", "logs", "02_run_methods"))){
+  dir.create(here("outputs", "logs", "02_run_methods"))
+}
