@@ -2,6 +2,8 @@
 
 These are stand alone scripts that allow you to download and preprocess individual data sets use in the `spoon` paper. 
 
+Before running the scripts below, please run the `/R/00_setup.R` script. 
+
 The following datasets are included in this folder: 
 
 - Human dorsolateral preprefrontal cortex (DLPFC)
@@ -12,7 +14,8 @@ The following datasets are included in this folder:
     - Source: 
     - Script: `preprocessing_humanBreast.R`
 - Human locus coeruleus (LC): 
-    - Source: 
+    - Source: https://bioconductor.org/packages/WeberDivechaLCdata
+    - Paper: https://elifesciences.org/articles/84628
     - Script: `preprocessing_humanLC.R`
 - Human hippocampus (HPC): 
     - Source: 
