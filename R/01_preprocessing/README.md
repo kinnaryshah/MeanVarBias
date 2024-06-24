@@ -23,7 +23,7 @@ The following datasets are included in this folder:
 - Human ovarian cancer tissue: 
     - Source: 
     - Script: `preprocessing_humanOvarian.R`
-- Simulated Gamma-Poisson data: 
-    - Source: 
+- Simulated data from a gamma-Poisson distribution (using `splatter`): 
+    - Source: https://bioconductor.org/packages/splatter
     - Script: `preprocesing_simulated_Gamma-Poisson.R`
 
