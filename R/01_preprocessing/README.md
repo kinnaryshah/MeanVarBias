@@ -5,7 +5,8 @@ These are stand alone scripts that allow you to download and preprocess individu
 The following datasets are included in this folder: 
 
 - Human dorsolateral preprefrontal cortex (DLPFC)
-    - Source: 
+    - Source: https://research.libd.org/spatialLIBD/
+    - Paper: [Maynard et al. 2021](https://www.nature.com/articles/s41593-020-00787-0)
     - Script: `preprocessing_humanDLFPC.R`
 - Human breast cancer tissue: 
     - Source: 
