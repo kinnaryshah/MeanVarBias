@@ -1,15 +1,9 @@
-# download files from 
-# https://www.10xgenomics.com/datasets/human-breast-cancer-visium-fresh-frozen-whole-transcriptome-1-standard
-
-# renamed the folder to "breast_cancer_data"
-
-personal_dir <- "/users/kshah/mean_var_project"
-
 library(scran)
 library(SpatialExperiment)
 library(here)
+# BiocManager::install("DropletUtils") if not installed
 
-(spe <- read10xVisium(paste0(personal_dir, "/breast_cancer_data/outs"),
+(spe <- read10xVisium("outputs/raw/humanBreast/outs",
                       type = "sparse",   # use sparse (not HDF5) format
                       data = "raw",     
                       images = "lowres", # specify which image(s) to include
