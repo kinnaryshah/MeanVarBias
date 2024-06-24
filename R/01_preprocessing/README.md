@@ -16,14 +16,16 @@ The following datasets are included in this folder:
     - Script 2: `preprocessing_humanBreast.R` (run in R to create RDS object)
 - Human locus coeruleus (LC): 
     - Source: https://bioconductor.org/packages/WeberDivechaLCdata
-    - Paper: https://elifesciences.org/articles/84628
+    - Paper: [Weber and Divecha et al. 2024](https://elifesciences.org/articles/84628)
     - Script: `preprocessing_humanLC.R`
 - Human hippocampus (HPC): 
     - Source: 
     - Paper: 
     - Script: `preprocessing_humanHPC.R`
 - Human ovarian cancer tissue: 
-    - Source: 
+    - Source: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE211956
+        - Tissue sample selected: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM6506111
+    - Paper: [Denisenko et al. 2024](https://pubmed.ncbi.nlm.nih.gov/38570491/)
     - Script: `preprocessing_humanOvarian.R`
 - Simulated data from a gamma-Poisson distribution (using `splatter`): 
     - Source: https://bioconductor.org/packages/splatter
