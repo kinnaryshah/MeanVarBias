@@ -16,3 +16,7 @@ tar -xvf Visium_Human_Breast_Cancer_raw_feature_bc_matrix.tar
 
 gunzip Visium_Human_Breast_Cancer_spatial.tar.gz
 tar -xvf Visium_Human_Breast_Cancer_spatial.tar
+
+# clean up
+rm Visium_Human_Breast_Cancer_raw_feature_bc_matrix.tar
+rm Visium_Human_Breast_Cancer_spatial.tar
