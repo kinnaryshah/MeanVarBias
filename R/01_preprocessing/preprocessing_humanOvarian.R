@@ -2,11 +2,14 @@ library(here)
 library(SpatialExperiment)
 library(nnSVG)
 library(scran)
+# BiocManager::install("DropletUtils") if not installed
 
-# downloaded from https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE211956
-# created similar SpaceRanger-like directory structure
+(spe <- read10xVisium("outputs/raw/humanOvarian/outs",
+                     type = "sparse",   # use sparse (not HDF5) format
+                     data = "filtered",     
+                     images = "lowres", # specify which image(s) to include
+                     load = TRUE))      # specify whether or not to load image(s)
 
-spe <- read10xVisium("~/ovarian_cancer_forrest/outs")
 
 #row data formatting
 rowData(spe)$gene_id <- rownames(spe)
