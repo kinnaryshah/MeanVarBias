@@ -1,16 +1,3 @@
----
-title: "figure_1"
-output: html_document
-date: '2023-03-02'
----
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
-
-
-```{r}
-
 library(SpatialExperiment)
 library(here)
 library(dplyr)
@@ -38,30 +25,32 @@ df_fxn <- function(file_name, dataset) {
     filter(rank <= 1000)
   
   df_effect$LR_stat_scaled <- df_effect$LR_stat / max(df_effect$LR_stat)
-
+  
   #add col of dataset name
   df_effect$dataset_val <- rep(dataset,1000)
   
-  #keep only necessary columns (nnSVG output) bc breast cancer dataset has different cols
+  #keep only nnSVG output because breast cancer dataset has different cols
   df_effect <- df_effect %>%
     select(mean,var,LR_stat,LR_stat_scaled,dataset_val,sigma.sq,tau.sq,prop_sv)
   
   return(df_effect)
 }
 
-file_list <- c("mean_var_project/spe_V10B01_085_A1_HPC_nnSVG.rds",
-               "mean_var_project/spe_breast_cancer_nnSVG.rds",
-               "mean_var_project/spe_151507_DLPFC_nnSVG.rds",
-               "mean_var_project/spe_Br2701_LC_round2_lowexpr_filter_nnSVG.rds")
-dataset_list <- c("HPC", "breast","DLPFC","LC")
-file_df <- map2(.x=file_list, .y=dataset_list, .f=~df_fxn(.x,.y))
-all_files_df <- Reduce(rbind,file_df)
+file_list <- c(here("outputs", "results", "spe_humanHPC_nnSVG.rds"),
+               here("outputs", "results", "spe_humanBreast_nnSVG.rds"),
+               here("outputs", "results", "spe_humanDLPFC_nnSVG.rds"),
+               here("outputs", "results", "spe_humanLC_nnSVG.rds"))
+
+dataset_list <- c("HPC", "Breast","DLPFC","LC")
+
+df <- map2(.x=file_list, .y=dataset_list, .f=~df_fxn(.x,.y))
+reduce_df <- Reduce(rbind,df)
 
 # variance vs. mean
-var <- ggplot(all_files_df, 
-       aes(x = mean, y = var, color = LR_stat_scaled)) + 
+var <- ggplot(reduce_df, 
+              aes(x = mean, y = var, color = LR_stat_scaled)) + 
   geom_point(size = 1) + 
-  geom_smooth(method="loess", color="black", size=0.5) +
+  geom_smooth(method="loess", color="black", linewidth=0.5) +
   facet_grid(dataset_val~., switch = "y") +
   scale_color_viridis(trans = "log10") +
   scale_color_gradient(low = "blue", high = "red") +
@@ -76,8 +65,8 @@ var <- ggplot(all_files_df,
 
 
 # spatial variance vs. mean
-spat_var <- ggplot(all_files_df, 
-       aes(x = mean, y = sigma.sq, color = LR_stat_scaled)) + 
+spat_var <- ggplot(reduce_df, 
+                   aes(x = mean, y = sigma.sq, color = LR_stat_scaled)) + 
   geom_point(size = 1) + 
   facet_grid(dataset_val~., switch = "y") +
   scale_color_viridis(trans = "log10") +
@@ -90,8 +79,8 @@ spat_var <- ggplot(all_files_df,
   theme(strip.background = element_blank(), strip.text.y = element_blank()) +
   theme(axis.title.x = element_text(size = 7))
 
-nonspat_var <- ggplot(all_files_df, 
-       aes(x = mean, y = tau.sq, color = LR_stat_scaled)) + 
+nonspat_var <- ggplot(reduce_df, 
+                      aes(x = mean, y = tau.sq, color = LR_stat_scaled)) + 
   geom_point(size = 1) + 
   facet_grid(dataset_val~., switch = "y") +
   scale_color_viridis(trans = "log10") +
@@ -104,8 +93,8 @@ nonspat_var <- ggplot(all_files_df,
   theme(strip.background = element_blank(), strip.text.y = element_blank()) +
   theme(axis.title.x = element_text(size = 7))
 
-prop <- ggplot(all_files_df, 
-       aes(x = mean, y = prop_sv, color = LR_stat_scaled)) + 
+prop <- ggplot(reduce_df, 
+               aes(x = mean, y = prop_sv, color = LR_stat_scaled)) + 
   geom_point(size = 1) + 
   facet_grid(dataset_val~., switch = "y") +
   scale_color_viridis(trans = "log10") +
@@ -118,10 +107,7 @@ prop <- ggplot(all_files_df,
   theme(strip.background = element_blank(), strip.text.y = element_blank()) +
   theme(axis.title.x = element_text(size = 7))
 
-pdf("proposal/fig2.pdf")
+pdf(here("plots", "main", "motivation.pdf"))
 wrap_plots(var, spat_var, nonspat_var, prop, guides="collect",
            ncol=4, nrow=1)
 dev.off()
-```
-
-
