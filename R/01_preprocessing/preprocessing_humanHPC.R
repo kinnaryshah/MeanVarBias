@@ -1,10 +1,21 @@
+###################################
+# dataset: Visium human hippocampus
+###################################
 library(here)
 library(SpatialExperiment)
 library(nnSVG)
 library(scran)
+# BiocManager::install("DropletUtils") if not installed
 
-#load in spe object
-load(file = "/dcs04/lieber/lcolladotor/spatialHPC_LIBD4035/spatial_hpc/processed-data/02_build_spe/spe_transform.Rdata")
+# ---------
+# load data
+# ---------
+
+spe <- read10xVisium(here("outputs/raw/humanHPC/outs/"),
+                     type = "sparse",   # use sparse (not HDF5) format
+                     data = "raw",     
+                     images = "lowres", # specify which image(s) to include
+                     load = TRUE)      # specify whether or not to load image(s)
 
 #subset to one sample
 spe <- spe[, spe$sample_id == "V10B01-085_A1"]
