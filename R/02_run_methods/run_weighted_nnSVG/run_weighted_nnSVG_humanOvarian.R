@@ -45,8 +45,11 @@ spe <- weighted_nnSVG(
 # save objects
 # -----------
 
-file = here("outputs","results","spe_humanOvarian_weighted_nnSVG.RData")
-save(spe, weights, file = file)
+file = here("outputs","results","spe_humanOvarian_weighted_nnSVG.rds")
+saveRDS(spe, file = file)
+
+file = here("outputs","results","spe_humanOvarian_weights.rds")
+saveRDS(weights, file = file)
 
 # -----------
 # session information
