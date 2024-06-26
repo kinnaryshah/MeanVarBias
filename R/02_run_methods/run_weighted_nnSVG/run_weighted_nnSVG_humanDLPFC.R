@@ -29,12 +29,17 @@ spe <- weighted_nnSVG(
   w = weights,
   BPPARAM = MulticoreParam(workers = 10, RNGseed = 5))
 
+print(spe)
+
 # -----------
 # save objects
 # -----------
 
-file = here("outputs","results","spe_humanDLPFC_weighted_nnSVG.RData")
-save(spe, weights, file = file)
+file = here("outputs","results","spe_humanDLPFC_weighted_nnSVG.rds")
+saveRDS(spe, file = file)
+
+file = here("outputs","results","spe_humanDLPFC_weights.rds")
+saveRDS(weights, file = file)
 
 # -----------
 # session information
