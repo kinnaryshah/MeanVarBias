@@ -15,7 +15,7 @@ library(ggridges)
 # overall idea: create a function to make four plots for each dataset
 # then, use the function for each dataset of interest and combine the plots
 
-ridge_plots <- function(spe_unweighted, spe_weighted){
+ridge_plots <- function(spe_unweighted, spe_weighted, dataset_name){
   
   n_genes <- dim(spe_weighted)[1]
   frac <- round(dim(spe_weighted)[1]*0.1*0.1)
@@ -41,7 +41,7 @@ ridge_plots <- function(spe_unweighted, spe_weighted){
     geom_density_ridges2(aes(x = rank, y = range), rel_min_height = 0.02) +
     theme_ridges(grid = TRUE) +
     labs(
-      y = "quantile - unw mean of logcounts",
+      y = paste0(dataset_name, " quantile - unw mean of logcounts"),
       x = "rank",
       title = "unweighted"
     ) +
@@ -158,7 +158,7 @@ ridge_plots <- function(spe_unweighted, spe_weighted){
 
 spe_unweighted <- readRDS(here("outputs", "results", "spe_humanDLPFC_nnSVG.rds"))
 spe_weighted <- readRDS(here("outputs", "results", "spe_humanDLPFC_weighted_nnSVG.rds"))
-plots <- ridge_plots(spe_unweighted, spe_weighted)
+plots_DLPFC <- ridge_plots(spe_unweighted, spe_weighted, "DLPFC")
 
 pdf(here("plots", "main", "weight_effect_real_data.pdf"))
 wrap_plots(plots, guides="collect",
