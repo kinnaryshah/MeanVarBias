@@ -31,6 +31,11 @@ if(!file.exists(here("outputs", "results"))){
   dir.create(here("outputs", "results"))
 }
 
+# create `/outputs/simulations` folder
+if(!file.exists(here("outputs", "simulations"))){
+  dir.create(here("outputs", "simulations"))
+}
+
 # create `/plots/supplementary` folder
 if(!file.exists(here("plots", "supplementary"))){
   dir.create(here("plots", "supplementary"))
