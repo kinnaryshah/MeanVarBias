@@ -160,7 +160,21 @@ spe_unweighted <- readRDS(here("outputs", "results", "spe_humanDLPFC_nnSVG.rds")
 spe_weighted <- readRDS(here("outputs", "results", "spe_humanDLPFC_weighted_nnSVG.rds"))
 plots_DLPFC <- ridge_plots(spe_unweighted, spe_weighted, "DLPFC")
 
+spe_unweighted <- readRDS(here("outputs", "results", "spe_humanOvarian_nnSVG.rds"))
+spe_weighted <- readRDS(here("outputs", "results", "spe_humanOvarian_weighted_nnSVG.rds"))
+plots_ovarian <- ridge_plots(spe_unweighted, spe_weighted, "Ovarian")
+
+spe_unweighted <- readRDS(here("outputs", "results", "spe_humanLC_nnSVG.rds"))
+spe_weighted <- readRDS(here("outputs", "results", "spe_humanLC_weighted_nnSVG.rds"))
+plots_LC <- ridge_plots(spe_unweighted, spe_weighted, "LC")
+
+spe_unweighted <- readRDS(here("outputs", "results", "spe_humanBreast_nnSVG.rds"))
+spe_weighted <- readRDS(here("outputs", "results", "spe_humanBreast_weighted_nnSVG.rds"))
+plots_breast <- ridge_plots(spe_unweighted, spe_weighted, "Breast")
+
 pdf(here("plots", "main", "weight_effect_real_data.pdf"))
-wrap_plots(plots, guides="collect",
-           ncol=4, nrow=1)
+wrap_plots(c(plots_DLPFC, plots_ovarian), guides="collect",
+           ncol=4, nrow=2)
+wrap_plots(c(plots_LC, plots_breast), guides="collect",
+           ncol=4, nrow=2)
 dev.off()
