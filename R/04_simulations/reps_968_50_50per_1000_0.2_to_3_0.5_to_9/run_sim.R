@@ -143,8 +143,7 @@ saveRDS(spe, file = file)
 
 ### RUN WEIGHTED NNSVG
 
-fn <- paste0("spe_simulation_",K,".rds")
-
+file = here("outputs", "simulations", sim_dir, paste0("spe_simulation_",K,".rds"))
 spe <- readRDS(fn)
 
 spe <- logNormCounts(spe)
