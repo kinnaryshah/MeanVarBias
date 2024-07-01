@@ -51,5 +51,5 @@ gene_df = spg.detect_svg(adata,
 # S determines the  sensitivity of kneedle algorithm
 
 # save gene_df as csv to open in R
-df_dir = base_dir / "outputs" / "results" / "SpatGFT_results_humanDLPFC.csv"
+df_dir = base_dir / "outputs" / "results" / "SpaGFT_results_humanDLPFC.csv"
 gene_df.to_csv(df_dir)
