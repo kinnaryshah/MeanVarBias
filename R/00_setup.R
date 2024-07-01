@@ -14,6 +14,11 @@ if(!file.exists(here("plots"))){
   dir.create(here("plots"))
 }
 
+# Create top-level envs folder
+if(!file.exists(here("envs"))){
+  dir.create(here("envs"))
+}
+
 ###############################
 ##### 2nd-level folders #######
 ###############################
