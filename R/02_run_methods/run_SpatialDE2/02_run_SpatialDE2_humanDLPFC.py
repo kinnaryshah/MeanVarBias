@@ -8,6 +8,7 @@ from pathlib import Path
 
 # Set up the base directory (typically the project root)
 base_dir = Path(__file__).resolve().parent
+base_dir = base_dir / ".." / ".." / ".." 
 print(base_dir)
 
 # ---------
