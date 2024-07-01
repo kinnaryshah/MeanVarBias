@@ -9,12 +9,11 @@ library(viridis)
 library(ggpubr)
 library(purrr)
 library(patchwork)
-library(here)
 
 df_fxn <- function(layer) {
   
   file = here("outputs","results",paste0("spe_humanDLPFC_layer_", layer, "_nnSVG.rds"))
-  spe <- readRDS(file = file_name)
+  spe <- readRDS(file = file)
   
   spe_df <- rowData(spe)
   
@@ -43,7 +42,7 @@ all_layers_df <- Reduce(rbind,layer_df)
 var <- ggplot(all_layers_df, 
               aes(x = mean, y = var, color = LR_stat_scaled)) + 
   geom_point(size = 1) + 
-  geom_smooth(method="loess", color="black", size=0.5) +
+  geom_smooth(method="loess", color="black", linewidth=0.5) +
   facet_grid(layer_val~., switch = "y") +
   scale_color_viridis(trans = "log10") +
   scale_color_gradient(low = "blue", high = "red") +
@@ -99,7 +98,7 @@ prop <- ggplot(all_layers_df,
   theme(strip.background = element_blank(), strip.text.y = element_blank()) +
   theme(axis.title.x = element_text(size = 7))
 
-pdf(here("plots", "supplementary", "DLPFC_layers.png"))
+pdf(here("plots", "supplementary", "DLPFC_layers.pdf"))
 wrap_plots(var, spat_var, nonspat_var, prop, guides="collect",
            ncol=4, nrow=1)
 dev.off()
