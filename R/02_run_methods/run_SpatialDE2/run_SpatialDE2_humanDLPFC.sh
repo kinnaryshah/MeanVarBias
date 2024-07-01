@@ -6,8 +6,8 @@
 #SBATCH --error=run_SpatialDE2_humanDLPFC.e
 #SBATCH --job-name=SpatialDE2_humanDLPFC
 
-# pip install git+https://github.com/PMBio/SpatialDE
-# installed in virtual environment named spatialde2_env
+# create conda environment
+# conda env create -f ../../../envs/SpatialDE2/environment.yml
 
 module load conda_R/4.4.x
 Rscript 01_prep_humanDLPFC.R

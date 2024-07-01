@@ -6,9 +6,9 @@
 #SBATCH --error=run_SpaGFT_humanDLPFC.e
 #SBATCH --job-name=SpaGFT_humanDLPFC
 
-# installation following
-# https://spagft.readthedocs.io/en/latest/Installation.html
-# installed in virtual environment named spagft_env
+# create conda environment
+# conda env create -f ../../../envs/SpaGFT/environment.yml
+
 
 module load conda_R/4.4.x
 Rscript 01_prep_humanDLPFC.R
