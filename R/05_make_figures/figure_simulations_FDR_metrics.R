@@ -149,7 +149,8 @@ create_ridge_plot_weighted <- function(spe_unweighted, spe_weighted) {
     ) +
     coord_cartesian(xlim = c(1, n_genes)) +
     theme_bw() +
-    theme(legend.position="none") 
+    theme(legend.position="none") +
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
   
   return(ridge_plot)
   
@@ -208,7 +209,8 @@ create_ridge_plot_unweighted <- function(spe_unweighted) {
     ) +
     theme_bw() + 
     theme(legend.position="none") +
-    coord_cartesian(xlim = c(1, n_genes)) 
+    coord_cartesian(xlim = c(1, n_genes)) +
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) 
 
   return(ridge_plot)
 }
@@ -264,7 +266,8 @@ create_col_plots <- function(file_dir) {
     ylim(0, 1) +
     labs(title = "", x = "alpha", y = "FDR") +
     theme(legend.position="none") +
-    theme_bw() 
+    theme_bw() +
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
   
   # TPR and TNR for unweighted and weighted
   df <- data.frame()
@@ -299,7 +302,8 @@ create_col_plots <- function(file_dir) {
     labs(title = "", x = "FDR", y = "TNR") +
     scale_linetype_manual(values = c("dashed", "solid")) +
     ylim(0, 1) +
-    theme_bw()
+    theme_bw() +
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
   
   p_TPR <- df_avg %>%
     ggplot(aes(x = fdr_levels)) +
@@ -310,7 +314,8 @@ create_col_plots <- function(file_dir) {
     labs(title = "", x = "FDR", y = "TPR") +
     scale_linetype_manual(values = c("dashed", "solid")) +
     ylim(0, 1) +
-    theme_bw()
+    theme_bw() +
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
   
   return(list(p_ridge_unweighted, p_ridge_weighted, p_FDR, p_TNR, p_TPR))
 }
@@ -318,14 +323,12 @@ create_col_plots <- function(file_dir) {
 l50 <- here("outputs", "simulations", "reps_968_50_50per_1000_0.2_to_3_0.5_to_9")
 l50_list <- create_col_plots(l50)
 
-pdf(here("plots", "main", "simulations_FDR_metrics.pdf"), width = 10, height = 15)
-
 plot <- ggarrange(plotlist = l50_list,
                   ncol = 5, nrow = 1)
-annotate_figure(plot, top = text_grob("varying length scale parameters", face = "bold", size = 14))
-                
-dev.off()
 
+ggsave(here("plots", "main", "simulations_FDR_metrics.png"),
+       plot = plot,
+       width = 10, height = 4)
 
 
 # extra code for plotting multiple simulations in the same file

@@ -98,8 +98,6 @@ prop <- ggplot(all_layers_df,
   theme(strip.background = element_blank(), strip.text.y = element_blank()) +
   theme(axis.title.x = element_text(size = 7))
 
-pdf(here("plots", "supplementary", "DLPFC_layers.pdf"))
-wrap_plots(var, spat_var, nonspat_var, prop, guides="collect",
-           ncol=4, nrow=1)
-dev.off()
-
+ggsave(here("plots", "supplementary", "DLPFC_layers.png"),
+       wrap_plots(var, spat_var, nonspat_var, prop, guides="collect",
+           ncol=4, nrow=1))

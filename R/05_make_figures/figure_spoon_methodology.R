@@ -44,6 +44,6 @@ p3 <- ggplot(dat, aes(x=x, y=y)) +
   annotate("text", x=3.9, y=0.91, label= "gene-wise mean-var trend") +
   theme_bw() 
 
-pdf(here("plots", "main", "weight_effect_real_data.pdf"), width = 15, height = 4)
-wrap_plots(p1, p2, p3, ncol=3, nrow=1)
-dev.off()
+ggsave(here("plots", "main", "spoon_methodology.png"),
+       wrap_plots(p1, p2, p3, ncol=3, nrow=1),
+       width=15, height=4)

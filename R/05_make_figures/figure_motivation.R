@@ -107,7 +107,7 @@ prop <- ggplot(reduce_df,
   theme(strip.background = element_blank(), strip.text.y = element_blank()) +
   theme(axis.title.x = element_text(size = 7))
 
-pdf(here("plots", "main", "motivation.pdf"))
-wrap_plots(var, spat_var, nonspat_var, prop, guides="collect",
-           ncol=4, nrow=1)
-dev.off()
+ggsave(here("plots", "main", "motivation.png"),
+       wrap_plots(var, spat_var, nonspat_var, prop, guides="collect",
+           ncol=4, nrow=1))
+

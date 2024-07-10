@@ -138,14 +138,13 @@ SpatialDE2_ridge_combined <- df_SpatialDE2 %>%
   coord_cartesian(xlim = c(1, n_genes)) +
   theme_bw()
 
-pdf(here("plots", "main", "comparing_SVG_methods.pdf"), width = 21, height = 20)
-wrap_plots(
-  HVG_ridge_combined,
-  MoransI_ridge_combined,
-  nnSVG_ridge_combined,
-  SPARKX_ridge_combined,
-  SpaGFT_ridge_combined,
-  SpatialDE2_ridge_combined,
-  ncol = 3
-)
-dev.off()
+ggsave(here("plots", "main", "comparing_SVG_methods.png"),
+       wrap_plots(
+          HVG_ridge_combined,
+          MoransI_ridge_combined,
+          nnSVG_ridge_combined,
+          SPARKX_ridge_combined,
+          SpaGFT_ridge_combined,
+          SpatialDE2_ridge_combined,
+          ncol = 3
+), width = 21, height = 20)
