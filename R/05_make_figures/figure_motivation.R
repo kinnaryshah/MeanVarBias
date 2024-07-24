@@ -39,9 +39,10 @@ df_fxn <- function(file_name, dataset) {
 file_list <- c(here("outputs", "results", "spe_humanHPC_nnSVG.rds"),
                here("outputs", "results", "spe_humanBreast_nnSVG.rds"),
                here("outputs", "results", "spe_humanDLPFC_nnSVG.rds"),
-               here("outputs", "results", "spe_humanLC_nnSVG.rds"))
+               here("outputs", "results", "spe_humanLC_nnSVG.rds"),
+               here("outputs", "results", "spe_humanOvarian_nnSVG.rds"))
 
-dataset_list <- c("HPC", "Breast","DLPFC","LC")
+dataset_list <- c("HPC", "Breast","DLPFC","LC", "Ovarian")
 
 df <- map2(.x=file_list, .y=dataset_list, .f=~df_fxn(.x,.y))
 reduce_df <- Reduce(rbind,df)
