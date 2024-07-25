@@ -157,30 +157,30 @@ ridge_plots <- function(spe_unweighted, spe_weighted, dataset_name){
 }
 
 spe_unweighted <- readRDS(here("outputs", "results", "spe_humanDLPFC_nnSVG.rds"))
-spe_weighted <- readRDS(here("outputs", "results", "spe_humanDLPFC_weighted_nnSVG.rds"))
+spe_weighted <- readRDS(here("outputs", "results", "spe_humanDLPFC_noise_weighted_nnSVG.rds"))
 plots_DLPFC <- ridge_plots(spe_unweighted, spe_weighted, "DLPFC")
 
 spe_unweighted <- readRDS(here("outputs", "results", "spe_humanOvarian_nnSVG.rds"))
-spe_weighted <- readRDS(here("outputs", "results", "spe_humanOvarian_weighted_nnSVG.rds"))
+spe_weighted <- readRDS(here("outputs", "results", "spe_humanOvarian_noise_weighted_nnSVG.rds"))
 plots_ovarian <- ridge_plots(spe_unweighted, spe_weighted, "Ovarian")
 
 spe_unweighted <- readRDS(here("outputs", "results", "spe_humanLC_nnSVG.rds"))
-spe_weighted <- readRDS(here("outputs", "results", "spe_humanLC_weighted_nnSVG.rds"))
+spe_weighted <- readRDS(here("outputs", "results", "spe_humanLC_noise_weighted_nnSVG.rds"))
 plots_LC <- ridge_plots(spe_unweighted, spe_weighted, "LC")
 
 spe_unweighted <- readRDS(here("outputs", "results", "spe_humanHPC_nnSVG.rds"))
-spe_weighted <- readRDS(here("outputs", "results", "spe_humanHPC_weighted_nnSVG.rds"))
+spe_weighted <- readRDS(here("outputs", "results", "spe_humanHPC_noise_weighted_nnSVG.rds"))
 plots_HPC <- ridge_plots(spe_unweighted, spe_weighted, "HPC")
 
 spe_unweighted <- readRDS(here("outputs", "results", "spe_humanBreast_nnSVG.rds"))
-spe_weighted <- readRDS(here("outputs", "results", "spe_humanBreast_weighted_nnSVG.rds"))
+spe_weighted <- readRDS(here("outputs", "results", "spe_humanBreast_noise_weighted_nnSVG.rds"))
 plots_breast <- ridge_plots(spe_unweighted, spe_weighted, "Breast")
 
 spe_unweighted <- readRDS(here("outputs", "results", "spe_humanLobularBreast_nnSVG.rds"))
-spe_weighted <- readRDS(here("outputs", "results", "spe_humanLobularBreast_weighted_nnSVG.rds"))
+spe_weighted <- readRDS(here("outputs", "results", "spe_humanLobularBreast_noise_weighted_nnSVG.rds"))
 plots_lobular_breast <- ridge_plots(spe_unweighted, spe_weighted, "Lobular Breast")
 
-pdf(here("plots", "main", "weight_effect_real_data.pdf"))
+pdf(here("plots", "main", "noise_weight_effect_real_data.pdf"))
 wrap_plots(c(plots_DLPFC, plots_ovarian), guides="collect",
            ncol=4, nrow=2)
 wrap_plots(c(plots_LC, plots_HPC), guides="collect",
