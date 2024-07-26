@@ -10,7 +10,7 @@ library(MASS)
 library(scuttle)
 library(here)
 
-sim_dir <- "reps_968_50_50per_1000_0.2_to_3_0.5_to_9"
+sim_dir <- "reps_968_60_50per_1000_0.2_to_3_0.5_to_9"
 K <- as.numeric(Sys.getenv("SLURM_ARRAY_TASK_ID"))
 
 file = here("outputs", "simulations", sim_dir, paste0("spe_simulation_",K,".rds"))
