@@ -24,7 +24,7 @@ small_lengthscale_effect <- function(spe_unweighted, spe_weighted, low, high) {
 }
 
 # list of datasets to use function on
-dat <- c("Ovarian", "DLPFC", "LC", "Breast", "HPC", "LobularBreast", "SubtypeBreast")
+dat <- c("Ovarian", "DLPFC", "LC", "Breast", "HPC", "HPC_V12D07-335_D1", "LobularBreast", "SubtypeBreast")
 
 # create a table of the output of the function for each dataset
 results <- data.frame()
@@ -40,7 +40,7 @@ results$`Prop Higher Rank` <- results$`Higher Rank` / results$`Total Small Lengt
 results <- results[, c(1, 2, 3, 7, 4, 5, 6)]
 
 # add a column for the proportion of genes that had their weight stabilized
-results$`Percent Weight Stabilized` <- c(24.2590865927539, 32.4546892587122, 42.0175677674449, 23.5156050403311, 28.8172894132482, 27.0195205755438, 29.6677436152434)
+results$`Percent Weight Stabilized` <- c(24.2590865927539, 32.4546892587122, 42.0175677674449, 23.5156050403311, 28.8172894132482, 27.5557059902324, 27.0195205755438, 29.6677436152434)
 
 #   Dataset       Higher Rank     Total Small Lengthscale Prop Higher Rank   Prop Unweighted SVGs Prop Weighted SVGs Total Genes Percent Weight Stabilized
 # 1 Ovarian          78                     161             0.4844720           0.3556813          0.3042755       12022                    24.25909
@@ -48,13 +48,15 @@ results$`Percent Weight Stabilized` <- c(24.2590865927539, 32.4546892587122, 42.
 # 3      LC           9                      23             0.3913043           0.5093914          0.5484598        1331                    42.01757
 # 4  Breast          77                     106             0.7264151           0.8055353          0.3106891       12321                    23.51561
 # 5     HPC          23                      54             0.4259259           0.9280105          0.9820494        5348                    28.81729
-# 6 LobularBreast    83                     143             0.5804196           0.8220057          0.4913657       12624                    27.01952
-# 7 SubtypeBreast    59                     119             0.4957983           0.2738337          0.4096552       12325                    29.66774
+# 6 HPC_V12D07-335_D1 22                    45             0.4888889            0.8477509          0.7269582        6358                    27.55571
+# 7 LobularBreast    83                     143             0.5804196           0.8220057          0.4913657       12624                    27.01952
+# 8 SubtypeBreast    59                     119             0.4957983           0.2738337          0.4096552       12325                    29.66774
 
 #Ovarian 24.2590865927539% of observations had their weight stabilized
 #DLPFC 32.4546892587122% of observations had their weight stabilized
 #LC 42.0175677674449% of observations had their weight stabilized
 #Breast 23.5156050403311% of observations had their weight stabilized
 #HPC 28.8172894132482% of observations had their weight stabilized
+#HPC_V12D07-335_D1 27.5557059902324% of observations had their weight stabilized
 #Lobular Breast 27.0195205755438% of observations had their weight stabilized
 #Subtype Breast 29.6677436152434% of observations had their weight stabilized

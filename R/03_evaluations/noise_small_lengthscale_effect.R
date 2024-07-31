@@ -24,7 +24,7 @@ small_lengthscale_effect <- function(spe_unweighted, spe_weighted, low, high) {
 }
 
 # list of datasets to use function on
-dat <- c("Ovarian", "DLPFC", "LC", "Breast", "HPC", "LobularBreast", "SubtypeBreast")
+dat <- c("Ovarian", "DLPFC", "LC", "Breast", "HPC", "HPC_V12D07-335_D1", "LobularBreast", "SubtypeBreast")
 
 # create a table of the output of the function for each dataset
 results <- data.frame()
@@ -48,16 +48,18 @@ results$`Percent Weight Stabilized` <- c(24.2762214149168, 32.5231071802586, 41.
 # 3            LC           9                      23        0.3913043
 # 4        Breast          71                     106        0.6698113
 # 5           HPC          21                      54        0.3888889
-# 6 LobularBreast          93                     143        0.6503497
-# 7 SubtypeBreast          51                     119        0.4285714
+# 6 HPC_V12D07-335_D1     21                      45        0.4666667
+# 7 LobularBreast          93                     143        0.6503497
+# 8 SubtypeBreast          51                     119        0.4285714
 # Prop Unweighted SVGs     Prop Weighted SVGs   Total Genes       Percent Weight Stabilized
 # 1            0.3556813          0.3785560       12022                  24.27622
 # 2            0.2189841          0.2090426        7343                  32.52311
 # 3            0.5093914          0.5326822        1331                  41.96341
 # 4            0.8055353          0.3808944       12321                  23.43633
 # 5            0.9280105          0.9526926        5348                  29.22013
-# 6            0.8220057          0.5201996       12624                  27.19424
-# 7            0.2738337          0.4101420       12325                  29.83522
+# 6            0.8477509          0.6988047        6358
+# 7            0.8220057          0.5201996       12624                  27.19424
+# 8            0.2738337          0.4101420       12325                  29.83522
 
 #Ovarian 24.2762214149168% of observations had their weight stabilized
 #DLPFC 32.5231071802586% of observations had their weight stabilized
