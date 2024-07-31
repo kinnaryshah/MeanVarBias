@@ -1,6 +1,7 @@
 library(SpatialExperiment)
 library(here)
 library(dplyr)
+library(ggplot2)
 
 # make a function for this code that takes in as input the spe_unweighted and spe_weighted and low and high lengthscales
 # and returns the proportion of genes that have higher ranks after weighting
@@ -48,7 +49,7 @@ results$`Percent Weight Stabilized` <- c(24.2590865927539, 32.4546892587122, 42.
 # 3      LC           9                      23             0.3913043           0.5093914          0.5484598        1331                    42.01757
 # 4  Breast          77                     106             0.7264151           0.8055353          0.3106891       12321                    23.51561
 # 5     HPC          23                      54             0.4259259           0.9280105          0.9820494        5348                    28.81729
-# 6 HPC_V12D07-335_D1 22                    45             0.4888889            0.8477509          0.7269582        6358                    27.55571
+# 6 HPC_V12D07-335_D1 22                     45             0.4888889           0.8477509          0.7269582        6358                    27.55571
 # 7 LobularBreast    83                     143             0.5804196           0.8220057          0.4913657       12624                    27.01952
 # 8 SubtypeBreast    59                     119             0.4957983           0.2738337          0.4096552       12325                    29.66774
 
@@ -60,3 +61,29 @@ results$`Percent Weight Stabilized` <- c(24.2590865927539, 32.4546892587122, 42.
 #HPC_V12D07-335_D1 27.5557059902324% of observations had their weight stabilized
 #Lobular Breast 27.0195205755438% of observations had their weight stabilized
 #Subtype Breast 29.6677436152434% of observations had their weight stabilized
+
+
+# create a plot with x-axis as prop unweighted SVGs and y-axis as prop higher rank
+# exclude HPC 
+results <- results %>% filter(Dataset != "HPC")
+# rename HPC_V12D07-335_D1 to HPC
+results$Dataset[results$Dataset == "HPC_V12D07-335_D1"] <- "HPC"
+
+fig1 <- ggplot(results, aes(x = `Prop Unweighted SVGs`, y = `Prop Higher Rank`)) +
+  geom_point() +
+  #add line of best fit
+  geom_smooth(method = "lm", se = FALSE) +
+  geom_text(aes(label = Dataset), nudge_x = 0.01, nudge_y = 0.01) +
+  theme_bw() +
+  labs(x = "Proportion of Unweighted SVGs", y = "Proportion of Low Lengthscale Genes with Higher Rank") +
+  theme(axis.text = element_text(size = 12),
+        axis.title = element_text(size = 14),
+        plot.title = element_text(size = 16),
+        legend.text = element_text(size = 12),
+        legend.title = element_text(size = 14))
+
+ggsave(filename=here("plots", "supplementary", "small_lengthscale.png"), 
+       plot = fig1, 
+       width = 7, 
+       height = 7,
+       units = "in")

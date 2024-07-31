@@ -1,6 +1,7 @@
 library(SpatialExperiment)
 library(here)
 library(dplyr)
+library(ggplot2)
 
 # make a function for this code that takes in as input the spe_unweighted and spe_weighted and low and high lengthscales
 # and returns the proportion of genes that have higher ranks after weighting
@@ -40,7 +41,7 @@ results$`Prop Higher Rank` <- results$`Higher Rank` / results$`Total Small Lengt
 results <- results[, c(1, 2, 3, 7, 4, 5, 6)]
 
 # add a column for the proportion of genes that had their weight stabilized
-results$`Percent Weight Stabilized` <- c(24.2762214149168, 32.5231071802586, 41.9634057000962, 23.4363301754294, 29.2201329157317, 27.1942350381327, 29.8352176439563)
+results$`Percent Weight Stabilized` <- c(24.2762214149168, 32.5231071802586, 41.9634057000962, 23.4363301754294, 29.2201329157317, 27.1942350381327, 27.5989176264912, 29.8352176439563)
 
 # Dataset            Higher Rank    Total Small Lengthscale   Prop Higher Rank
 # 1       Ovarian          75                     161        0.4658385
@@ -48,7 +49,7 @@ results$`Percent Weight Stabilized` <- c(24.2762214149168, 32.5231071802586, 41.
 # 3            LC           9                      23        0.3913043
 # 4        Breast          71                     106        0.6698113
 # 5           HPC          21                      54        0.3888889
-# 6 HPC_V12D07-335_D1     21                      45        0.4666667
+# 6 HPC_V12D07-335_D1      21                      45        0.4666667
 # 7 LobularBreast          93                     143        0.6503497
 # 8 SubtypeBreast          51                     119        0.4285714
 # Prop Unweighted SVGs     Prop Weighted SVGs   Total Genes       Percent Weight Stabilized
@@ -57,8 +58,8 @@ results$`Percent Weight Stabilized` <- c(24.2762214149168, 32.5231071802586, 41.
 # 3            0.5093914          0.5326822        1331                  41.96341
 # 4            0.8055353          0.3808944       12321                  23.43633
 # 5            0.9280105          0.9526926        5348                  29.22013
-# 6            0.8477509          0.6988047        6358
-# 7            0.8220057          0.5201996       12624                  27.19424
+# 6            0.8477509          0.6988047        6358                  27.19424
+# 7            0.8220057          0.5201996       12624                  27.59892
 # 8            0.2738337          0.4101420       12325                  29.83522
 
 #Ovarian 24.2762214149168% of observations had their weight stabilized
@@ -66,5 +67,31 @@ results$`Percent Weight Stabilized` <- c(24.2762214149168, 32.5231071802586, 41.
 #LC 41.9634057000962% of observations had their weight stabilized
 #Breast 23.4363301754294% of observations had their weight stabilized
 #HPC 29.2201329157317% of observations had their weight stabilized
-#Lobular Breast 27.1942350381327% of observations had their weight stabilized
+#HPV_V12D07-335_D1 27.1942350381327% of observations had their weight stabilized
+#Lobular Breast 27.5989176264912% of observations had their weight stabilized
 #Subtype Breast 29.8352176439563% of observations had their weight stabilized
+
+# create a plot with x-axis as prop unweighted SVGs and y-axis as prop higher rank
+# exclude HPC 
+results <- results %>% filter(Dataset != "HPC")
+# rename HPC_V12D07-335_D1 to HPC
+results$Dataset[results$Dataset == "HPC_V12D07-335_D1"] <- "HPC"
+
+fig1 <- ggplot(results, aes(x = `Prop Unweighted SVGs`, y = `Prop Higher Rank`)) +
+  geom_point() +
+  #add line of best fit
+  geom_smooth(method = "lm", se = FALSE) +
+  geom_text(aes(label = Dataset), nudge_x = 0.01, nudge_y = 0.01) +
+  theme_bw() +
+  labs(x = "Proportion of Unweighted SVGs", y = "Proportion of Low Lengthscale Genes with Higher Rank") +
+  theme(axis.text = element_text(size = 12),
+        axis.title = element_text(size = 14),
+        plot.title = element_text(size = 16),
+        legend.text = element_text(size = 12),
+        legend.title = element_text(size = 14))
+
+ggsave(filename=here("plots", "supplementary", "noise_small_lengthscale.png"), 
+       plot = fig1, 
+       width = 7, 
+       height = 7,
+       units = "in")
