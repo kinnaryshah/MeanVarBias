@@ -3,6 +3,8 @@ library(SpatialExperiment)
 library(nnSVG)
 library(scran)
 
+# TODO: HPC GEO error was fixed, update this file as well
+
 #load in spe object
 load(file = "/dcs04/lieber/lcolladotor/spatialHPC_LIBD4035/spatial_hpc/processed-data/02_build_spe/spe_transform.Rdata")
 
