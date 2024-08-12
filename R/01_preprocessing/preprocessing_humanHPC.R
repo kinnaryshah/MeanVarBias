@@ -21,8 +21,10 @@ spe <- read10xVisium(here("outputs/raw/humanHPC/outs/"),
 # preprocessing
 # -------------
 
-#subset to one sample
-spe <- spe[, spe$sample_id == "V10B01-085_A1"]
+#row data formatting
+rowData(spe)$gene_id <- rownames(spe)
+rowData(spe)$gene_name <- rowData(spe)$symbol
+rowData(spe)$symbol <- NULL
 
 spe <- filter_genes(spe)
 
@@ -41,6 +43,4 @@ saveRDS(spe, file = fn)
 # -----------
 
 sessionInfo()
-
-
 
