@@ -1,6 +1,7 @@
 library(SpatialExperiment)
 library(dplyr)
 library(here)
+library(ggplot2)
 
 for (tissue in c("Breast","Ovarian", "LobularBreast", "SubtypeBreast")) {
   spe_unweighted <- readRDS(here("outputs", "results", paste0("spe_human", tissue, "_nnSVG.rds")))
@@ -131,6 +132,82 @@ for (ix in indices) {
           coord_fixed() + 
           scale_y_reverse() + 
           scale_color_viridis_c(name = "logcounts") + 
+          ggtitle(rowData(spe_unweighted)$gene_name[ix]) + 
+          theme_bw() + 
+          theme(plot.title = element_text(face = "italic"), 
+                panel.grid = element_blank(), 
+                axis.title = element_blank(), 
+                axis.text = element_blank(), 
+                axis.ticks = element_blank())
+  )
+}
+dev.off()
+
+# vis cancer related genes on counts scale
+# Breast cancer related genes
+spe_unweighted <- readRDS(here("outputs", "results", "spe_humanBreast_nnSVG.rds"))
+genes <- c("ATXN7", "E2F3", "MFHAS1", "SAAL1", "DDX10", "TLN2", "ITCH", "ZHX3")
+indices <- which(rowData(spe_unweighted)$gene_name %in% genes)
+
+pdf(here("plots", "transcription_factors_Breast_counts.pdf"))
+for (ix in indices) {
+  df <- as.data.frame(cbind(spatialCoords(spe_unweighted), expr = counts(spe_unweighted)[ix, ]))
+  print(ggplot(df, aes(x = pxl_col_in_fullres, y = pxl_row_in_fullres, 
+                       color = expr)) + 
+          geom_point(size = 2) + 
+          coord_fixed() + 
+          scale_y_reverse() + 
+          scale_color_viridis_c(name = "counts") + 
+          ggtitle(rowData(spe_unweighted)$gene_name[ix]) + 
+          theme_bw() + 
+          theme(plot.title = element_text(face = "italic"), 
+                panel.grid = element_blank(), 
+                axis.title = element_blank(), 
+                axis.text = element_blank(), 
+                axis.ticks = element_blank())
+  )
+}
+dev.off()
+
+# Ovarian cancer related genes
+spe_unweighted <- readRDS(here("outputs", "results", "spe_humanOvarian_nnSVG.rds"))
+genes <- c("TUFT1", "DDX39B")
+indices <- which(rowData(spe_unweighted)$gene_name %in% genes)
+
+pdf(here("plots", "transcription_factors_Ovarian_counts.pdf"))
+for (ix in indices) {
+  df <- as.data.frame(cbind(spatialCoords(spe_unweighted), expr = counts(spe_unweighted)[ix, ]))
+  print(ggplot(df, aes(x = pxl_col_in_fullres, y = pxl_row_in_fullres, 
+                       color = expr)) + 
+          geom_point(size = 3) + 
+          coord_fixed() + 
+          scale_y_reverse() + 
+          scale_color_viridis_c(name = "counts") + 
+          ggtitle(rowData(spe_unweighted)$gene_name[ix]) + 
+          theme_bw() + 
+          theme(plot.title = element_text(face = "italic"), 
+                panel.grid = element_blank(), 
+                axis.title = element_blank(), 
+                axis.text = element_blank(), 
+                axis.ticks = element_blank())
+  )
+}
+dev.off()
+
+# Lobular Breast cancer related genes
+spe_unweighted <- readRDS(here("outputs", "results", "spe_humanLobularBreast_nnSVG.rds"))
+genes <- c("PDK1", "PPAT", "ATP6AP1L", "LYRM7", "TRIM35", "TRIM32", "FRAT1", "TIGAR", "ZNF439", "MOSPD2", "BRWD3")
+indices <- which(rowData(spe_unweighted)$gene_name %in% genes)
+
+pdf(here("plots", "transcription_factors_LobularBreast_counts.pdf"))
+for (ix in indices) {
+  df <- as.data.frame(cbind(spatialCoords(spe_unweighted), expr = counts(spe_unweighted)[ix, ]))
+  print(ggplot(df, aes(x = pxl_col_in_fullres, y = pxl_row_in_fullres, 
+                       color = expr)) + 
+          geom_point(size = 2) + 
+          coord_fixed() + 
+          scale_y_reverse() + 
+          scale_color_viridis_c(name = "counts") + 
           ggtitle(rowData(spe_unweighted)$gene_name[ix]) + 
           theme_bw() + 
           theme(plot.title = element_text(face = "italic"), 
