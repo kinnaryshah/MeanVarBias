@@ -63,6 +63,36 @@ results$`Percent Weight Stabilized` <- c(24.2590865927539, 32.4546892587122, 42.
 #Subtype Breast 29.6677436152434% of observations had their weight stabilized
 
 
+small_lengthscale_effect <- function(spe_unweighted, spe_weighted, low, high) {
+  idx <- which(rowData(spe_unweighted)$phi > low & rowData(spe_unweighted)$phi < high)
+  ranks <- data.frame(
+    gene = rowData(spe_unweighted)$gene_name[idx],
+    unweighted = rowData(spe_unweighted)$rank[idx],
+    weighted = rowData(spe_weighted)$weighted_rank[idx],
+    diff = rowData(spe_unweighted)$rank[idx] - rowData(spe_weighted)$weighted_rank[idx]
+  )
+  
+  ranks <- filter(ranks, diff > 0)
+  
+  return(ranks$gene)
+}
+
+# list of datasets to use function on
+dat <- c("Ovarian", "DLPFC", "LC", "Breast", "HPC", "HPC_V12D07-335_D1", "LobularBreast", "SubtypeBreast")
+
+# create a list of the output of the function for each dataset
+results <- list()
+for (d in dat) {
+  spe_unweighted <- readRDS(here("outputs", "results", paste0("spe_human", d, "_nnSVG.rds")))
+  spe_weighted <- readRDS(here("outputs", "results", paste0("spe_human", d, "_weighted_nnSVG.rds")))
+  results[[d]] <- small_lengthscale_effect(spe_unweighted, spe_weighted, 0.011, 0.025)
+}
+
+gene_list <- results[["Breast"]]
+gene_column <- paste(gene_list, collapse = "\n")
+cat(gene_column)
+
+
 # create a plot with x-axis as prop unweighted SVGs and y-axis as prop higher rank
 # exclude HPC 
 results <- results %>% filter(Dataset != "HPC")
