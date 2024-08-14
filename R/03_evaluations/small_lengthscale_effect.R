@@ -62,7 +62,32 @@ results$`Percent Weight Stabilized` <- c(24.2590865927539, 32.4546892587122, 42.
 #Lobular Breast 27.0195205755438% of observations had their weight stabilized
 #Subtype Breast 29.6677436152434% of observations had their weight stabilized
 
+# create a plot with x-axis as prop unweighted SVGs and y-axis as prop higher rank
+# exclude HPC 
+results <- results %>% filter(Dataset != "HPC")
+# rename HPC_V12D07-335_D1 to HPC
+results$Dataset[results$Dataset == "HPC_V12D07-335_D1"] <- "HPC"
 
+fig1 <- ggplot(results, aes(x = `Prop Unweighted SVGs`, y = `Prop Higher Rank`)) +
+  geom_point() +
+  #add line of best fit
+  geom_smooth(method = "lm", se = FALSE) +
+  geom_text(aes(label = Dataset), nudge_x = 0.01, nudge_y = 0.01) +
+  theme_bw() +
+  labs(x = "Proportion of Unweighted SVGs", y = "Proportion of Low Lengthscale Genes with Higher Rank") +
+  theme(axis.text = element_text(size = 12),
+        axis.title = element_text(size = 14),
+        plot.title = element_text(size = 16),
+        legend.text = element_text(size = 12),
+        legend.title = element_text(size = 14))
+
+ggsave(filename=here("plots", "supplementary", "small_lengthscale.png"), 
+       plot = fig1, 
+       width = 7, 
+       height = 7,
+       units = "in")
+
+# look for genes related to cancer and visualize these
 small_lengthscale_effect <- function(spe_unweighted, spe_weighted, low, high) {
   idx <- which(rowData(spe_unweighted)$phi > low & rowData(spe_unweighted)$phi < high)
   ranks <- data.frame(
@@ -92,28 +117,112 @@ gene_list <- results[["Breast"]]
 gene_column <- paste(gene_list, collapse = "\n")
 cat(gene_column)
 
+# vis cancer related genes
+# Breast cancer related genes
+spe_unweighted <- readRDS(here("outputs", "results", "spe_humanBreast_nnSVG.rds"))
+genes <- c("DDX20", "ASXL2", "MGAT5", "ICOS", "TNFRSF21", "NUP43", "CDK13",
+           "NOL6", "DAPK1", "TRIM21", "FAM111B", "SPDYC", "ZBTB1", "PEAK1",
+           "RCCD1", "FTO", "ULK2", "TRIM65", "DNMT3B")
+indices <- which(rowData(spe_unweighted)$gene_name %in% genes)
 
-# create a plot with x-axis as prop unweighted SVGs and y-axis as prop higher rank
-# exclude HPC 
-results <- results %>% filter(Dataset != "HPC")
-# rename HPC_V12D07-335_D1 to HPC
-results$Dataset[results$Dataset == "HPC_V12D07-335_D1"] <- "HPC"
+pdf(here("plots", "low_lengthscale_Breast.pdf"))
+for (ix in indices) {
+  df <- as.data.frame(cbind(spatialCoords(spe_unweighted), expr = logcounts(spe_unweighted)[ix, ]))
+  print(ggplot(df, aes(x = pxl_col_in_fullres, y = pxl_row_in_fullres, 
+                       color = expr)) + 
+          geom_point(size = 2) + 
+          coord_fixed() + 
+          scale_y_reverse() + 
+          scale_color_viridis_c(name = "logcounts") + 
+          ggtitle(rowData(spe_unweighted)$gene_name[ix]) + 
+          theme_bw() + 
+          theme(plot.title = element_text(face = "italic"), 
+                panel.grid = element_blank(), 
+                axis.title = element_blank(), 
+                axis.text = element_blank(), 
+                axis.ticks = element_blank())
+  )
+}
+dev.off()
 
-fig1 <- ggplot(results, aes(x = `Prop Unweighted SVGs`, y = `Prop Higher Rank`)) +
-  geom_point() +
-  #add line of best fit
-  geom_smooth(method = "lm", se = FALSE) +
-  geom_text(aes(label = Dataset), nudge_x = 0.01, nudge_y = 0.01) +
-  theme_bw() +
-  labs(x = "Proportion of Unweighted SVGs", y = "Proportion of Low Lengthscale Genes with Higher Rank") +
-  theme(axis.text = element_text(size = 12),
-        axis.title = element_text(size = 14),
-        plot.title = element_text(size = 16),
-        legend.text = element_text(size = 12),
-        legend.title = element_text(size = 14))
+# Ovarian cancer related genes
+spe_unweighted <- readRDS(here("outputs", "results", "spe_humanOvarian_nnSVG.rds"))
+genes <- c("LSAMP", "DTX3L", "CASC15", "SLC25A6", "CDK9", "MAP3K8", "GCH1", "PCYT2")
+indices <- which(rowData(spe_unweighted)$gene_name %in% genes)
 
-ggsave(filename=here("plots", "supplementary", "small_lengthscale.png"), 
-       plot = fig1, 
-       width = 7, 
-       height = 7,
-       units = "in")
+pdf(here("plots", "low_lengthscale_Ovarian.pdf"))
+for (ix in indices) {
+  df <- as.data.frame(cbind(spatialCoords(spe_unweighted), expr = logcounts(spe_unweighted)[ix, ]))
+  print(ggplot(df, aes(x = pxl_col_in_fullres, y = pxl_row_in_fullres, 
+                       color = expr)) + 
+          geom_point(size = 3) + 
+          coord_fixed() + 
+          scale_y_reverse() + 
+          scale_color_viridis_c(name = "logcounts") + 
+          ggtitle(rowData(spe_unweighted)$gene_name[ix]) + 
+          theme_bw() + 
+          theme(plot.title = element_text(face = "italic"), 
+                panel.grid = element_blank(), 
+                axis.title = element_blank(), 
+                axis.text = element_blank(), 
+                axis.ticks = element_blank())
+  )
+}
+dev.off()
+
+# Lobular Breast cancer related genes
+spe_unweighted <- readRDS(here("outputs", "results", "spe_humanLobularBreast_nnSVG.rds"))
+genes <- c("ZNF436", "MTF2", "HAGLR", "SATB1", "CD200", "TRIM59", "UCHL1",
+           "LIFR", "FER", "NFIL3", "ENTPD1", "CLEC2D", "FLT1", "CGRRF1",
+           "TYRO3", "ADAM10", "NLRP1", "HAUS5", "MECP2")
+indices <- which(rowData(spe_unweighted)$gene_name %in% genes)
+
+pdf(here("plots", "low_lengthscale_LobularBreast.pdf"))
+for (ix in indices) {
+  df <- as.data.frame(cbind(spatialCoords(spe_unweighted), expr = logcounts(spe_unweighted)[ix, ]))
+  print(ggplot(df, aes(x = pxl_col_in_fullres, y = pxl_row_in_fullres, 
+                       color = expr)) + 
+          geom_point(size = 2) + 
+          coord_fixed() + 
+          scale_y_reverse() + 
+          scale_color_viridis_c(name = "logcounts") + 
+          ggtitle(rowData(spe_unweighted)$gene_name[ix]) + 
+          theme_bw() + 
+          theme(plot.title = element_text(face = "italic"), 
+                panel.grid = element_blank(), 
+                axis.title = element_blank(), 
+                axis.text = element_blank(), 
+                axis.ticks = element_blank())
+  )
+}
+dev.off()
+
+# Subtype Breast cancer related genes
+spe_unweighted <- readRDS(here("outputs", "results", "spe_humanSubtypeBreast_nnSVG.rds"))
+genes <- c("CASP8", "ATP11B", "E2F3", "EHMT2", "TREM1", "SMC2", "CD82",
+           "BIRC2", "GABARAPL1", "CDYL2", "MSI2", "CTDP1", "DDA1", "JAM2",
+           "TAF1", "FGF13")
+indices <- which(rowData(spe_unweighted)$gene_name %in% genes)
+
+pdf(here("plots", "low_lengthscale_SubtypeBreast.pdf"))
+for (ix in indices) {
+  df <- as.data.frame(cbind(spatialCoords(spe_unweighted), expr = logcounts(spe_unweighted)[ix, ]))
+  print(ggplot(df, aes(x = pxl_col_in_fullres, y = pxl_row_in_fullres, 
+                       color = expr)) + 
+          geom_point(size = 2) + 
+          coord_fixed() + 
+          scale_y_reverse() + 
+          scale_color_viridis_c(name = "logcounts") + 
+          ggtitle(rowData(spe_unweighted)$gene_name[ix]) + 
+          theme_bw() + 
+          theme(plot.title = element_text(face = "italic"), 
+                panel.grid = element_blank(), 
+                axis.title = element_blank(), 
+                axis.text = element_blank(), 
+                axis.ticks = element_blank())
+  )
+}
+dev.off()
+
+
+
