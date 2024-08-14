@@ -9,7 +9,9 @@ library(tidyverse)
 
 # Lobular Breast cancer related genes
 spe_unweighted <- readRDS(here("outputs", "results", "spe_humanLobularBreast_nnSVG.rds"))
-genes <- c("PDK1", "PPAT", "ATP6AP1L", "LYRM7", "TRIM35", "TRIM32", "FRAT1", "TIGAR", "ZNF439", "MOSPD2", "BRWD3")
+genes <- c("ZNF436", "MTF2", "HAGLR", "SATB1", "CD200", "TRIM59", "UCHL1",
+           "LIFR", "FER", "NFIL3", "ENTPD1", "CLEC2D", "FLT1", "CGRRF1",
+           "TYRO3", "ADAM10", "NLRP1", "HAUS5", "MECP2")
 indices <- which(rowData(spe_unweighted)$gene_name %in% genes)
 
 # in colData(spe_unweighted), rename array_row and array_col to row and col
@@ -53,7 +55,7 @@ col_data_df <- colData(spe_unweighted) |>
 rownames(col_data_df) <- colnames(spe_unweighted)
 colData(spe_unweighted)$PRECAST_cluster <- col_data_df$PRECAST_cluster
 
-pdf(here("plots", "transcription_factors_LobularBreast_escheR_2.pdf"))
+pdf(here("plots", "low_lengthscale_LobularBreast_escheR_2.pdf"))
 for (gene in genes) {
   spe_unweighted$counts_gene <- counts(spe_unweighted)[which(rowData(spe_unweighted)$gene_name==gene),]
   p <- make_escheR(spe_unweighted)  |> 

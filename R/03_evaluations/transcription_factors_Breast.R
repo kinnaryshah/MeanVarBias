@@ -7,9 +7,9 @@ library(PRECAST)
 library(Seurat)
 library(tidyverse)
 
-# Lobular Breast cancer related genes
-spe_unweighted <- readRDS(here("outputs", "results", "spe_humanLobularBreast_nnSVG.rds"))
-genes <- c("PDK1", "PPAT", "ATP6AP1L", "LYRM7", "TRIM35", "TRIM32", "FRAT1", "TIGAR", "ZNF439", "MOSPD2", "BRWD3")
+# Breast cancer related genes
+spe_unweighted <- readRDS(here("outputs", "results", "spe_humanBreast_nnSVG.rds"))
+genes <- c("ATXN7", "E2F3", "MFHAS1", "SAAL1", "DDX10", "TLN2", "ITCH", "ZHX3")
 indices <- which(rowData(spe_unweighted)$gene_name %in% genes)
 
 # in colData(spe_unweighted), rename array_row and array_col to row and col
@@ -19,9 +19,9 @@ colData(spe_unweighted)$col <- colData(spe_unweighted)$array_col
 # use clustering with k=6 to cluster the cells
 seu <- CreateSeuratObject(counts = as.matrix(counts(spe_unweighted)), 
                           meta.data=data.frame(colData(spe_unweighted)),
-                          project="LobularBreast")
+                          project="Breast")
 
-seuList <- list("LobularBreast" = seu)
+seuList <- list("Breast" = seu)
 
 set.seed(1)
 preobj <- CreatePRECASTObject(seuList = seuList, gene.number=2000, selectGenesMethod='HVGs',
@@ -53,7 +53,7 @@ col_data_df <- colData(spe_unweighted) |>
 rownames(col_data_df) <- colnames(spe_unweighted)
 colData(spe_unweighted)$PRECAST_cluster <- col_data_df$PRECAST_cluster
 
-pdf(here("plots", "transcription_factors_LobularBreast_escheR_2.pdf"))
+pdf(here("plots", "transcription_factors_Breast_escheR_2.pdf"))
 for (gene in genes) {
   spe_unweighted$counts_gene <- counts(spe_unweighted)[which(rowData(spe_unweighted)$gene_name==gene),]
   p <- make_escheR(spe_unweighted)  |> 
