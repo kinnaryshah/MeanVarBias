@@ -345,7 +345,7 @@ create_col_plots <- function(file_dir) {
 }
 
 
-percent <- "70"
+percent <- "50"
 
 best <- "reps_high_range_sigma.sq_high_beta_1000_genes_SVG_percentages_subset"
 high_genes <- "reps_high_range_sigma.sq_high_beta_3000_genes_SVG_percentages_subset"
@@ -431,4 +431,37 @@ annotate_figure(plot, top = text_grob("varying length scale parameters", face = 
                 left = "              Lengthscale 200                                                              Lengthscale 100                                                            Lengthscale 90                                                             Lengthscale 80")
 
 dev.off()
+
+
+### UPDATE FOR SUPP PAPER PLOT
+
+l40 <- here("R", "false_discovery_rate", "reps_968_40_50per_1000_0.2_to_3_0.5_to_9")
+l40_list <- create_col_plots(l40)
+
+l50 <- here("R", "false_discovery_rate", "reps_968_50_50per_1000_0.2_to_3_0.5_to_9")
+l50_list <- create_col_plots(l50)
+
+l60 <- here("R", "false_discovery_rate", "reps_968_60_50per_1000_0.2_to_3_0.5_to_9")
+l60_list <- create_col_plots(l60)
+
+l70 <- here("R", "false_discovery_rate", "reps_968_70_50per_1000_0.2_to_3_0.5_to_9")
+l70_list <- create_col_plots(l70)
+
+l80 <- here("R", "false_discovery_rate", "reps_968_80_50per_1000_0.2_to_3_0.5_to_9")
+l80_list <- create_col_plots(l80)
+
+l90 <- here("R", "false_discovery_rate", "reps_968_90_50per_1000_0.2_to_3_0.5_to_9")
+l90_list <- create_col_plots(l90)
+
+l100 <- here("R", "false_discovery_rate", "reps_968_100_50per_1000_0.2_to_3_0.5_to_9")
+l100_list <- create_col_plots(l100)
+
+
+plot <- ggarrange(plotlist = c(l40_list, l50_list, l60_list, l70_list, l80_list, l90_list, l100_list),
+                  ncol = 5, nrow = 7)
+plot <- annotate_figure(plot, top = text_grob("varying length scale parameters", face = "bold", size = 14),
+                left = "    Lengthscale 100                             Lengthscale 90                             Lengthscale 80                             Lengthscale 70                             Lengthscale 60                           Lengthscale 50                              Lengthscale 40")
+
+ggsave(here("plots","supplementary","lengthscale_metrics_plots.png"), 
+       plot = plot, width = 10, height = 20)
 
