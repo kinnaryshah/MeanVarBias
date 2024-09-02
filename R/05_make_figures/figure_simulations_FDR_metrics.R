@@ -327,7 +327,8 @@ l60 <- here("outputs", "simulations", "reps_968_60_50per_1000_0.2_to_3_0.5_to_9"
 l60_list <- create_col_plots(l60)
 
 plot <- ggarrange(plotlist = c(l50_list, l60_list),
-                  ncol = 5, nrow = 2)
+                  ncol = 5, nrow = 2,
+                  labels = c("A", "B", "C", "D", "E", "F", "G", "H", "I", "J"))
 plot <- annotate_figure(plot, top = text_grob("varying length scale parameters", face = "bold", size = 14),
                 left = "              Lengthscale 60                                                              Lengthscale 50        ")
 
