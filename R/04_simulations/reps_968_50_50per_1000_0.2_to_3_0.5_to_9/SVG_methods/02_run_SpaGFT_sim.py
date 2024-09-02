@@ -8,7 +8,7 @@ from pathlib import Path
 
 # Set up the base directory (typically the project root)
 base_dir = Path(__file__).resolve().parent
-base_dir = base_dir / ".." / ".." / ".." 
+base_dir = base_dir / ".."  / ".." / ".." / ".." 
 print(base_dir)
 
 # ---------
@@ -28,6 +28,7 @@ print("File path:", counts_dir)
 count_mtx = pd.read_csv(counts_dir,index_col=0).transpose()
 coord_mtx = pd.read_csv(coords_dir,index_col=0)
 coord_mtx = coord_mtx.rename(columns={'pxl_col_in_fullres': 'array_col', 'pxl_row_in_fullres': 'array_row'})
+coord_mtx.index = count_mtx.index
 adata = sc.AnnData(count_mtx)
 adata.obs.loc[:, ['array_col', 'array_row']] = coord_mtx
 adata.var_names_make_unique()
