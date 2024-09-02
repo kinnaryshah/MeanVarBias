@@ -36,7 +36,7 @@ df_fxn <- function(file_name, dataset) {
   return(df_effect)
 }
 
-file_list <- c(here("outputs", "results", "spe_humanHPC_nnSVG.rds"),
+file_list <- c(here("outputs", "results", "spe_humanHPC_V12D07-335_D1_nnSVG.rds"),
                here("outputs", "results", "spe_humanBreast_nnSVG.rds"),
                here("outputs", "results", "spe_humanDLPFC_nnSVG.rds"),
                here("outputs", "results", "spe_humanLC_nnSVG.rds"),
