@@ -57,7 +57,8 @@ example_para <- extract_para(
   marginal_list = example_marginal,
   n_cores = 10,
   family_use = "nb",
-  new_covariate = example_datadat
+  new_covariate = example_data$new_covariate,
+  data = example_data$dat
 )
 
 
@@ -69,7 +70,8 @@ dev_ordered <- order(dev_explain, decreasing = TRUE)
 
 
 df_dev_explain <- as.data.frame(dev_explain)
-df_dev_explainranking <- rank(-df_dev_explain$dev_explain)
+df_dev_explain$gene <- rownames(df_dev_explain)
+df_dev_explain$ranking <- rank(-df_dev_explain$dev_explain)
 
 write.csv(df_dev_explain, 'dev_explain.csv')
 head(df_dev_explain)
@@ -87,10 +89,7 @@ p <- ggplot(data = df_dev_explain, aes(x = ranking, y = dev_explain)) +
   xlab("Genes") + ylab("deviation explained by GP") +
   theme(axis.text.x = element_blank())
 
-p
-
 head(df_dev_explain)
-
 
 for(num_de in c(50, 100, 150, 200)){
   ordered <- dev_explain[dev_ordered]
@@ -106,11 +105,15 @@ for(num_de in c(50, 100, 150, 200)){
   set.seed(1)
   example_newcount <- simu_new(
     sce = example_sce,
-    mean_mat = example_parasigma_mat,
-    zero_mat = example_paracopula_list,
+    mean_mat = example_para$mean_mat,
+    sigma_mat = example_para$sigma_mat,
+    zero_mat = example_para$zero_mat,
+    quantile_mat = NULL,
+    copula_list = example_copula$copula_list,
     n_cores = 10,
     family_use = "nb",
-    input_data = example_datanewCovariate,
+    input_data = example_data$dat,
+    new_covariate = example_data$newCovariate,
     important_feature = rep(TRUE, dim(example_sce)[1]),
     filtered_gene = NULL
   )
