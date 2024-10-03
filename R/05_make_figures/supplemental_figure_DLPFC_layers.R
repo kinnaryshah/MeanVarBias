@@ -41,7 +41,7 @@ all_layers_df <- Reduce(rbind,layer_df)
 # variance vs. mean
 var <- ggplot(all_layers_df, 
               aes(x = mean, y = var, color = LR_stat_scaled)) + 
-  geom_point(size = 1) + 
+  geom_point(size = 0.7) + 
   geom_smooth(method="loess", color="black", linewidth=0.5) +
   facet_grid(layer_val~., switch = "y") +
   scale_color_viridis(trans = "log10") +
@@ -58,7 +58,7 @@ var <- ggplot(all_layers_df,
 # spatial variance vs. mean
 spat_var <- ggplot(all_layers_df, 
                    aes(x = mean, y = sigma.sq, color = LR_stat_scaled)) + 
-  geom_point(size = 1) + 
+  geom_point(size = 0.7) + 
   facet_grid(layer_val~., switch = "y") +
   scale_color_viridis(trans = "log10") +
   scale_color_gradient(low = "blue", high = "red") +
@@ -72,7 +72,7 @@ spat_var <- ggplot(all_layers_df,
 
 nonspat_var <- ggplot(all_layers_df, 
                       aes(x = mean, y = tau.sq, color = LR_stat_scaled)) + 
-  geom_point(size = 1) + 
+  geom_point(size = 0.7) + 
   facet_grid(layer_val~., switch = "y") +
   scale_color_viridis(trans = "log10") +
   scale_color_gradient(low = "blue", high = "red") +
@@ -86,7 +86,7 @@ nonspat_var <- ggplot(all_layers_df,
 
 prop <- ggplot(all_layers_df, 
                aes(x = mean, y = prop_sv, color = LR_stat_scaled)) + 
-  geom_point(size = 1) + 
+  geom_point(size = 0.7) + 
   facet_grid(layer_val~., switch = "y") +
   scale_color_viridis(trans = "log10") +
   scale_color_gradient(low = "blue", high = "red") +
@@ -100,4 +100,6 @@ prop <- ggplot(all_layers_df,
 
 ggsave(here("plots", "supplementary", "DLPFC_layers.png"),
        wrap_plots(var, spat_var, nonspat_var, prop, guides="collect",
-           ncol=4, nrow=1))
+           ncol=4, nrow=1),
+       width = 10,
+       height = 8)
