@@ -17,6 +17,7 @@ results <- read.csv(file=fn, header = T, sep = ",", row.names = 1)
 # merge results into spe
 # ---------
 
+rownames(spe) <- c(1:1000)
 df_merge <- merge(rowData(spe), results, by=0)
 row.names(df_merge) <- df_merge$Row.names
 df_merge$Row.names <- NULL
@@ -25,6 +26,7 @@ df_merge$Row.names <- NULL
 df_merge$SpatialDE2_rank <- rank(-df_merge$FSV, ties.method = "first")
 
 # add to spe
+df_merge <- df_merge[match(rownames(spe), rownames(df_merge)), ]
 rowData(spe) <- df_merge
 
 # ---------

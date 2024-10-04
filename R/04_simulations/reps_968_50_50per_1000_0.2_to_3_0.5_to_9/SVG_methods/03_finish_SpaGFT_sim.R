@@ -17,14 +17,16 @@ results <- read.csv(file=fn, header = T, sep = ",", row.names = 1)
 # merge results into spe
 # ---------
 
+rownames(spe) <- c(1:1000)
 df_merge <- merge(rowData(spe), results, by=0)
 row.names(df_merge) <- df_merge$Row.names
 df_merge$Row.names <- NULL
 
-# rank by qvalues
-df_merge$SpaGFT_rank <- rank(df_merge$qvalue, ties.method = "first")
+# re-name
+df_merge$SpaGFT_rank <- df_merge$svg_rank
 
 # add to spe
+df_merge <- df_merge[match(rownames(spe), rownames(df_merge)), ]
 rowData(spe) <- df_merge
 
 # ---------
