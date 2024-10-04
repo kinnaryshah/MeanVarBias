@@ -11,7 +11,7 @@ sim_dir <- "reps_968_50_50per_1000_0.2_to_3_0.5_to_9"
 spe_HVG <- readRDS(here("outputs", "results", "simulations",sim_dir, "spe_HVG.rds"))
 spe_MoransI <- readRDS(here("outputs", "results", "simulations",sim_dir, "spe_MoransI.rds"))
 i=1
-spe_nnSVG <- readRDS(here("outputs", "simulations", "reps_968_60_50per_1000_0.2_to_3_0.5_to_9", paste0("spe_nnSVG_", i, ".rds")))
+spe_nnSVG <- readRDS(here("outputs", "simulations", sim_dir, paste0("spe_nnSVG_", i, ".rds")))
 spe_SPARKX <- readRDS(here("outputs", "results", "simulations",sim_dir, "spe_SPARKX.rds"))
 spe_SpaGFT <- readRDS(here("outputs", "results", "simulations",sim_dir, "spe_SpaGFT.rds"))
 spe_SpatialDE2 <- readRDS(here("outputs", "results", "simulations",sim_dir, "spe_SpatialDE2.rds"))
