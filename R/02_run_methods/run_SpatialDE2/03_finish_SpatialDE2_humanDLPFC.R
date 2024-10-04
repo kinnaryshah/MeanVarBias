@@ -23,7 +23,8 @@ df_merge$Row.names <- NULL
 df_merge$SpatialDE2_rank <- rank(-df_merge$FSV, ties.method = "first")
 
 # add to spe
-rowData(spe) <- df_merge
+df_merge <- df_merge[match(rownames(spe), rownames(df_merge)), ]
+rowData(spe)$SpatialDE2_rank <- df_merge$SpatialDE2_rank
 
 # ---------
 # save spe
