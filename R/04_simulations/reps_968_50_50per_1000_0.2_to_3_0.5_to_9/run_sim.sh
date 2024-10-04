@@ -2,7 +2,7 @@
 #SBATCH --job-name=run_sim
 #SBATCH --cpus-per-task=10
 #SBATCH --mem-per-cpu=5G
-#SBATCH --array=1-5
+#SBATCH --array=1-50
 #SBATCH --mail-type=END
 #SBATCH --output=sim.%a.o
 #SBATCH --error=sim.%a.e
