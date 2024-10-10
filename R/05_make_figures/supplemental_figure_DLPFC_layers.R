@@ -46,9 +46,9 @@ var <- ggplot(all_layers_df,
   facet_grid(layer_val~., switch = "y") +
   scale_color_viridis(trans = "log10") +
   scale_color_gradient(low = "blue", high = "red") +
-  labs(x = "mean logcounts", 
+  labs(x = "Mean Logcounts", 
        y = "", 
-       color = "LR stat",
+       color = "LR Stat",
        title = expression(sigma^{2}+tau^{2})) + 
   theme_bw() + 
   theme(strip.text.y.left = element_text(angle = 0)) +
@@ -62,9 +62,9 @@ spat_var <- ggplot(all_layers_df,
   facet_grid(layer_val~., switch = "y") +
   scale_color_viridis(trans = "log10") +
   scale_color_gradient(low = "blue", high = "red") +
-  labs(x = "mean logcounts", 
+  labs(x = "Mean Logcounts", 
        y = "", 
-       color = "LR stat",
+       color = "LR Stat",
        title = expression(sigma^{2})) + 
   theme_bw() + 
   theme(strip.background = element_blank(), strip.text.y = element_blank()) +
@@ -76,9 +76,9 @@ nonspat_var <- ggplot(all_layers_df,
   facet_grid(layer_val~., switch = "y") +
   scale_color_viridis(trans = "log10") +
   scale_color_gradient(low = "blue", high = "red") +
-  labs(x = "mean logcounts", 
+  labs(x = "Mean Logcounts", 
        y = "", 
-       color = "LR stat",
+       color = "LR Stat",
        title =expression(tau^{2})) + 
   theme_bw() + 
   theme(strip.background = element_blank(), strip.text.y = element_blank()) +
@@ -90,16 +90,16 @@ prop <- ggplot(all_layers_df,
   facet_grid(layer_val~., switch = "y") +
   scale_color_viridis(trans = "log10") +
   scale_color_gradient(low = "blue", high = "red") +
-  labs(x = "mean logcounts", 
+  labs(x = "Mean Logcounts", 
        y = "", 
-       color = "LR stat",
+       color = "LR Stat",
        title = expression(sigma^{2}/(sigma^{2}+tau^{2}))) + 
   theme_bw() + 
   theme(strip.background = element_blank(), strip.text.y = element_blank()) +
   theme(axis.title.x = element_text(size = 7))
 
 ggsave(here("plots", "supplementary", "DLPFC_layers.png"),
-       wrap_plots(var, spat_var, nonspat_var, prop, guides="collect",
-           ncol=4, nrow=1),
+       wrap_plots(var, spat_var, nonspat_var, prop, guides="collect", axis_titles = "collect",
+           ncol=4, nrow=1) + plot_annotation(tag_levels = 'A'),
        width = 10,
        height = 8)

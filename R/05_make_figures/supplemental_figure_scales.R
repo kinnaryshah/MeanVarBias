@@ -17,7 +17,7 @@ p1 <- data.frame(x=emp_mean, y=emp_var) %>%
   ggplot() +
   geom_point(aes(x=x, y=y)) +
   theme_bw() +
-  labs(x = "sample mean", y="sample variance", 
+  labs(x = "Sample Mean", y="Sample Variance", 
        title = "Using raw counts")
 
 # voom plot
@@ -30,10 +30,10 @@ p2 <- data.frame(x=emp_mean_log,
   ggplot() +
   geom_point(aes(x=x, y=y)) +
   theme_bw() +
-  labs(x = "sample mean", y="standard variance", 
+  labs(x = "Sample Mean", y="Sample Variance", 
        title = "Using log2(counts + 1)")
 
-fig1 <- wrap_plots(A = p1, B = p2, nrow=1) + 
+fig1 <- wrap_plots(A = p1, B = p2, nrow=1, axis_titles = "collect") + 
           plot_annotation(tag_levels = 'A') 
 ggsave(filename=here("plots", "supplementary", "scales.png"), 
        plot = fig1, 

@@ -42,7 +42,7 @@ file_list <- c(here("outputs", "results", "spe_humanHPC_V12D07-335_D1_nnSVG.rds"
                here("outputs", "results", "spe_humanLC_nnSVG.rds"),
                here("outputs", "results", "spe_humanOvarian_nnSVG.rds"))
 
-dataset_list <- c("HPC", "Breast","DLPFC","LC", "Ovarian")
+dataset_list <- c("HPC", "Ductal Breast","DLPFC","LC", "Ovarian")
 
 df <- map2(.x=file_list, .y=dataset_list, .f=~df_fxn(.x,.y))
 reduce_df <- Reduce(rbind,df)
@@ -55,9 +55,9 @@ var <- ggplot(reduce_df,
   facet_grid(dataset_val~., switch = "y") +
   scale_color_viridis(trans = "log10") +
   scale_color_gradient(low = "blue", high = "red") +
-  labs(x = "mean logcounts", 
+  labs(x = "Mean Logcounts", 
        y = "", 
-       color = "LR stat",
+       color = "LR Stat",
        title = expression(sigma^{2}+tau^{2})) + 
   theme_bw() + 
   theme(strip.text.y.left = element_text(angle = 0)) +
@@ -72,9 +72,9 @@ spat_var <- ggplot(reduce_df,
   facet_grid(dataset_val~., switch = "y") +
   scale_color_viridis(trans = "log10") +
   scale_color_gradient(low = "blue", high = "red") +
-  labs(x = "mean logcounts", 
+  labs(x = "Mean Logcounts", 
        y = "", 
-       color = "LR stat",
+       color = "LR Stat",
        title = expression(sigma^{2})) + 
   theme_bw() + 
   theme(strip.background = element_blank(), strip.text.y = element_blank()) +
@@ -86,9 +86,9 @@ nonspat_var <- ggplot(reduce_df,
   facet_grid(dataset_val~., switch = "y") +
   scale_color_viridis(trans = "log10") +
   scale_color_gradient(low = "blue", high = "red") +
-  labs(x = "mean logcounts", 
+  labs(x = "Mean Logcounts", 
        y = "", 
-       color = "LR stat",
+       color = "LR Stat",
        title = expression(tau^{2})) + 
   theme_bw() + 
   theme(strip.background = element_blank(), strip.text.y = element_blank()) +
@@ -100,17 +100,17 @@ prop <- ggplot(reduce_df,
   facet_grid(dataset_val~., switch = "y") +
   scale_color_viridis(trans = "log10") +
   scale_color_gradient(low = "blue", high = "red") +
-  labs(x = "mean logcounts", 
+  labs(x = "Mean Logcounts", 
        y = "", 
-       color = "LR stat",
+       color = "LR Stat",
        title = expression(sigma^{2}/(sigma^{2}+tau^{2}))) + 
   theme_bw() + 
   theme(strip.background = element_blank(), strip.text.y = element_blank()) +
   theme(axis.title.x = element_text(size = 7))
 
 ggsave(here("plots", "main", "motivation.png"),
-       wrap_plots(var, spat_var, nonspat_var, prop, guides="collect",
-           ncol=4, nrow=1),
+       wrap_plots(var, spat_var, nonspat_var, prop, guides="collect", axis_titles = "collect",
+           ncol=4, nrow=1) + plot_annotation(tag_levels = 'A'),
        width = 10,
        height = 6)
 

@@ -5,6 +5,7 @@ library(SpatialExperiment)
 library(dplyr)
 library(ggpubr)
 library(here)
+library(grid)
 
 create_FDR_df <- function(spe_unweighted, spe_weighted) {
   
@@ -109,24 +110,17 @@ create_ridge_plot_weighted <- function(spe_unweighted, spe_weighted) {
                                        quantile(mean, probs=0:9/10))) %>%
     tibble::rownames_to_column()
   
-  # create a new column called "range" with string values
-  # this new column contains the range of "mean" values for each "quantile" value
-  df <- df %>% 
-    group_by(quantile) %>% 
-    mutate(range = paste0(round(min(mean),2), " - ", round(max(mean),2))) %>% 
-    ungroup()
-  
   df_signal <- df %>%
     mutate(quantile = as.factor(quantile)) %>%
     group_by(quantile) %>%
     slice_min(order_by = rank, n = frac) %>%
-    mutate(grp = "signal")
+    mutate(group = "signal")
   
   indices <- as.integer(df_signal$rowname)
   
   df_background <- df[-indices,] %>%
     mutate(quantile = as.factor(quantile)) %>%
-    mutate(grp = "background")
+    mutate(group = "background")
   
   df <- rbind(df_signal, df_background)
   
@@ -134,22 +128,20 @@ create_ridge_plot_weighted <- function(spe_unweighted, spe_weighted) {
   # and the means of the ranks of "background" groups within each "quantile"
   # and store the results in a new data frame
   df_rank_means_weighted <- df %>%
-    group_by(quantile, grp) %>%
+    group_by(quantile, group) %>%
     summarize(mean = mean(rank)) %>%
     ungroup()
   
-  ridge_plot <- ggplot(df, aes(x = rank, y = range)) +
-    geom_density_ridges2(aes(fill = grp), rel_min_height = 0.02, alpha = 0.3,
-                         stat = "binline", bins = 75, draw_baseline = FALSE) +
+  ridge_plot <- ggplot(df, aes(x = rank, y = quantile)) +
+    geom_density_ridges2(aes(fill = group), rel_min_height = 0.02, alpha = 0.3) +
     theme_ridges(grid = TRUE) +
     labs(
-      y = "decile - unw mean of logcounts",
-      x = "rank",
+      y = "Weighted Method Deciles",
+      x = "Rank",
       title = ""
     ) +
     coord_cartesian(xlim = c(1, n_genes)) +
     theme_bw() +
-    theme(legend.position="none") +
     theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
   
   return(ridge_plot)
@@ -169,24 +161,17 @@ create_ridge_plot_unweighted <- function(spe_unweighted) {
                                        quantile(mean, probs=0:9/10))) %>%
     tibble::rownames_to_column()
   
-  # create a new column called "range" with string values
-  # this new column contains the range of "mean" values for each "quantile" value
-  df <- df %>% 
-    group_by(quantile) %>% 
-    mutate(range = paste0(round(min(mean),2), " - ", round(max(mean),2))) %>% 
-    ungroup()
-  
   df_signal <- df %>%
     mutate(quantile = as.factor(quantile)) %>%
     group_by(quantile) %>%
     slice_min(order_by = rank, n = frac) %>%
-    mutate(grp = "signal")
+    mutate(group = "signal")
   
   indices <- as.integer(df_signal$rowname)
   
   df_background <- df[-indices,] %>%
     mutate(quantile = as.factor(quantile)) %>%
-    mutate(grp = "background")
+    mutate(group = "background")
   
   df <- rbind(df_signal, df_background)
   
@@ -194,21 +179,19 @@ create_ridge_plot_unweighted <- function(spe_unweighted) {
   # and the means of the ranks of "background" groups within each "quantile"
   # and store the results in a new data frame
   df_rank_means_unweighted <- df %>%
-    group_by(quantile, grp) %>%
+    group_by(quantile, group) %>%
     summarize(mean = mean(rank)) %>%
     ungroup()
   
-  ridge_plot <- ggplot(df, aes(x = rank, y = range)) +
-    geom_density_ridges2(aes(fill = grp), rel_min_height = 0.02, alpha = 0.3,
-                         stat = "binline", bins = 75, draw_baseline = FALSE) +
+  ridge_plot <- ggplot(df, aes(x = rank, y = quantile)) +
+    geom_density_ridges2(aes(fill = group), rel_min_height = 0.02, alpha = 0.3) +
     theme_ridges(grid = TRUE) +
     labs(
-      y = "decile - unw mean of logcounts",
-      x = "rank",
+      y = "Unweighted Method Deciles",
+      x = "Rank",
       title = ""
     ) +
     theme_bw() + 
-    theme(legend.position="none") +
     coord_cartesian(xlim = c(1, n_genes)) +
     theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) 
   
@@ -264,8 +247,7 @@ create_col_plots <- function(file_dir) {
     geom_ribbon(aes(ymin = fdr_percent_unweighted - fdr_percent_unweighted_sd, ymax = fdr_percent_unweighted + fdr_percent_unweighted_sd), fill = "blue") +
     geom_ribbon(aes(ymin = fdr_percent_weighted - fdr_percent_weighted_sd, ymax = fdr_percent_weighted + fdr_percent_weighted_sd), fill = "red") +
     ylim(0, 1) +
-    labs(title = "", x = "alpha", y = "FDR") +
-    theme(legend.position="none") +
+    labs(title = "", x = "Alpha", y = "FDR") +
     theme_bw() +
     theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
   
@@ -313,15 +295,12 @@ create_col_plots <- function(file_dir) {
     geom_ribbon(aes(ymin = tpr_levels_weighted - tpr_levels_weighted_sd, ymax = tpr_levels_weighted + tpr_levels_weighted_sd), fill = "red") +
     labs(title = "", x = "FDR", y = "TPR") +
     scale_linetype_manual(values = c("dashed", "solid")) +
-    ylim(0, 1) +
+    ylim(0, 1.01) +
     theme_bw() +
     theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
   
   return(list(p_ridge_unweighted, p_ridge_weighted, p_FDR, p_TNR, p_TPR))
 }
-
-l40 <- here("outputs", "simulations", "reps_968_40_50per_1000_0.2_to_3_0.5_to_9")
-l40_list <- create_col_plots(l40)
 
 l50 <- here("outputs", "simulations", "reps_968_50_50per_1000_0.2_to_3_0.5_to_9")
 l50_list <- create_col_plots(l50)
@@ -329,24 +308,23 @@ l50_list <- create_col_plots(l50)
 l60 <- here("outputs", "simulations", "reps_968_60_50per_1000_0.2_to_3_0.5_to_9")
 l60_list <- create_col_plots(l60)
 
-l70 <- here("outputs", "simulations", "reps_968_70_50per_1000_0.2_to_3_0.5_to_9")
-l70_list <- create_col_plots(l70)
-
-l80 <- here("outputs", "simulations", "reps_968_80_50per_1000_0.2_to_3_0.5_to_9")
-l80_list <- create_col_plots(l80)
-
-l90 <- here("outputs", "simulations", "reps_968_90_50per_1000_0.2_to_3_0.5_to_9")
-l90_list <- create_col_plots(l90)
-
-l100 <- here("outputs", "simulations", "reps_968_100_50per_1000_0.2_to_3_0.5_to_9")
+l100 <- here("R", "04_simulations", "reps_968_100_50per_1000_0.2_to_3_0.5_to_9")
 l100_list <- create_col_plots(l100)
 
+l500 <- here("R", "04_simulations", "reps_968_500_50per_1000_0.2_to_3_0.5_to_9")
+l500_list <- create_col_plots(l500)
 
-plot <- ggarrange(plotlist = c(l40_list, l50_list, l60_list, l70_list, l80_list, l90_list, l100_list),
-                  ncol = 5, nrow = 7)
-plot <- annotate_figure(plot, top = text_grob("varying length scale parameters", face = "bold", size = 14),
-                        left = "    Lengthscale 100                             Lengthscale 90                             Lengthscale 80                             Lengthscale 70                             Lengthscale 60                           Lengthscale 50                              Lengthscale 40")
+plot <- wrap_plots(
+  plot_list_combined <- c(l50_list, l60_list, l100_list, l500_list),
+  ncol = 5,
+  nrow = 4,
+  guides = "collect"
+) + plot_annotation(tag_levels = 'A')
 
-ggsave(here("plots","supplementary","lengthscale_metrics_plots.png"), 
-       plot = plot, width = 10, height = 20)
-
+# Save the plot with ggsave
+ggsave(
+  here("plots", "supplementary", "lengthscale_metrics_plots.png"),
+  plot = plot,
+  width = 10,
+  height = 20
+)
