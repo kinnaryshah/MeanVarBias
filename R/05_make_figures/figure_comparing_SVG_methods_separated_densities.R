@@ -6,6 +6,15 @@ library(dplyr)
 library(ggridges)
 library(here)
 
+
+My_Theme = theme(
+  axis.title.x = element_text(size = 20),
+  axis.title.y = element_text(size = 20),
+  legend.title = element_text(size=20),
+  legend.text = element_text(size=20),
+  title = element_text(size = 20))
+
+
 spe_MoransI <- readRDS(here("outputs", "results", "spe_humanDLPFC_MoransI.rds"))
 spe_nnSVG <- readRDS(here("outputs", "results", "spe_humanDLPFC_nnSVG.rds"))
 spe_SPARKX <- readRDS(here("outputs", "results", "spe_humanDLPFC_SPARKX.rds"))
@@ -46,7 +55,8 @@ MoransI_ridge <- ggplot(df_MoransI, aes(x = rank, y = quantile)) +
   ) +
   guides(fill=guide_legend(title="group")) +
   coord_cartesian(xlim = c(1, n_genes)) +
-  theme_bw() 
+  theme_bw() +
+  My_Theme
 
 df_nnSVG <- data.frame(
   rank = rowData(spe_nnSVG)$rank,
@@ -79,7 +89,8 @@ nnSVG_ridge <- ggplot(df_nnSVG, aes(x = rank, y = quantile)) +
   ) +
   guides(fill=guide_legend(title="group")) +
   coord_cartesian(xlim = c(1, n_genes)) +
-  theme_bw() 
+  theme_bw() +
+  My_Theme
 
 df_SPARKX <- data.frame(
   rank = rowData(spe_SPARKX)$SPARKX_rank,
@@ -113,7 +124,8 @@ SPARKX_ridge <- ggplot(df_SPARKX, aes(x = rank, y = quantile)) +
   ) +
   guides(fill=guide_legend(title="group")) +
   coord_cartesian(xlim = c(1, n_genes)) +
-  theme_bw() 
+  theme_bw() +
+  My_Theme
 
 df_SpaGFT <- data.frame(
   rank = rowData(spe_SpaGFT)$SpaGFT_rank,
@@ -147,7 +159,8 @@ SpaGFT_ridge <- ggplot(df_SpaGFT, aes(x = rank, y = quantile)) +
   ) +
   guides(fill=guide_legend(title="group")) +
   coord_cartesian(xlim = c(1, n_genes)) +
-  theme_bw() 
+  theme_bw() +
+  My_Theme
 
 df_SpatialDE2 <- data.frame(
   rank = rowData(spe_SpatialDE2)$SpatialDE2_rank,
@@ -181,7 +194,8 @@ SpatialDE2_ridge <- ggplot(df_SpatialDE2, aes(x = rank, y = quantile)) +
   ) +
   guides(fill=guide_legend(title="group")) +
   coord_cartesian(xlim = c(1, n_genes)) +
-  theme_bw() 
+  theme_bw() +
+  My_Theme
 
 DLPFC_plotlist <- list(
   MoransI_ridge,
@@ -231,7 +245,8 @@ Ovarian_MoransI_ridge <- ggplot(df_MoransI, aes(x = rank, y = quantile)) +
   ) +
   guides(fill=guide_legend(title="group")) +
   coord_cartesian(xlim = c(1, n_genes)) +
-  theme_bw() 
+  theme_bw() +
+  My_Theme
 
 df_nnSVG <- data.frame(
   rank = rowData(spe_nnSVG)$rank,
@@ -264,7 +279,8 @@ Ovarian_nnSVG_ridge <- ggplot(df_nnSVG, aes(x = rank, y = quantile)) +
   ) +
   guides(fill=guide_legend(title="group")) +
   coord_cartesian(xlim = c(1, n_genes)) +
-  theme_bw() 
+  theme_bw() +
+  My_Theme
 
 df_SPARKX <- data.frame(
   rank = rowData(spe_SPARKX)$SPARKX_rank,
@@ -298,7 +314,8 @@ Ovarian_SPARKX_ridge <- ggplot(df_SPARKX, aes(x = rank, y = quantile)) +
   ) +
   guides(fill=guide_legend(title="group")) +
   coord_cartesian(xlim = c(1, n_genes)) +
-  theme_bw() 
+  theme_bw() +
+  My_Theme
 
 df_SpaGFT <- data.frame(
   rank = rowData(spe_SpaGFT)$SpaGFT_rank,
@@ -332,7 +349,8 @@ Ovarian_SpaGFT_ridge <- ggplot(df_SpaGFT, aes(x = rank, y = quantile)) +
   ) +
   guides(fill=guide_legend(title="group")) +
   coord_cartesian(xlim = c(1, n_genes)) +
-  theme_bw() 
+  theme_bw() +
+  My_Theme
 
 df_SpatialDE2 <- data.frame(
   rank = rowData(spe_SpatialDE2)$SpatialDE2_rank,
@@ -366,7 +384,8 @@ Ovarian_SpatialDE2_ridge <- ggplot(df_SpatialDE2, aes(x = rank, y = quantile)) +
   ) +
   guides(fill=guide_legend(title="group")) +
   coord_cartesian(xlim = c(1, n_genes)) +
-  theme_bw() 
+  theme_bw() +
+  My_Theme
 
 Ovarian_plotlist <- list(
   Ovarian_MoransI_ridge,
@@ -416,7 +435,8 @@ LobularBreast_MoransI_ridge <- ggplot(df_MoransI, aes(x = rank, y = quantile)) +
   ) +
   guides(fill=guide_legend(title="group")) +
   coord_cartesian(xlim = c(1, n_genes)) +
-  theme_bw() 
+  theme_bw() +
+  My_Theme
 
 df_nnSVG <- data.frame(
   rank = rowData(spe_nnSVG)$rank,
@@ -449,7 +469,8 @@ LobularBreast_nnSVG_ridge <- ggplot(df_nnSVG, aes(x = rank, y = quantile)) +
   ) +
   guides(fill=guide_legend(title="group")) +
   coord_cartesian(xlim = c(1, n_genes)) +
-  theme_bw() 
+  theme_bw() +
+  My_Theme
 
 df_SPARKX <- data.frame(
   rank = rowData(spe_SPARKX)$SPARKX_rank,
@@ -483,7 +504,8 @@ LobularBreast_SPARKX_ridge <- ggplot(df_SPARKX, aes(x = rank, y = quantile)) +
   ) +
   guides(fill=guide_legend(title="group")) +
   coord_cartesian(xlim = c(1, n_genes)) +
-  theme_bw() 
+  theme_bw() +
+  My_Theme
 
 df_SpaGFT <- data.frame(
   rank = rowData(spe_SpaGFT)$SpaGFT_rank,
@@ -517,7 +539,8 @@ LobularBreast_SpaGFT_ridge <- ggplot(df_SpaGFT, aes(x = rank, y = quantile)) +
   ) +
   guides(fill=guide_legend(title="group")) +
   coord_cartesian(xlim = c(1, n_genes)) +
-  theme_bw() 
+  theme_bw() +
+  My_Theme
 
 df_SpatialDE2 <- data.frame(
   rank = rowData(spe_SpatialDE2)$SpatialDE2_rank,
@@ -551,7 +574,8 @@ LobularBreast_SpatialDE2_ridge <- ggplot(df_SpatialDE2, aes(x = rank, y = quanti
   ) +
   guides(fill=guide_legend(title="group")) +
   coord_cartesian(xlim = c(1, n_genes)) +
-  theme_bw() 
+  theme_bw() +
+  My_Theme
 
 LobularBreast_plotlist <- list(
   LobularBreast_MoransI_ridge,
@@ -582,5 +606,6 @@ ggsave(here("plots", "main", "comparing_SVG_methods_separated.png"),
          nrow = 3,
          guides = "collect",
          axis_titles = "collect"
-       ) + plot_annotation(tag_levels = 'A'),
+       ) + plot_annotation(tag_levels = 'A') & 
+         theme(plot.tag = element_text(size = 25)),
        width = 21, height = 30)

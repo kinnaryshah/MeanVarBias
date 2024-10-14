@@ -28,6 +28,7 @@ lengthscale_data <- lengthscale_data[lengthscale_data$lengthscale < 1, ]
 
 HPC_hist <- ggplot(as.data.frame(lengthscale_data), aes(x = lengthscale_data)) + 
   geom_density(color = "black", fill = "#804585") + 
+  geom_vline(xintercept=c(0.02), linetype="dotted") +
   xlim(c(0, 1)) + 
   xlab("Estimated Length Scale") + 
   ylab("Density") + 
@@ -40,6 +41,7 @@ lengthscale_data <- lengthscale_data[lengthscale_data$lengthscale < 1, ]
 
 Breast_hist <- ggplot(as.data.frame(lengthscale_data), aes(x = lengthscale_data)) + 
   geom_density(color = "black", fill = "#804585") + 
+  geom_vline(xintercept=c(0.02), linetype="dotted") +
   xlim(c(0, 1)) + 
   xlab("Estimated Length Scale") + 
   ylab("Density") + 
@@ -52,6 +54,7 @@ lengthscale_data <- lengthscale_data[lengthscale_data$lengthscale < 1, ]
 
 LC_hist <- ggplot(as.data.frame(lengthscale_data), aes(x = lengthscale_data)) + 
   geom_density(color = "black", fill = "#804585") + 
+  geom_vline(xintercept=c(0.02), linetype="dotted") + 
   xlim(c(0, 1)) + 
   xlab("Estimated Length Scale") + 
   ylab("Density") + 
@@ -64,6 +67,7 @@ lengthscale_data <- lengthscale_data[lengthscale_data$lengthscale < 1, ]
 
 Ovarian_hist <- ggplot(as.data.frame(lengthscale_data), aes(x = lengthscale_data)) + 
   geom_density(color = "black", fill = "#804585") + 
+  geom_vline(xintercept=c(0.02), linetype="dotted") +
   xlim(c(0, 1)) + 
   xlab("Estimated Length Scale") + 
   ylab("Density") + 

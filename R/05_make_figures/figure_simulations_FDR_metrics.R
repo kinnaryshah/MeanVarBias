@@ -134,13 +134,14 @@ create_ridge_plot_weighted <- function(spe_unweighted, spe_weighted) {
     geom_density_ridges2(aes(fill = group), rel_min_height = 0.02, alpha = 0.3) +
     theme_ridges(grid = TRUE) +
     labs(
-      y = "Weighted Method Deciles",
+      y = "Mean Expression Deciles",
       x = "Rank",
-      title = ""
+      title = "Weighted"
     ) +
     coord_cartesian(xlim = c(1, n_genes)) +
     theme_bw() +
-    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
+          title = element_text(size = 9))
   
   return(ridge_plot)
   
@@ -185,13 +186,14 @@ create_ridge_plot_unweighted <- function(spe_unweighted) {
     geom_density_ridges2(aes(fill = group), rel_min_height = 0.02, alpha = 0.3) +
     theme_ridges(grid = TRUE) +
     labs(
-      y = "Unweighted Method Deciles",
+      y = "Mean Expression Deciles",
       x = "Rank",
-      title = ""
+      title = "Unweighted"
     ) +
     theme_bw() + 
     coord_cartesian(xlim = c(1, n_genes)) +
-    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) 
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
+          title = element_text(size = 9)) 
 
   return(ridge_plot)
 }
