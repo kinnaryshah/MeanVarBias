@@ -10,8 +10,7 @@ scenarios <- c(
   "Small Lengthscale, Ovarian",
   "Small Lengthscale, Lobular Breast",
   "Small Lengthscale, Ductal Breast",
-  "Small Lengthscale, Subtype Breast",
-  "High Mean, Ovarian"
+  "Small Lengthscale, Subtype Breast"
 )
 
 scenarios_row1 <- list(
@@ -22,7 +21,7 @@ scenarios_row1 <- list(
 )
 
 scenarios_row2 <- list(
-  c(A = 69, "A&B" = 8),   # 1: 77 genes in List 1, 8 overlaps
+  c(A = 70, "A&B" = 7),   # 1: 77 genes in List 1, 7 overlaps
   c(A = 65, "A&B" = 19),  # 2: 84 genes in List 1, 19 overlaps
   c(A = 59, "A&B" = 19),  # 3: 78 genes in List 1, 19 overlaps
   c(A = 43, "A&B" = 16)   # 4: 59 genes in List 1, 16 overlaps

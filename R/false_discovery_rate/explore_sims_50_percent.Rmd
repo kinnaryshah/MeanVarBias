@@ -4,8 +4,8 @@ library(SpatialExperiment)
 library(spatialLIBD)
 library(ggplot2)
 
-spe_weighted <- readRDS("reps_high_range_sigma.sq_high_beta_1000_genes_SVG_percentages_subset/50_percent_nonSVGs/spe_weighted_nnSVG_3.rds")
-spe_unweighted <- readRDS("reps_high_range_sigma.sq_high_beta_1000_genes_SVG_percentages_subset/50_percent_nonSVGs/spe_nnSVG_3.rds")
+spe_weighted <- readRDS("reps_968_200_varying_1000_0.2_to_3_0.5_to_7/50_percent_nonSVGs/spe_weighted_nnSVG_3.rds")
+spe_unweighted <- readRDS("reps_968_200_varying_1000_0.2_to_3_0.5_to_7/50_percent_nonSVGs/spe_nnSVG_3.rds")
 
 adj_p_values_weighted <- p.adjust(1 - pchisq(rowData(spe_weighted)$weighted_LR_stat, df=2), method = "BH")
 rowData(spe_weighted)$weighted_padj <- adj_p_values_weighted
@@ -90,7 +90,7 @@ fivenum(rowData(spe_unweighted)$mean[tn_both], na.rm = TRUE)
 ```{r}
 # find the distribution of mean weights for the true negatives that are not getting captured by the weighted simulation
 # weights is spots x genes
-weights <- readRDS("reps_high_range_sigma.sq_high_beta_1000_genes_SVG_percentages_subset/50_percent_nonSVGs/weights_3.rds")
+weights <- readRDS("reps_968_200_varying_1000_0.2_to_3_0.5_to_7/50_percent_nonSVGs/weights_3.rds")
 
 fivenum(weights[,tn_unweighted_not_weighted])
 fivenum(weights[,tn_weighted_not_unweighted])
