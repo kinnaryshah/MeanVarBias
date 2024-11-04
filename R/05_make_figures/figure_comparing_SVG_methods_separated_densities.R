@@ -35,13 +35,13 @@ df_MoransI_signal <- df_MoransI %>%
   mutate(quantile = as.factor(quantile)) %>%
   group_by(quantile) %>%
   slice_min(order_by = rank, n = frac) %>%
-  mutate(grp = "signal")
+  mutate(grp = "Signal")
 
 indices <- as.integer(df_MoransI_signal$rowname)
 
 df_MoransI_background <- df_MoransI[-indices,] %>%
   mutate(quantile = as.factor(quantile)) %>%
-  mutate(grp = "background")
+  mutate(grp = "Background")
 
 df_MoransI <- rbind(df_MoransI_signal, df_MoransI_background)
 
@@ -53,7 +53,7 @@ MoransI_ridge <- ggplot(df_MoransI, aes(x = rank, y = quantile)) +
     x = "Rank",
     title = "Moran's I"
   ) +
-  guides(fill=guide_legend(title="group")) +
+  guides(fill=guide_legend(title="Group")) +
   coord_cartesian(xlim = c(1, n_genes)) +
   theme_bw() +
   My_Theme
@@ -69,13 +69,13 @@ df_nnSVG_signal <- df_nnSVG %>%
   mutate(quantile = as.factor(quantile)) %>%
   group_by(quantile) %>%
   slice_min(order_by = rank, n = frac) %>%
-  mutate(grp = "signal")
+  mutate(grp = "Signal")
 
 indices <- as.integer(df_nnSVG_signal$rowname)
 
 df_nnSVG_background <- df_nnSVG[-indices,] %>%
   mutate(quantile = as.factor(quantile)) %>%
-  mutate(grp = "background")
+  mutate(grp = "Background")
 
 df_nnSVG <- rbind(df_nnSVG_signal, df_nnSVG_background)
 
@@ -87,7 +87,7 @@ nnSVG_ridge <- ggplot(df_nnSVG, aes(x = rank, y = quantile)) +
     x = "Rank",
     title = "nnSVG"
   ) +
-  guides(fill=guide_legend(title="group")) +
+  guides(fill=guide_legend(title="Group")) +
   coord_cartesian(xlim = c(1, n_genes)) +
   theme_bw() +
   My_Theme
@@ -104,13 +104,13 @@ df_SPARKX_signal <- df_SPARKX %>%
   mutate(quantile = as.factor(quantile)) %>%
   group_by(quantile) %>%
   slice_min(order_by = rank, n = frac) %>%
-  mutate(grp = "signal")
+  mutate(grp = "Signal")
 
 indices <- as.integer(df_SPARKX_signal$rowname)
 
 df_SPARKX_background <- df_SPARKX[-indices,] %>%
   mutate(quantile = as.factor(quantile)) %>%
-  mutate(grp = "background")
+  mutate(grp = "Background")
 
 df_SPARKX <- rbind(df_SPARKX_signal, df_SPARKX_background)
 
@@ -122,7 +122,7 @@ SPARKX_ridge <- ggplot(df_SPARKX, aes(x = rank, y = quantile)) +
     x = "Rank",
     title = "SPARK-X"
   ) +
-  guides(fill=guide_legend(title="group")) +
+  guides(fill=guide_legend(title="Group")) +
   coord_cartesian(xlim = c(1, n_genes)) +
   theme_bw() +
   My_Theme
@@ -139,13 +139,13 @@ df_SpaGFT_signal <- df_SpaGFT %>%
   mutate(quantile = as.factor(quantile)) %>%
   group_by(quantile) %>%
   slice_min(order_by = rank, n = frac) %>%
-  mutate(grp = "signal")
+  mutate(grp = "Signal")
 
 indices <- as.integer(df_SpaGFT_signal$rowname)
 
 df_SpaGFT_background <- df_SpaGFT[-indices,] %>%
   mutate(quantile = as.factor(quantile)) %>%
-  mutate(grp = "background")
+  mutate(grp = "Background")
 
 df_SpaGFT <- rbind(df_SpaGFT_signal, df_SpaGFT_background)
 
@@ -157,7 +157,7 @@ SpaGFT_ridge <- ggplot(df_SpaGFT, aes(x = rank, y = quantile)) +
     x = "Rank",
     title = "SpaGFT"
   ) +
-  guides(fill=guide_legend(title="group")) +
+  guides(fill=guide_legend(title="Group")) +
   coord_cartesian(xlim = c(1, n_genes)) +
   theme_bw() +
   My_Theme
@@ -174,13 +174,13 @@ df_SpatialDE2_signal <- df_SpatialDE2 %>%
   mutate(quantile = as.factor(quantile)) %>%
   group_by(quantile) %>%
   slice_min(order_by = rank, n = frac) %>%
-  mutate(grp = "signal")
+  mutate(grp = "Signal")
 
 indices <- as.integer(df_SpatialDE2_signal$rowname)
 
 df_SpatialDE2_background <- df_SpatialDE2[-indices,] %>%
   mutate(quantile = as.factor(quantile)) %>%
-  mutate(grp = "background")
+  mutate(grp = "Background")
 
 df_SpatialDE2 <- rbind(df_SpatialDE2_signal, df_SpatialDE2_background)
 
@@ -192,7 +192,7 @@ SpatialDE2_ridge <- ggplot(df_SpatialDE2, aes(x = rank, y = quantile)) +
     x = "Rank",
     title = "SpatialDE2"
   ) +
-  guides(fill=guide_legend(title="group")) +
+  guides(fill=guide_legend(title="Group")) +
   coord_cartesian(xlim = c(1, n_genes)) +
   theme_bw() +
   My_Theme
@@ -225,13 +225,13 @@ df_MoransI_signal <- df_MoransI %>%
   mutate(quantile = as.factor(quantile)) %>%
   group_by(quantile) %>%
   slice_min(order_by = rank, n = frac) %>%
-  mutate(grp = "signal")
+  mutate(grp = "Signal")
 
 indices <- as.integer(df_MoransI_signal$rowname)
 
 df_MoransI_background <- df_MoransI[-indices,] %>%
   mutate(quantile = as.factor(quantile)) %>%
-  mutate(grp = "background")
+  mutate(grp = "Background")
 
 df_MoransI <- rbind(df_MoransI_signal, df_MoransI_background)
 
@@ -243,7 +243,7 @@ Ovarian_MoransI_ridge <- ggplot(df_MoransI, aes(x = rank, y = quantile)) +
     x = "Rank",
     title = ""
   ) +
-  guides(fill=guide_legend(title="group")) +
+  guides(fill=guide_legend(title="Group")) +
   coord_cartesian(xlim = c(1, n_genes)) +
   theme_bw() +
   My_Theme
@@ -259,13 +259,13 @@ df_nnSVG_signal <- df_nnSVG %>%
   mutate(quantile = as.factor(quantile)) %>%
   group_by(quantile) %>%
   slice_min(order_by = rank, n = frac) %>%
-  mutate(grp = "signal")
+  mutate(grp = "Signal")
 
 indices <- as.integer(df_nnSVG_signal$rowname)
 
 df_nnSVG_background <- df_nnSVG[-indices,] %>%
   mutate(quantile = as.factor(quantile)) %>%
-  mutate(grp = "background")
+  mutate(grp = "Background")
 
 df_nnSVG <- rbind(df_nnSVG_signal, df_nnSVG_background)
 
@@ -277,7 +277,7 @@ Ovarian_nnSVG_ridge <- ggplot(df_nnSVG, aes(x = rank, y = quantile)) +
     x = "Rank",
     title = ""
   ) +
-  guides(fill=guide_legend(title="group")) +
+  guides(fill=guide_legend(title="Group")) +
   coord_cartesian(xlim = c(1, n_genes)) +
   theme_bw() +
   My_Theme
@@ -294,13 +294,13 @@ df_SPARKX_signal <- df_SPARKX %>%
   mutate(quantile = as.factor(quantile)) %>%
   group_by(quantile) %>%
   slice_min(order_by = rank, n = frac) %>%
-  mutate(grp = "signal")
+  mutate(grp = "Signal")
 
 indices <- as.integer(df_SPARKX_signal$rowname)
 
 df_SPARKX_background <- df_SPARKX[-indices,] %>%
   mutate(quantile = as.factor(quantile)) %>%
-  mutate(grp = "background")
+  mutate(grp = "Background")
 
 df_SPARKX <- rbind(df_SPARKX_signal, df_SPARKX_background)
 
@@ -312,7 +312,7 @@ Ovarian_SPARKX_ridge <- ggplot(df_SPARKX, aes(x = rank, y = quantile)) +
     x = "Rank",
     title = ""
   ) +
-  guides(fill=guide_legend(title="group")) +
+  guides(fill=guide_legend(title="Group")) +
   coord_cartesian(xlim = c(1, n_genes)) +
   theme_bw() +
   My_Theme
@@ -329,13 +329,13 @@ df_SpaGFT_signal <- df_SpaGFT %>%
   mutate(quantile = as.factor(quantile)) %>%
   group_by(quantile) %>%
   slice_min(order_by = rank, n = frac) %>%
-  mutate(grp = "signal")
+  mutate(grp = "Signal")
 
 indices <- as.integer(df_SpaGFT_signal$rowname)
 
 df_SpaGFT_background <- df_SpaGFT[-indices,] %>%
   mutate(quantile = as.factor(quantile)) %>%
-  mutate(grp = "background")
+  mutate(grp = "Background")
 
 df_SpaGFT <- rbind(df_SpaGFT_signal, df_SpaGFT_background)
 
@@ -347,7 +347,7 @@ Ovarian_SpaGFT_ridge <- ggplot(df_SpaGFT, aes(x = rank, y = quantile)) +
     x = "Rank",
     title = ""
   ) +
-  guides(fill=guide_legend(title="group")) +
+  guides(fill=guide_legend(title="Group")) +
   coord_cartesian(xlim = c(1, n_genes)) +
   theme_bw() +
   My_Theme
@@ -364,13 +364,13 @@ df_SpatialDE2_signal <- df_SpatialDE2 %>%
   mutate(quantile = as.factor(quantile)) %>%
   group_by(quantile) %>%
   slice_min(order_by = rank, n = frac) %>%
-  mutate(grp = "signal")
+  mutate(grp = "Signal")
 
 indices <- as.integer(df_SpatialDE2_signal$rowname)
 
 df_SpatialDE2_background <- df_SpatialDE2[-indices,] %>%
   mutate(quantile = as.factor(quantile)) %>%
-  mutate(grp = "background")
+  mutate(grp = "Background")
 
 df_SpatialDE2 <- rbind(df_SpatialDE2_signal, df_SpatialDE2_background)
 
@@ -382,7 +382,7 @@ Ovarian_SpatialDE2_ridge <- ggplot(df_SpatialDE2, aes(x = rank, y = quantile)) +
     x = "Rank",
     title = ""
   ) +
-  guides(fill=guide_legend(title="group")) +
+  guides(fill=guide_legend(title="Group")) +
   coord_cartesian(xlim = c(1, n_genes)) +
   theme_bw() +
   My_Theme
@@ -415,13 +415,13 @@ df_MoransI_signal <- df_MoransI %>%
   mutate(quantile = as.factor(quantile)) %>%
   group_by(quantile) %>%
   slice_min(order_by = rank, n = frac) %>%
-  mutate(grp = "signal")
+  mutate(grp = "Signal")
 
 indices <- as.integer(df_MoransI_signal$rowname)
 
 df_MoransI_background <- df_MoransI[-indices,] %>%
   mutate(quantile = as.factor(quantile)) %>%
-  mutate(grp = "background")
+  mutate(grp = "Background")
 
 df_MoransI <- rbind(df_MoransI_signal, df_MoransI_background)
 
@@ -433,7 +433,7 @@ LobularBreast_MoransI_ridge <- ggplot(df_MoransI, aes(x = rank, y = quantile)) +
     x = "Rank",
     title = ""
   ) +
-  guides(fill=guide_legend(title="group")) +
+  guides(fill=guide_legend(title="Group")) +
   coord_cartesian(xlim = c(1, n_genes)) +
   theme_bw() +
   My_Theme
@@ -449,13 +449,13 @@ df_nnSVG_signal <- df_nnSVG %>%
   mutate(quantile = as.factor(quantile)) %>%
   group_by(quantile) %>%
   slice_min(order_by = rank, n = frac) %>%
-  mutate(grp = "signal")
+  mutate(grp = "Signal")
 
 indices <- as.integer(df_nnSVG_signal$rowname)
 
 df_nnSVG_background <- df_nnSVG[-indices,] %>%
   mutate(quantile = as.factor(quantile)) %>%
-  mutate(grp = "background")
+  mutate(grp = "Background")
 
 df_nnSVG <- rbind(df_nnSVG_signal, df_nnSVG_background)
 
@@ -467,7 +467,7 @@ LobularBreast_nnSVG_ridge <- ggplot(df_nnSVG, aes(x = rank, y = quantile)) +
     x = "Rank",
     title = ""
   ) +
-  guides(fill=guide_legend(title="group")) +
+  guides(fill=guide_legend(title="Group")) +
   coord_cartesian(xlim = c(1, n_genes)) +
   theme_bw() +
   My_Theme
@@ -484,13 +484,13 @@ df_SPARKX_signal <- df_SPARKX %>%
   mutate(quantile = as.factor(quantile)) %>%
   group_by(quantile) %>%
   slice_min(order_by = rank, n = frac) %>%
-  mutate(grp = "signal")
+  mutate(grp = "Signal")
 
 indices <- as.integer(df_SPARKX_signal$rowname)
 
 df_SPARKX_background <- df_SPARKX[-indices,] %>%
   mutate(quantile = as.factor(quantile)) %>%
-  mutate(grp = "background")
+  mutate(grp = "Background")
 
 df_SPARKX <- rbind(df_SPARKX_signal, df_SPARKX_background)
 
@@ -502,7 +502,7 @@ LobularBreast_SPARKX_ridge <- ggplot(df_SPARKX, aes(x = rank, y = quantile)) +
     x = "Rank",
     title = ""
   ) +
-  guides(fill=guide_legend(title="group")) +
+  guides(fill=guide_legend(title="Group")) +
   coord_cartesian(xlim = c(1, n_genes)) +
   theme_bw() +
   My_Theme
@@ -519,13 +519,13 @@ df_SpaGFT_signal <- df_SpaGFT %>%
   mutate(quantile = as.factor(quantile)) %>%
   group_by(quantile) %>%
   slice_min(order_by = rank, n = frac) %>%
-  mutate(grp = "signal")
+  mutate(grp = "Signal")
 
 indices <- as.integer(df_SpaGFT_signal$rowname)
 
 df_SpaGFT_background <- df_SpaGFT[-indices,] %>%
   mutate(quantile = as.factor(quantile)) %>%
-  mutate(grp = "background")
+  mutate(grp = "Background")
 
 df_SpaGFT <- rbind(df_SpaGFT_signal, df_SpaGFT_background)
 
@@ -537,7 +537,7 @@ LobularBreast_SpaGFT_ridge <- ggplot(df_SpaGFT, aes(x = rank, y = quantile)) +
     x = "Rank",
     title = ""
   ) +
-  guides(fill=guide_legend(title="group")) +
+  guides(fill=guide_legend(title="Group")) +
   coord_cartesian(xlim = c(1, n_genes)) +
   theme_bw() +
   My_Theme
@@ -554,13 +554,13 @@ df_SpatialDE2_signal <- df_SpatialDE2 %>%
   mutate(quantile = as.factor(quantile)) %>%
   group_by(quantile) %>%
   slice_min(order_by = rank, n = frac) %>%
-  mutate(grp = "signal")
+  mutate(grp = "Signal")
 
 indices <- as.integer(df_SpatialDE2_signal$rowname)
 
 df_SpatialDE2_background <- df_SpatialDE2[-indices,] %>%
   mutate(quantile = as.factor(quantile)) %>%
-  mutate(grp = "background")
+  mutate(grp = "Background")
 
 df_SpatialDE2 <- rbind(df_SpatialDE2_signal, df_SpatialDE2_background)
 
@@ -572,7 +572,7 @@ LobularBreast_SpatialDE2_ridge <- ggplot(df_SpatialDE2, aes(x = rank, y = quanti
     x = "Rank",
     title = ""
   ) +
-  guides(fill=guide_legend(title="group")) +
+  guides(fill=guide_legend(title="Group")) +
   coord_cartesian(xlim = c(1, n_genes)) +
   theme_bw() +
   My_Theme

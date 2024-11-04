@@ -112,13 +112,13 @@ create_ridge_plot_weighted <- function(spe_unweighted, spe_weighted) {
     mutate(quantile = as.factor(quantile)) %>%
     group_by(quantile) %>%
     slice_min(order_by = rank, n = frac) %>%
-    mutate(group = "signal")
+    mutate(Group = "Signal")
   
   indices <- as.integer(df_signal$rowname)
   
   df_background <- df[-indices,] %>%
     mutate(quantile = as.factor(quantile)) %>%
-    mutate(group = "background")
+    mutate(Group = "Background")
   
   df <- rbind(df_signal, df_background)
   
@@ -126,12 +126,12 @@ create_ridge_plot_weighted <- function(spe_unweighted, spe_weighted) {
   # and the means of the ranks of "background" groups within each "quantile"
   # and store the results in a new data frame
   df_rank_means_weighted <- df %>%
-    group_by(quantile, group) %>%
+    group_by(quantile, Group) %>%
     summarize(mean = mean(rank)) %>%
     ungroup()
   
   ridge_plot <- ggplot(df, aes(x = rank, y = quantile)) +
-    geom_density_ridges2(aes(fill = group), rel_min_height = 0.02, alpha = 0.3) +
+    geom_density_ridges2(aes(fill = Group), rel_min_height = 0.02, alpha = 0.3) +
     theme_ridges(grid = TRUE) +
     labs(
       y = "Mean Expression Deciles",
@@ -164,13 +164,13 @@ create_ridge_plot_unweighted <- function(spe_unweighted) {
     mutate(quantile = as.factor(quantile)) %>%
     group_by(quantile) %>%
     slice_min(order_by = rank, n = frac) %>%
-    mutate(group = "signal")
+    mutate(Group = "Signal")
   
   indices <- as.integer(df_signal$rowname)
   
   df_background <- df[-indices,] %>%
     mutate(quantile = as.factor(quantile)) %>%
-    mutate(group = "background")
+    mutate(Group = "Background")
   
   df <- rbind(df_signal, df_background)
   
@@ -178,12 +178,12 @@ create_ridge_plot_unweighted <- function(spe_unweighted) {
   # and the means of the ranks of "background" groups within each "quantile"
   # and store the results in a new data frame
   df_rank_means_unweighted <- df %>%
-    group_by(quantile, group) %>%
+    group_by(quantile, Group) %>%
     summarize(mean = mean(rank)) %>%
     ungroup()
   
   ridge_plot <- ggplot(df, aes(x = rank, y = quantile)) +
-    geom_density_ridges2(aes(fill = group), rel_min_height = 0.02, alpha = 0.3) +
+    geom_density_ridges2(aes(fill = Group), rel_min_height = 0.02, alpha = 0.3) +
     theme_ridges(grid = TRUE) +
     labs(
       y = "Mean Expression Deciles",
