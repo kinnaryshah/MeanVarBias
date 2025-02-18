@@ -2,6 +2,7 @@ library(SpatialExperiment)
 library(nnSVG)
 library(scran)
 library(here)
+library(spoon)
 library(limma)
 library(Matrix)
 library(scuttle)
@@ -18,8 +19,11 @@ spe <- readRDS(file=fn)
 # run weighted nnSVG
 # ---------
 
-weights <- voom(
-  counts(spe))$weights
+voom_list <- voom(
+  counts(spe))
+
+weights <- voom_list$weights
+weights <- t(weights)
 
 spe <- weighted_nnSVG(
   input = spe,
@@ -32,10 +36,10 @@ print(spe)
 # save objects
 # -----------
 
-file = here("outputs","results","spe_humanDLPFC_weighted_nnSVG.rds")
+file = here("outputs","results","spe_humanDLPFC_voom_weighted_nnSVG.rds")
 saveRDS(spe, file = file)
 
-file = here("outputs","results","spe_humanDLPFC_weights.rds")
+file = here("outputs","results","spe_humanDLPFC_voom_weights.rds")
 saveRDS(weights, file = file)
 
 # -----------
