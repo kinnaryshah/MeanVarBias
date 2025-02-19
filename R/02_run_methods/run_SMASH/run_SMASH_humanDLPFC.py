@@ -24,7 +24,6 @@ from pathlib import Path
 
 # Set up the base directory (typically the project root)
 base_dir = path + "../../"
-base_dir = base_dir / ".." / ".." / ".." 
 print(base_dir)
 
 # ---------
