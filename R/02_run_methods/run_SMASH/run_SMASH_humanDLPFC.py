@@ -1,5 +1,15 @@
+
+# conda create -n SMASH_env
+# conda activate SMASH_env
+# downladed .zip file from https://github.com/sealx017/SMASH-package and unzipped in /envs folder
+# pip install matplotlib
+# pip install matplotlib-venn
+# pip install blosc
+
+# conda activate SMASH_env
+
 import os
-path = "/users/kshah/MeanVarBias/envs/SMASH-package-main"
+path = "/users/kshah/MeanVarBias/envs/SMASH-package-main/"
 os.chdir(path + "/SMASH")
 
 import SMASH 
@@ -13,7 +23,7 @@ pd.set_option('display.float_format', '{:.2g}'.format)
 from pathlib import Path
 
 # Set up the base directory (typically the project root)
-base_dir = Path(__file__).resolve().parent
+base_dir = path + "../../"
 base_dir = base_dir / ".." / ".." / ".." 
 print(base_dir)
 
@@ -21,9 +31,9 @@ print(base_dir)
 # load data
 # ---------
 
-data_dir = base_dir / "outputs" / "preprocessed"
-counts_dir = data_dir / "counts_humanDLPFC_preprocessed.csv"
-coords_dir = data_dir / "coords_humanDLPFC_preprocessed.csv"
+data_dir = base_dir + "outputs/preprocessed/"
+counts_dir = data_dir + "counts_humanDLPFC_preprocessed.csv"
+coords_dir = data_dir + "coords_humanDLPFC_preprocessed.csv"
 print("File path:", counts_dir)
 
 # ---------
@@ -45,5 +55,5 @@ print(SVGS_SMASH)
 print({'# detected SVGs ': SVGS_SMASH.shape[0]})
 
 # save df as csv to open in R
-df_dir = base_dir / "outputs" / "results" / "SMASH_results_humanDLPFC.csv"
+df_dir = base_dir + "outputs/results/SMASH_results_humanDLPFC.csv"
 SMASH_pvals.to_csv(df_dir)
