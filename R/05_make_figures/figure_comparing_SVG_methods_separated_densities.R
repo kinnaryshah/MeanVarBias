@@ -20,6 +20,9 @@ spe_nnSVG <- readRDS(here("outputs", "results", "spe_humanDLPFC_nnSVG.rds"))
 spe_SPARKX <- readRDS(here("outputs", "results", "spe_humanDLPFC_SPARKX.rds"))
 spe_SpaGFT <- readRDS(here("outputs", "results", "spe_humanDLPFC_SpaGFT.rds"))
 spe_SpatialDE2 <- readRDS(here("outputs", "results", "spe_humanDLPFC_SpatialDE2.rds"))
+
+spe_SMASH <- readRDS(here("outputs", "results", "spe_humanDLPFC_SMASH.rds"))
+
 n_genes <- dim(spe_MoransI)[1]
 frac <- round(n_genes*0.1*0.1)
 
@@ -197,6 +200,43 @@ SpatialDE2_ridge <- ggplot(df_SpatialDE2, aes(x = rank, y = quantile)) +
   theme_bw() +
   My_Theme
 
+df_SMASH <- data.frame(
+  rank = rowData(spe_SMASH)$SMASH_rank,
+  #SpaGFT did not calculate mean
+  mean = rowData(spe_nnSVG)$mean
+) %>% mutate(quantile = findInterval(mean, 
+                                     quantile(mean, probs=0:9/10))) %>%
+  tibble::rownames_to_column()
+
+df_SMASH_signal <- df_SMASH %>%
+  mutate(quantile = as.factor(quantile)) %>%
+  group_by(quantile) %>%
+  slice_min(order_by = rank, n = frac) %>%
+  mutate(grp = "Signal")
+
+indices <- as.integer(df_SMASH_signal$rowname)
+
+df_SMASH_background <- df_SMASH[-indices,] %>%
+  mutate(quantile = as.factor(quantile)) %>%
+  mutate(grp = "Background")
+
+df_SMASH <- rbind(df_SMASH_signal, df_SMASH_background)
+
+SMASH_ridge <- ggplot(df_SMASH, aes(x = rank, y = quantile)) +
+  geom_density_ridges2(aes(fill = grp), rel_min_height = 0.02, alpha = 0.3) +
+  theme_ridges(grid = TRUE) +
+  labs(
+    y = "DLPFC Deciles",
+    x = "Rank",
+    title = "SMASH"
+  ) +
+  guides(fill=guide_legend(title="Group")) +
+  coord_cartesian(xlim = c(1, n_genes)) +
+  theme_bw() +
+  My_Theme
+
+
+
 DLPFC_plotlist <- list(
   MoransI_ridge,
   nnSVG_ridge,
@@ -210,6 +250,11 @@ spe_nnSVG <- readRDS(here("outputs", "results", "spe_humanOvarian_nnSVG.rds"))
 spe_SPARKX <- readRDS(here("outputs", "results", "spe_humanOvarian_SPARKX.rds"))
 spe_SpaGFT <- readRDS(here("outputs", "results", "spe_humanOvarian_SpaGFT.rds"))
 spe_SpatialDE2 <- readRDS(here("outputs", "results", "spe_humanOvarian_SpatialDE2.rds"))
+
+# something wrong with file
+# need to run run_SMASH_Ovarian.R and save spe 
+spe_SMASH <- readRDS(here("outputs", "results", "spe_humanOvarian_SMASH.rds"))
+
 n_genes <- dim(spe_MoransI)[1]
 frac <- round(n_genes*0.1*0.1)
 
@@ -387,6 +432,43 @@ Ovarian_SpatialDE2_ridge <- ggplot(df_SpatialDE2, aes(x = rank, y = quantile)) +
   theme_bw() +
   My_Theme
 
+
+df_SMASH <- data.frame(
+  rank = rowData(spe_SMASH)$SMASH_rank,
+  #SpaGFT did not calculate mean
+  mean = rowData(spe_nnSVG)$mean
+) %>% mutate(quantile = findInterval(mean, 
+                                     quantile(mean, probs=0:9/10))) %>%
+  tibble::rownames_to_column()
+
+df_SMASH_signal <- df_SMASH %>%
+  mutate(quantile = as.factor(quantile)) %>%
+  group_by(quantile) %>%
+  slice_min(order_by = rank, n = frac) %>%
+  mutate(grp = "Signal")
+
+indices <- as.integer(df_SMASH_signal$rowname)
+
+df_SMASH_background <- df_SMASH[-indices,] %>%
+  mutate(quantile = as.factor(quantile)) %>%
+  mutate(grp = "Background")
+
+df_SMASH <- rbind(df_SMASH_signal, df_SMASH_background)
+
+Ovarian_SMASH_ridge <- ggplot(df_SMASH, aes(x = rank, y = quantile)) +
+  geom_density_ridges2(aes(fill = grp), rel_min_height = 0.02, alpha = 0.3) +
+  theme_ridges(grid = TRUE) +
+  labs(
+    y = "Ovarian Deciles",
+    x = "Rank",
+    title = "SMASH"
+  ) +
+  guides(fill=guide_legend(title="Group")) +
+  coord_cartesian(xlim = c(1, n_genes)) +
+  theme_bw() +
+  My_Theme
+
+
 Ovarian_plotlist <- list(
   Ovarian_MoransI_ridge,
   Ovarian_nnSVG_ridge,
@@ -400,6 +482,10 @@ spe_nnSVG <- readRDS(here("outputs", "results", "spe_humanLobularBreast_nnSVG.rd
 spe_SPARKX <- readRDS(here("outputs", "results", "spe_humanLobularBreast_SPARKX.rds"))
 spe_SpaGFT <- readRDS(here("outputs", "results", "spe_humanLobularBreast_SpaGFT.rds"))
 spe_SpatialDE2 <- readRDS(here("outputs", "results", "spe_humanLobularBreast_SpatialDE2.rds"))
+
+spe_SMASH <- readRDS(here("outputs", "results", "spe_humanLobularBreast_SMASH.rds"))
+
+
 n_genes <- dim(spe_MoransI)[1]
 frac <- round(n_genes*0.1*0.1)
 
@@ -577,6 +663,41 @@ LobularBreast_SpatialDE2_ridge <- ggplot(df_SpatialDE2, aes(x = rank, y = quanti
   theme_bw() +
   My_Theme
 
+df_SMASH <- data.frame(
+  rank = rowData(spe_SMASH)$SMASH_rank,
+  #SpaGFT did not calculate mean
+  mean = rowData(spe_nnSVG)$mean
+) %>% mutate(quantile = findInterval(mean, 
+                                     quantile(mean, probs=0:9/10))) %>%
+  tibble::rownames_to_column()
+
+df_SMASH_signal <- df_SMASH %>%
+  mutate(quantile = as.factor(quantile)) %>%
+  group_by(quantile) %>%
+  slice_min(order_by = rank, n = frac) %>%
+  mutate(grp = "Signal")
+
+indices <- as.integer(df_SMASH_signal$rowname)
+
+df_SMASH_background <- df_SMASH[-indices,] %>%
+  mutate(quantile = as.factor(quantile)) %>%
+  mutate(grp = "Background")
+
+df_SMASH <- rbind(df_SMASH_signal, df_SMASH_background)
+
+LobularBreast_SMASH_ridge <- ggplot(df_SMASH, aes(x = rank, y = quantile)) +
+  geom_density_ridges2(aes(fill = grp), rel_min_height = 0.02, alpha = 0.3) +
+  theme_ridges(grid = TRUE) +
+  labs(
+    y = "Lobular Breast Deciles",
+    x = "Rank",
+    title = "SMASH"
+  ) +
+  guides(fill=guide_legend(title="Group")) +
+  coord_cartesian(xlim = c(1, n_genes)) +
+  theme_bw() +
+  My_Theme
+
 LobularBreast_plotlist <- list(
   LobularBreast_MoransI_ridge,
   LobularBreast_nnSVG_ridge,
@@ -604,6 +725,17 @@ ggsave(here("plots", "main", "comparing_SVG_methods_separated.png"),
          LobularBreast_plotlist[[4]],
          LobularBreast_plotlist[[5]],
          nrow = 3,
+         guides = "collect",
+         axis_titles = "collect"
+       ) + plot_annotation(tag_levels = 'A') & 
+         theme(plot.tag = element_text(size = 25)),
+       width = 21, height = 30)
+
+
+ggsave(here("plots", "main", "test_dlpfc.png"),
+       wrap_plots(
+         SMASH_ridge,
+         nrow = 1,
          guides = "collect",
          axis_titles = "collect"
        ) + plot_annotation(tag_levels = 'A') & 
