@@ -21,6 +21,7 @@ spe <- readRDS(file=fn)
 df <- spatialCoords(spe)
 colnames(df) <- c("col", "row")
 counts_mat <- t(counts(spe))
+counts_mat <- as(counts_mat, "dgCMatrix")
 df <- cbind(df, counts_mat)
 
 results <- heartsvg(df,scale=T)
