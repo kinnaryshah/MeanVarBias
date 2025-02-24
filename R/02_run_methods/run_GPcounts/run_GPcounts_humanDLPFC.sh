@@ -24,5 +24,9 @@
 
 module load conda
 conda activate gpcounts
+
+# already run prep_GPcounts_humanDLPFC.py
+#python prep_GPcounts_humanDLPFC.py
+
 python run_GPcounts_humanDLPFC.py
 
