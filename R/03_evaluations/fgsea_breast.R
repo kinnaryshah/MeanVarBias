@@ -41,7 +41,7 @@ pathways.Breast.unweighted <- reactomePathways(Breast.unweighted.id)
 pathways.Breast.unweighted <- x.h[names(pathways.Breast.unweighted)]
 
 spe_nnSVG_Breast <- spe_nnSVG_Breast[!idx,]
-Breast.unweighted.stats = rowData(spe_nnSVG_Breast)$padj
+Breast.unweighted.stats = rowData(spe_nnSVG_Breast)$LR_stat
 names(Breast.unweighted.stats) = Breast.unweighted.id
 
 set.seed(123)
@@ -52,18 +52,6 @@ olig.results.Breast.unweighted$leadingEdge2 = sapply(olig.results.Breast.unweigh
 small_dat <- olig.results.Breast.unweighted[,c(1,3)]
 print(small_dat[order(small_dat$padj),][c(1:10),])
 print(small_dat[order(small_dat$padj),][c(1:3),]$pathway)
-
-# even more are significant
-#1:                            Nonsense Mediated Decay (NMD) independent of the Exon Junction Complex (EJC)
-#2:                                                                    Cap-dependent Translation Initiation
-#3:                                                                       Eukaryotic Translation Initiation
-#4:                                                                                  Viral mRNA Translation
-#5:                            Activation of APC/C and APC/C:Cdc20 mediated degradation of mitotic proteins
-#6:                                          Regulation of APC/C activators between G1/S and early anaphase
-#7:                                                    Cdc20:Phospho-APC/C mediated degradation of Cyclin A
-#8:                                                    APC/C:Cdc20 mediated degradation of mitotic proteins
-#9:                                                               SCF(Skp2)-mediated degradation of p27/p21
-#10: APC:Cdc20 mediated degradation of cell cycle proteins prior to satisfation of the cell cycle checkpoint
 
 spe_weighted_nnSVG_Breast <- spe_weighted_nnSVG_Breast[!is.na(rowData(spe_weighted_nnSVG_Breast)$weighted_padj) & rowData(spe_weighted_nnSVG_Breast)$weighted_padj < .05,]
 
@@ -76,7 +64,7 @@ pathways.Breast.weighted <- reactomePathways(Breast.weighted.id)
 pathways.Breast.weighted <- x.h[names(pathways.Breast.weighted)]
 
 spe_weighted_nnSVG_Breast <- spe_weighted_nnSVG_Breast[!idx,]
-Breast.weighted.stats = rowData(spe_weighted_nnSVG_Breast)$weighted_padj
+Breast.weighted.stats = rowData(spe_weighted_nnSVG_Breast)$weighted_LR_stat
 names(Breast.weighted.stats) = Breast.weighted.id
 
 set.seed(123)
@@ -87,5 +75,3 @@ olig.results.Breast.weighted$leadingEdge2 = sapply(olig.results.Breast.weighted$
 small_dat <- olig.results.Breast.weighted[,c(1,3)]
 print(small_dat[order(small_dat$padj),][c(1:10),])
 print(small_dat[order(small_dat$padj),][c(1:3),]$pathway)
-
-# none are significant
