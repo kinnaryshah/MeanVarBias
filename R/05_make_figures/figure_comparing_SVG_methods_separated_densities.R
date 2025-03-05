@@ -6,7 +6,6 @@ library(dplyr)
 library(ggridges)
 library(here)
 
-
 My_Theme = theme(
   axis.title.x = element_text(size = 20),
   axis.title.y = element_text(size = 20),
@@ -14,13 +13,11 @@ My_Theme = theme(
   legend.text = element_text(size=20),
   title = element_text(size = 20))
 
-
 spe_MoransI <- readRDS(here("outputs", "results", "spe_humanDLPFC_MoransI.rds"))
 spe_nnSVG <- readRDS(here("outputs", "results", "spe_humanDLPFC_nnSVG.rds"))
 spe_SPARKX <- readRDS(here("outputs", "results", "spe_humanDLPFC_SPARKX.rds"))
 spe_SpaGFT <- readRDS(here("outputs", "results", "spe_humanDLPFC_SpaGFT.rds"))
 spe_SpatialDE2 <- readRDS(here("outputs", "results", "spe_humanDLPFC_SpatialDE2.rds"))
-
 spe_SMASH <- readRDS(here("outputs", "results", "spe_humanDLPFC_SMASH.rds"))
 spe_HEARTSVG <- readRDS(here("outputs", "results", "spe_humanDLPFC_HEARTSVG.rds"))
 
@@ -277,7 +274,9 @@ DLPFC_plotlist <- list(
   nnSVG_ridge,
   SPARKX_ridge,
   SpaGFT_ridge,
-  SpatialDE2_ridge
+  SpatialDE2_ridge,
+  SMASH_ridge,
+  HEARTSVG_ridge
 )
 
 spe_MoransI <- readRDS(here("outputs", "results", "spe_humanOvarian_MoransI.rds"))
@@ -497,7 +496,7 @@ Ovarian_SMASH_ridge <- ggplot(df_SMASH, aes(x = rank, y = quantile)) +
   labs(
     y = "Ovarian Deciles",
     x = "Rank",
-    title = "SMASH"
+    title = ""
   ) +
   guides(fill=guide_legend(title="Group")) +
   coord_cartesian(xlim = c(1, n_genes)) +
@@ -532,7 +531,7 @@ Ovarian_HEARTSVG_ridge <- ggplot(df_HEARTSVG, aes(x = rank, y = quantile)) +
   labs(
     y = "Ovarian Deciles",
     x = "Rank",
-    title = "HEARTSVG"
+    title = ""
   ) +
   guides(fill=guide_legend(title="Group")) +
   coord_cartesian(xlim = c(1, n_genes)) +
@@ -544,7 +543,9 @@ Ovarian_plotlist <- list(
   Ovarian_nnSVG_ridge,
   Ovarian_SPARKX_ridge,
   Ovarian_SpaGFT_ridge,
-  Ovarian_SpatialDE2_ridge
+  Ovarian_SpatialDE2_ridge,
+  Ovarian_SMASH_ridge,
+  Ovarian_HEARTSVG_ridge
 )
 
 spe_MoransI <- readRDS(here("outputs", "results", "spe_humanLobularBreast_MoransI.rds"))
@@ -552,7 +553,6 @@ spe_nnSVG <- readRDS(here("outputs", "results", "spe_humanLobularBreast_nnSVG.rd
 spe_SPARKX <- readRDS(here("outputs", "results", "spe_humanLobularBreast_SPARKX.rds"))
 spe_SpaGFT <- readRDS(here("outputs", "results", "spe_humanLobularBreast_SpaGFT.rds"))
 spe_SpatialDE2 <- readRDS(here("outputs", "results", "spe_humanLobularBreast_SpatialDE2.rds"))
-
 spe_SMASH <- readRDS(here("outputs", "results", "spe_humanLobularBreast_SMASH.rds"))
 spe_HEARTSVG <- readRDS(here("outputs", "results", "spe_humanLobularBreast_HEARTSVG.rds"))
 
@@ -761,7 +761,7 @@ LobularBreast_SMASH_ridge <- ggplot(df_SMASH, aes(x = rank, y = quantile)) +
   labs(
     y = "Lobular Breast Deciles",
     x = "Rank",
-    title = "SMASH"
+    title = ""
   ) +
   guides(fill=guide_legend(title="Group")) +
   coord_cartesian(xlim = c(1, n_genes)) +
@@ -796,22 +796,22 @@ LobularBreast_HEARTSVG_ridge <- ggplot(df_HEARTSVG, aes(x = rank, y = quantile))
   labs(
     y = "Lobular Breast Deciles",
     x = "Rank",
-    title = "HEARTSVG"
+    title = ""
   ) +
   guides(fill=guide_legend(title="Group")) +
   coord_cartesian(xlim = c(1, n_genes)) +
   theme_bw() +
   My_Theme
 
-
 LobularBreast_plotlist <- list(
   LobularBreast_MoransI_ridge,
   LobularBreast_nnSVG_ridge,
   LobularBreast_SPARKX_ridge,
   LobularBreast_SpaGFT_ridge,
-  LobularBreast_SpatialDE2_ridge
+  LobularBreast_SpatialDE2_ridge,
+  LobularBreast_SMASH_ridge,
+  LobularBreast_HEARTSVG_ridge
 )
-
 
 ggsave(here("plots", "main", "comparing_SVG_methods_separated.png"),
        wrap_plots(
@@ -820,30 +820,25 @@ ggsave(here("plots", "main", "comparing_SVG_methods_separated.png"),
          DLPFC_plotlist[[3]],
          DLPFC_plotlist[[4]],
          DLPFC_plotlist[[5]],
+         DLPFC_plotlist[[6]],
+         DLPFC_plotlist[[7]],
          Ovarian_plotlist[[1]],
          Ovarian_plotlist[[2]],
          Ovarian_plotlist[[3]],
          Ovarian_plotlist[[4]],
          Ovarian_plotlist[[5]],
+         Ovarian_plotlist[[6]],
+         Ovarian_plotlist[[7]],
          LobularBreast_plotlist[[1]],
          LobularBreast_plotlist[[2]],
          LobularBreast_plotlist[[3]],
          LobularBreast_plotlist[[4]],
          LobularBreast_plotlist[[5]],
+         LobularBreast_plotlist[[6]],
+         LobularBreast_plotlist[[7]],
          nrow = 3,
          guides = "collect",
          axis_titles = "collect"
        ) + plot_annotation(tag_levels = 'A') & 
          theme(plot.tag = element_text(size = 25)),
-       width = 21, height = 30)
-
-
-ggsave(here("plots", "main", "test_lobularbreast.png"),
-       wrap_plots(
-         LobularBreast_HEARTSVG_ridge,
-         nrow = 1,
-         guides = "collect",
-         axis_titles = "collect"
-       ) + plot_annotation(tag_levels = 'A') & 
-         theme(plot.tag = element_text(size = 25)),
-       width = 21, height = 30)
+       width = 25, height = 25)
