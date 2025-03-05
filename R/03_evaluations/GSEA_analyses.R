@@ -98,19 +98,27 @@ for (d in dat) {
   gseDGN_small_weighted <- setReadable(gseDGN_small_weighted, 'org.Hs.eg.db')
   head(gseDGN_small_weighted,10)
 
+  title_d <- d
+  
   # Visualize the comparison results
   if (d=="Breast"){
-    title_d <- "DuctalBreast"
-  } else {
-    title_d <- d
-  }
+    title_d <- "Ductal Breast"
+  } 
+  
+  if (d=="SubtypeBreast"){
+    title_d <- "ER+ Breast"
+  } 
+  
+  if (d=="LobularBreast"){
+    title_d <- "Lobular Breast"
+  } 
+  
   p1 <- dotplot(gseDGN_small_unweighted) + ggtitle(paste0(title_d, " Unweighted nnSVG GSEA"))
   p2 <- dotplot(gseDGN_small_weighted) + ggtitle(paste0(title_d, " Weighted nnSVG GSEA"))
   
   plot_list[[d]] <- list(p1, p2)
   
 }
-
 
 p <- wrap_plots(list(
   plot_list[["LobularBreast"]][[1]],
