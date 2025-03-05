@@ -181,4 +181,4 @@ ggsave(here("plots", "supplementary", "comparing_voom.png"),
                   nrow = 2,
                   guides = "collect") + plot_annotation(tag_levels = 'A') & 
          theme(plot.tag = element_text(size = 25)),
-       width = 21, height = 30)
+       width = 15, height = 15)
