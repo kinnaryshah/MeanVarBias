@@ -230,10 +230,10 @@ scenarios <- c(
   "Low Mean, Ductal Breast",
   "Low Mean, Ovarian",
   "Low Mean, ER+ Breast",
-  "Small Lengthscale, Lobular Breast",
-  "Small Lengthscale, Ductal Breast",
-  "Small Lengthscale, Ovarian",
-  "Small Lengthscale, ER+ Breast"
+  "Low Lengthscale, Lobular Breast",
+  "Low Lengthscale, Ductal Breast",
+  "Low Lengthscale, Ovarian",
+  "Low Lengthscale, ER+ Breast"
 )
 
 scenarios_row1 <- list(
@@ -265,6 +265,8 @@ create_df <- function(scenarios_data, scenario_names) {
 df_row1 <- create_df(scenarios_row1, scenarios[1:4])
 df_row2 <- create_df(scenarios_row2, scenarios[5:9])
 
+df_combined <- bind_rows(df_row1, df_row2)
+
 df_combined$Component <- ifelse(
   df_combined$Scenario %in% scenarios[1:4] & df_combined$Component == "A&B", "A&B_LowMean",
   ifelse(df_combined$Scenario %in% scenarios[5:8] & df_combined$Component == "A&B", "A&B_LowLengthscale", df_combined$Component)
@@ -293,6 +295,7 @@ p <- ggplot(df_combined, aes(x = Scenario, y = Count, fill = Component)) +
   theme_bw() +
   coord_flip() +
   My_Theme +
+  theme(legend.position="none") +
   theme(axis.text.y = element_text(size = 12))
 
 # Define layout areas
