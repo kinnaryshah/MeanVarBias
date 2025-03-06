@@ -44,7 +44,7 @@ results$Dataset[results$Dataset == "HPC_V12D07-335_D1"] <- "HPC"
 # rename Breast to Ductal Breast
 results$Dataset[results$Dataset == "Breast"] <- "Ductal Breast"
 # rename SubtypeBreast to Subtype Breast
-results$Dataset[results$Dataset == "SubtypeBreast"] <- "Subtype Breast"
+results$Dataset[results$Dataset == "SubtypeBreast"] <- "ER+ Breast"
 # rename LobularBreast to Lobular Breast
 results$Dataset[results$Dataset == "LobularBreast"] <- "Lobular Breast"
 
@@ -55,7 +55,7 @@ fig1 <- ggplot(results, aes(x = `Prop Unweighted SVGs`, y = `Prop Higher Rank`))
   geom_text(aes(label = Dataset), nudge_x = 0.01, nudge_y = 0.01) +
   xlim(0.1, 0.9) +
   theme_bw() +
-  labs(x = "Proportion of Unweighted SVGs", y = "Proportion of Small Lengthscale Genes with Higher Rank") +
+  labs(x = "Proportion of Unweighted SVGs", y = "Proportion of Low Lengthscale Genes with Higher Rank") +
   theme(axis.text = element_text(size = 12),
         axis.title = element_text(size = 14),
         plot.title = element_text(size = 16),
