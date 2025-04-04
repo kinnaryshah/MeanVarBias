@@ -46,17 +46,25 @@ df_MoransI_background <- df_MoransI[-indices,] %>%
 
 df_MoransI <- rbind(df_MoransI_signal, df_MoransI_background)
 
-MoransI_ridge <- ggplot(df_MoransI, aes(x = rank, y = quantile)) +
-  geom_density_ridges2(aes(fill = grp), rel_min_height = 0.02, alpha = 0.3) +
-  theme_ridges(grid = TRUE) +
+df_MoransI$quantile <- factor(df_MoransI$quantile, levels=c(10,9,8,7,6,5,4,3,2,1))
+
+MoransI_ridge <- ggplot(df_MoransI, aes(x = rank, fill = grp)) +
+  geom_density(alpha = 0.4, trim=T) +
+  facet_wrap(~ quantile, scales = "free_y", ncol=1, switch = "y") +
+  theme_bw() +
   labs(
     y = "DLPFC Deciles",
     x = "Rank",
     title = "Moran's I"
   ) +
   guides(fill=guide_legend(title="Group")) +
-  coord_cartesian(xlim = c(1, n_genes)) +
-  theme_bw() +
+  theme(
+    axis.text.y=element_blank(),
+    axis.ticks.y=element_blank(),
+    strip.text = element_text(hjust = 0),
+    strip.text.y.left = element_text(angle = 0),
+    strip.background = element_rect(colour="black", fill="white")
+  ) +
   My_Theme
 
 df_nnSVG <- data.frame(
@@ -80,17 +88,25 @@ df_nnSVG_background <- df_nnSVG[-indices,] %>%
 
 df_nnSVG <- rbind(df_nnSVG_signal, df_nnSVG_background)
 
-nnSVG_ridge <- ggplot(df_nnSVG, aes(x = rank, y = quantile)) +
-  geom_density_ridges2(aes(fill = grp), rel_min_height = 0.02, alpha = 0.3) +
-  theme_ridges(grid = TRUE) +
+df_nnSVG$quantile <- factor(df_nnSVG$quantile, levels=c(10,9,8,7,6,5,4,3,2,1))
+
+nnSVG_ridge <- ggplot(df_nnSVG, aes(x = rank, fill = grp)) +
+  geom_density(alpha = 0.4, trim=T) +
+  facet_wrap(~ quantile, scales = "free_y", ncol=1, switch = "y") +
+  theme_bw() +
   labs(
     y = "DLPFC Deciles",
     x = "Rank",
     title = "nnSVG"
   ) +
   guides(fill=guide_legend(title="Group")) +
-  coord_cartesian(xlim = c(1, n_genes)) +
-  theme_bw() +
+  theme(
+    axis.text.y=element_blank(),
+    axis.ticks.y=element_blank(),
+    strip.text = element_text(hjust = 0),
+    strip.text.y.left = element_text(angle = 0),
+    strip.background = element_rect(colour="black", fill="white")
+  ) +
   My_Theme
 
 df_SPARKX <- data.frame(
@@ -115,17 +131,25 @@ df_SPARKX_background <- df_SPARKX[-indices,] %>%
 
 df_SPARKX <- rbind(df_SPARKX_signal, df_SPARKX_background)
 
-SPARKX_ridge <- ggplot(df_SPARKX, aes(x = rank, y = quantile)) +
-  geom_density_ridges2(aes(fill = grp), rel_min_height = 0.02, alpha = 0.3) +
-  theme_ridges(grid = TRUE) +
+df_SPARKX$quantile <- factor(df_SPARKX$quantile, levels=c(10,9,8,7,6,5,4,3,2,1))
+
+SPARKX_ridge <- ggplot(df_SPARKX, aes(x = rank, fill = grp)) +
+  geom_density(alpha = 0.4, trim=T) +
+  facet_wrap(~ quantile, scales = "free_y", ncol=1, switch = "y") +
+  theme_bw() +
   labs(
     y = "DLPFC Deciles",
     x = "Rank",
     title = "SPARK-X"
   ) +
   guides(fill=guide_legend(title="Group")) +
-  coord_cartesian(xlim = c(1, n_genes)) +
-  theme_bw() +
+  theme(
+    axis.text.y=element_blank(),
+    axis.ticks.y=element_blank(),
+    strip.text = element_text(hjust = 0),
+    strip.text.y.left = element_text(angle = 0),
+    strip.background = element_rect(colour="black", fill="white")
+  ) +
   My_Theme
 
 df_SpaGFT <- data.frame(
@@ -150,17 +174,25 @@ df_SpaGFT_background <- df_SpaGFT[-indices,] %>%
 
 df_SpaGFT <- rbind(df_SpaGFT_signal, df_SpaGFT_background)
 
-SpaGFT_ridge <- ggplot(df_SpaGFT, aes(x = rank, y = quantile)) +
-  geom_density_ridges2(aes(fill = grp), rel_min_height = 0.02, alpha = 0.3) +
-  theme_ridges(grid = TRUE) +
+df_SpaGFT$quantile <- factor(df_SpaGFT$quantile, levels=c(10,9,8,7,6,5,4,3,2,1))
+
+SpaGFT_ridge <- ggplot(df_SpaGFT, aes(x = rank, fill = grp)) +
+  geom_density(alpha = 0.4, trim=T) +
+  facet_wrap(~ quantile, scales = "free_y", ncol=1, switch = "y") +
+  theme_bw() +
   labs(
     y = "DLPFC Deciles",
     x = "Rank",
     title = "SpaGFT"
   ) +
   guides(fill=guide_legend(title="Group")) +
-  coord_cartesian(xlim = c(1, n_genes)) +
-  theme_bw() +
+  theme(
+    axis.text.y=element_blank(),
+    axis.ticks.y=element_blank(),
+    strip.text = element_text(hjust = 0),
+    strip.text.y.left = element_text(angle = 0),
+    strip.background = element_rect(colour="black", fill="white")
+  ) +
   My_Theme
 
 df_SpatialDE2 <- data.frame(
@@ -185,17 +217,25 @@ df_SpatialDE2_background <- df_SpatialDE2[-indices,] %>%
 
 df_SpatialDE2 <- rbind(df_SpatialDE2_signal, df_SpatialDE2_background)
 
-SpatialDE2_ridge <- ggplot(df_SpatialDE2, aes(x = rank, y = quantile)) +
-  geom_density_ridges2(aes(fill = grp), rel_min_height = 0.02, alpha = 0.3) +
-  theme_ridges(grid = TRUE) +
+df_SpatialDE2$quantile <- factor(df_SpatialDE2$quantile, levels=c(10,9,8,7,6,5,4,3,2,1))
+
+SpatialDE2_ridge <- ggplot(df_SpatialDE2, aes(x = rank, fill = grp)) +
+  geom_density(alpha = 0.4, trim=T) +
+  facet_wrap(~ quantile, scales = "free_y", ncol=1, switch = "y") +
+  theme_bw() +
   labs(
     y = "DLPFC Deciles",
     x = "Rank",
     title = "SpatialDE2"
   ) +
   guides(fill=guide_legend(title="Group")) +
-  coord_cartesian(xlim = c(1, n_genes)) +
-  theme_bw() +
+  theme(
+    axis.text.y=element_blank(),
+    axis.ticks.y=element_blank(),
+    strip.text = element_text(hjust = 0),
+    strip.text.y.left = element_text(angle = 0),
+    strip.background = element_rect(colour="black", fill="white")
+  ) +
   My_Theme
 
 df_SMASH <- data.frame(
@@ -220,17 +260,25 @@ df_SMASH_background <- df_SMASH[-indices,] %>%
 
 df_SMASH <- rbind(df_SMASH_signal, df_SMASH_background)
 
-SMASH_ridge <- ggplot(df_SMASH, aes(x = rank, y = quantile)) +
-  geom_density_ridges2(aes(fill = grp), rel_min_height = 0.02, alpha = 0.3) +
-  theme_ridges(grid = TRUE) +
+df_SMASH$quantile <- factor(df_SMASH$quantile, levels=c(10,9,8,7,6,5,4,3,2,1))
+
+SMASH_ridge <- ggplot(df_SMASH, aes(x = rank, fill = grp)) +
+  geom_density(alpha = 0.4, trim=T) +
+  facet_wrap(~ quantile, scales = "free_y", ncol=1, switch = "y") +
+  theme_bw() +
   labs(
     y = "DLPFC Deciles",
     x = "Rank",
     title = "SMASH"
   ) +
   guides(fill=guide_legend(title="Group")) +
-  coord_cartesian(xlim = c(1, n_genes)) +
-  theme_bw() +
+  theme(
+    axis.text.y=element_blank(),
+    axis.ticks.y=element_blank(),
+    strip.text = element_text(hjust = 0),
+    strip.text.y.left = element_text(angle = 0),
+    strip.background = element_rect(colour="black", fill="white")
+  ) +
   My_Theme
 
 df_HEARTSVG <- data.frame(
@@ -255,17 +303,25 @@ df_HEARTSVG_background <- df_HEARTSVG[-indices,] %>%
 
 df_HEARTSVG <- rbind(df_HEARTSVG_signal, df_HEARTSVG_background)
 
-HEARTSVG_ridge <- ggplot(df_HEARTSVG, aes(x = rank, y = quantile)) +
-  geom_density_ridges2(aes(fill = grp), rel_min_height = 0.02, alpha = 0.3) +
-  theme_ridges(grid = TRUE) +
+df_HEARTSVG$quantile <- factor(df_HEARTSVG$quantile, levels=c(10,9,8,7,6,5,4,3,2,1))
+
+HEARTSVG_ridge <- ggplot(df_HEARTSVG, aes(x = rank, fill = grp)) +
+  geom_density(alpha = 0.4, trim=T) +
+  facet_wrap(~ quantile, scales = "free_y", ncol=1, switch = "y") +
+  theme_bw() +
   labs(
     y = "DLPFC Deciles",
     x = "Rank",
     title = "HEARTSVG"
   ) +
   guides(fill=guide_legend(title="Group")) +
-  coord_cartesian(xlim = c(1, n_genes)) +
-  theme_bw() +
+  theme(
+    axis.text.y=element_blank(),
+    axis.ticks.y=element_blank(),
+    strip.text = element_text(hjust = 0),
+    strip.text.y.left = element_text(angle = 0),
+    strip.background = element_rect(colour="black", fill="white")
+  ) +
   My_Theme
 
 
@@ -315,17 +371,25 @@ df_MoransI_background <- df_MoransI[-indices,] %>%
 
 df_MoransI <- rbind(df_MoransI_signal, df_MoransI_background)
 
-Ovarian_MoransI_ridge <- ggplot(df_MoransI, aes(x = rank, y = quantile)) +
-  geom_density_ridges2(aes(fill = grp), rel_min_height = 0.02, alpha = 0.3) +
-  theme_ridges(grid = TRUE) +
+df_MoransI$quantile <- factor(df_MoransI$quantile, levels=c(10,9,8,7,6,5,4,3,2,1))
+
+Ovarian_MoransI_ridge <- ggplot(df_MoransI, aes(x = rank, fill = grp)) +
+  geom_density(alpha = 0.4, trim=T) +
+  facet_wrap(~ quantile, scales = "free_y", ncol=1, switch = "y") +
+  theme_bw() +
   labs(
     y = "Ovarian Deciles",
     x = "Rank",
     title = ""
   ) +
   guides(fill=guide_legend(title="Group")) +
-  coord_cartesian(xlim = c(1, n_genes)) +
-  theme_bw() +
+  theme(
+    axis.text.y=element_blank(),
+    axis.ticks.y=element_blank(),
+    strip.text = element_text(hjust = 0),
+    strip.text.y.left = element_text(angle = 0),
+    strip.background = element_rect(colour="black", fill="white")
+  ) +
   My_Theme
 
 df_nnSVG <- data.frame(
@@ -349,17 +413,25 @@ df_nnSVG_background <- df_nnSVG[-indices,] %>%
 
 df_nnSVG <- rbind(df_nnSVG_signal, df_nnSVG_background)
 
-Ovarian_nnSVG_ridge <- ggplot(df_nnSVG, aes(x = rank, y = quantile)) +
-  geom_density_ridges2(aes(fill = grp), rel_min_height = 0.02, alpha = 0.3) +
-  theme_ridges(grid = TRUE) +
+df_nnSVG$quantile <- factor(df_nnSVG$quantile, levels=c(10,9,8,7,6,5,4,3,2,1))
+
+Ovarian_nnSVG_ridge <- ggplot(df_nnSVG, aes(x = rank, fill = grp)) +
+  geom_density(alpha = 0.4, trim=T) +
+  facet_wrap(~ quantile, scales = "free_y", ncol=1, switch = "y") +
+  theme_bw() +
   labs(
     y = "Ovarian Deciles",
     x = "Rank",
     title = ""
   ) +
   guides(fill=guide_legend(title="Group")) +
-  coord_cartesian(xlim = c(1, n_genes)) +
-  theme_bw() +
+  theme(
+    axis.text.y=element_blank(),
+    axis.ticks.y=element_blank(),
+    strip.text = element_text(hjust = 0),
+    strip.text.y.left = element_text(angle = 0),
+    strip.background = element_rect(colour="black", fill="white")
+  ) +
   My_Theme
 
 df_SPARKX <- data.frame(
@@ -384,17 +456,25 @@ df_SPARKX_background <- df_SPARKX[-indices,] %>%
 
 df_SPARKX <- rbind(df_SPARKX_signal, df_SPARKX_background)
 
-Ovarian_SPARKX_ridge <- ggplot(df_SPARKX, aes(x = rank, y = quantile)) +
-  geom_density_ridges2(aes(fill = grp), rel_min_height = 0.02, alpha = 0.3) +
-  theme_ridges(grid = TRUE) +
+df_SPARKX$quantile <- factor(df_SPARKX$quantile, levels=c(10,9,8,7,6,5,4,3,2,1))
+
+Ovarian_SPARKX_ridge <- ggplot(df_SPARKX, aes(x = rank, fill = grp)) +
+  geom_density(alpha = 0.4, trim=T) +
+  facet_wrap(~ quantile, scales = "free_y", ncol=1, switch = "y") +
+  theme_bw() +
   labs(
     y = "Ovarian Deciles",
     x = "Rank",
     title = ""
   ) +
   guides(fill=guide_legend(title="Group")) +
-  coord_cartesian(xlim = c(1, n_genes)) +
-  theme_bw() +
+  theme(
+    axis.text.y=element_blank(),
+    axis.ticks.y=element_blank(),
+    strip.text = element_text(hjust = 0),
+    strip.text.y.left = element_text(angle = 0),
+    strip.background = element_rect(colour="black", fill="white")
+  ) +
   My_Theme
 
 df_SpaGFT <- data.frame(
@@ -419,18 +499,27 @@ df_SpaGFT_background <- df_SpaGFT[-indices,] %>%
 
 df_SpaGFT <- rbind(df_SpaGFT_signal, df_SpaGFT_background)
 
-Ovarian_SpaGFT_ridge <- ggplot(df_SpaGFT, aes(x = rank, y = quantile)) +
-  geom_density_ridges2(aes(fill = grp), rel_min_height = 0.02, alpha = 0.3) +
-  theme_ridges(grid = TRUE) +
+df_SpaGFT$quantile <- factor(df_SpaGFT$quantile, levels=c(10,9,8,7,6,5,4,3,2,1))
+
+Ovarian_SpaGFT_ridge <- ggplot(df_SpaGFT, aes(x = rank, fill = grp)) +
+  geom_density(alpha = 0.4, trim=T) +
+  facet_wrap(~ quantile, scales = "free_y", ncol=1, switch = "y") +
+  theme_bw() +
   labs(
     y = "Ovarian Deciles",
     x = "Rank",
     title = ""
   ) +
   guides(fill=guide_legend(title="Group")) +
-  coord_cartesian(xlim = c(1, n_genes)) +
-  theme_bw() +
+  theme(
+    axis.text.y=element_blank(),
+    axis.ticks.y=element_blank(),
+    strip.text = element_text(hjust = 0),
+    strip.text.y.left = element_text(angle = 0),
+    strip.background = element_rect(colour="black", fill="white")
+  ) +
   My_Theme
+
 
 df_SpatialDE2 <- data.frame(
   rank = rowData(spe_SpatialDE2)$SpatialDE2_rank,
@@ -454,19 +543,26 @@ df_SpatialDE2_background <- df_SpatialDE2[-indices,] %>%
 
 df_SpatialDE2 <- rbind(df_SpatialDE2_signal, df_SpatialDE2_background)
 
-Ovarian_SpatialDE2_ridge <- ggplot(df_SpatialDE2, aes(x = rank, y = quantile)) +
-  geom_density_ridges2(aes(fill = grp), rel_min_height = 0.02, alpha = 0.3) +
-  theme_ridges(grid = TRUE) +
+df_SpatialDE2$quantile <- factor(df_SpatialDE2$quantile, levels=c(10,9,8,7,6,5,4,3,2,1))
+
+Ovarian_SpatialDE2_ridge <- ggplot(df_SpatialDE2, aes(x = rank, fill = grp)) +
+  geom_density(alpha = 0.4, trim=T) +
+  facet_wrap(~ quantile, scales = "free_y", ncol=1, switch = "y") +
+  theme_bw() +
   labs(
     y = "Ovarian Deciles",
     x = "Rank",
     title = ""
   ) +
   guides(fill=guide_legend(title="Group")) +
-  coord_cartesian(xlim = c(1, n_genes)) +
-  theme_bw() +
+  theme(
+    axis.text.y=element_blank(),
+    axis.ticks.y=element_blank(),
+    strip.text = element_text(hjust = 0),
+    strip.text.y.left = element_text(angle = 0),
+    strip.background = element_rect(colour="black", fill="white")
+  ) +
   My_Theme
-
 
 df_SMASH <- data.frame(
   rank = rowData(spe_SMASH)$SMASH_rank,
@@ -490,17 +586,25 @@ df_SMASH_background <- df_SMASH[-indices,] %>%
 
 df_SMASH <- rbind(df_SMASH_signal, df_SMASH_background)
 
-Ovarian_SMASH_ridge <- ggplot(df_SMASH, aes(x = rank, y = quantile)) +
-  geom_density_ridges2(aes(fill = grp), rel_min_height = 0.02, alpha = 0.3) +
-  theme_ridges(grid = TRUE) +
+df_SMASH$quantile <- factor(df_SMASH$quantile, levels=c(10,9,8,7,6,5,4,3,2,1))
+
+Ovarian_SMASH_ridge <- ggplot(df_SMASH, aes(x = rank, fill = grp)) +
+  geom_density(alpha = 0.4, trim=T) +
+  facet_wrap(~ quantile, scales = "free_y", ncol=1, switch = "y") +
+  theme_bw() +
   labs(
     y = "Ovarian Deciles",
     x = "Rank",
     title = ""
   ) +
   guides(fill=guide_legend(title="Group")) +
-  coord_cartesian(xlim = c(1, n_genes)) +
-  theme_bw() +
+  theme(
+    axis.text.y=element_blank(),
+    axis.ticks.y=element_blank(),
+    strip.text = element_text(hjust = 0),
+    strip.text.y.left = element_text(angle = 0),
+    strip.background = element_rect(colour="black", fill="white")
+  ) +
   My_Theme
 
 df_HEARTSVG <- data.frame(
@@ -525,18 +629,27 @@ df_HEARTSVG_background <- df_HEARTSVG[-indices,] %>%
 
 df_HEARTSVG <- rbind(df_HEARTSVG_signal, df_HEARTSVG_background)
 
-Ovarian_HEARTSVG_ridge <- ggplot(df_HEARTSVG, aes(x = rank, y = quantile)) +
-  geom_density_ridges2(aes(fill = grp), rel_min_height = 0.02, alpha = 0.3) +
-  theme_ridges(grid = TRUE) +
+df_HEARTSVG$quantile <- factor(df_HEARTSVG$quantile, levels=c(10,9,8,7,6,5,4,3,2,1))
+
+Ovarian_HEARTSVG_ridge <- ggplot(df_HEARTSVG, aes(x = rank, fill = grp)) +
+  geom_density(alpha = 0.4, trim=T) +
+  facet_wrap(~ quantile, scales = "free_y", ncol=1, switch = "y") +
+  theme_bw() +
   labs(
     y = "Ovarian Deciles",
     x = "Rank",
     title = ""
   ) +
   guides(fill=guide_legend(title="Group")) +
-  coord_cartesian(xlim = c(1, n_genes)) +
-  theme_bw() +
+  theme(
+    axis.text.y=element_blank(),
+    axis.ticks.y=element_blank(),
+    strip.text = element_text(hjust = 0),
+    strip.text.y.left = element_text(angle = 0),
+    strip.background = element_rect(colour="black", fill="white")
+  ) +
   My_Theme
+
 
 Ovarian_plotlist <- list(
   Ovarian_MoransI_ridge,
@@ -581,17 +694,25 @@ df_MoransI_background <- df_MoransI[-indices,] %>%
 
 df_MoransI <- rbind(df_MoransI_signal, df_MoransI_background)
 
-LobularBreast_MoransI_ridge <- ggplot(df_MoransI, aes(x = rank, y = quantile)) +
-  geom_density_ridges2(aes(fill = grp), rel_min_height = 0.02, alpha = 0.3) +
-  theme_ridges(grid = TRUE) +
+df_MoransI$quantile <- factor(df_MoransI$quantile, levels=c(10,9,8,7,6,5,4,3,2,1))
+
+LobularBreast_MoransI_ridge <- ggplot(df_MoransI, aes(x = rank, fill = grp)) +
+  geom_density(alpha = 0.4, trim=T) +
+  facet_wrap(~ quantile, scales = "free_y", ncol=1, switch = "y") +
+  theme_bw() +
   labs(
     y = "Lobular Breast Deciles",
     x = "Rank",
     title = ""
   ) +
   guides(fill=guide_legend(title="Group")) +
-  coord_cartesian(xlim = c(1, n_genes)) +
-  theme_bw() +
+  theme(
+    axis.text.y=element_blank(),
+    axis.ticks.y=element_blank(),
+    strip.text = element_text(hjust = 0),
+    strip.text.y.left = element_text(angle = 0),
+    strip.background = element_rect(colour="black", fill="white")
+  ) +
   My_Theme
 
 df_nnSVG <- data.frame(
@@ -615,17 +736,25 @@ df_nnSVG_background <- df_nnSVG[-indices,] %>%
 
 df_nnSVG <- rbind(df_nnSVG_signal, df_nnSVG_background)
 
-LobularBreast_nnSVG_ridge <- ggplot(df_nnSVG, aes(x = rank, y = quantile)) +
-  geom_density_ridges2(aes(fill = grp), rel_min_height = 0.02, alpha = 0.3) +
-  theme_ridges(grid = TRUE) +
+df_nnSVG$quantile <- factor(df_nnSVG$quantile, levels=c(10,9,8,7,6,5,4,3,2,1))
+
+LobularBreast_nnSVG_ridge <- ggplot(df_nnSVG, aes(x = rank, fill = grp)) +
+  geom_density(alpha = 0.4, trim=T) +
+  facet_wrap(~ quantile, scales = "free_y", ncol=1, switch = "y") +
+  theme_bw() +
   labs(
     y = "Lobular Breast Deciles",
     x = "Rank",
     title = ""
   ) +
   guides(fill=guide_legend(title="Group")) +
-  coord_cartesian(xlim = c(1, n_genes)) +
-  theme_bw() +
+  theme(
+    axis.text.y=element_blank(),
+    axis.ticks.y=element_blank(),
+    strip.text = element_text(hjust = 0),
+    strip.text.y.left = element_text(angle = 0),
+    strip.background = element_rect(colour="black", fill="white")
+  ) +
   My_Theme
 
 df_SPARKX <- data.frame(
@@ -650,17 +779,25 @@ df_SPARKX_background <- df_SPARKX[-indices,] %>%
 
 df_SPARKX <- rbind(df_SPARKX_signal, df_SPARKX_background)
 
-LobularBreast_SPARKX_ridge <- ggplot(df_SPARKX, aes(x = rank, y = quantile)) +
-  geom_density_ridges2(aes(fill = grp), rel_min_height = 0.02, alpha = 0.3) +
-  theme_ridges(grid = TRUE) +
+df_SPARKX$quantile <- factor(df_SPARKX$quantile, levels=c(10,9,8,7,6,5,4,3,2,1))
+
+LobularBreast_SPARKX_ridge <- ggplot(df_SPARKX, aes(x = rank, fill = grp)) +
+  geom_density(alpha = 0.4, trim=T) +
+  facet_wrap(~ quantile, scales = "free_y", ncol=1, switch = "y") +
+  theme_bw() +
   labs(
     y = "Lobular Breast Deciles",
     x = "Rank",
     title = ""
   ) +
   guides(fill=guide_legend(title="Group")) +
-  coord_cartesian(xlim = c(1, n_genes)) +
-  theme_bw() +
+  theme(
+    axis.text.y=element_blank(),
+    axis.ticks.y=element_blank(),
+    strip.text = element_text(hjust = 0),
+    strip.text.y.left = element_text(angle = 0),
+    strip.background = element_rect(colour="black", fill="white")
+  ) +
   My_Theme
 
 df_SpaGFT <- data.frame(
@@ -685,17 +822,25 @@ df_SpaGFT_background <- df_SpaGFT[-indices,] %>%
 
 df_SpaGFT <- rbind(df_SpaGFT_signal, df_SpaGFT_background)
 
-LobularBreast_SpaGFT_ridge <- ggplot(df_SpaGFT, aes(x = rank, y = quantile)) +
-  geom_density_ridges2(aes(fill = grp), rel_min_height = 0.02, alpha = 0.3) +
-  theme_ridges(grid = TRUE) +
+df_SpaGFT$quantile <- factor(df_SpaGFT$quantile, levels=c(10,9,8,7,6,5,4,3,2,1))
+
+LobularBreast_SpaGFT_ridge <- ggplot(df_SpaGFT, aes(x = rank, fill = grp)) +
+  geom_density(alpha = 0.4, trim=T) +
+  facet_wrap(~ quantile, scales = "free_y", ncol=1, switch = "y") +
+  theme_bw() +
   labs(
     y = "Lobular Breast Deciles",
     x = "Rank",
     title = ""
   ) +
   guides(fill=guide_legend(title="Group")) +
-  coord_cartesian(xlim = c(1, n_genes)) +
-  theme_bw() +
+  theme(
+    axis.text.y=element_blank(),
+    axis.ticks.y=element_blank(),
+    strip.text = element_text(hjust = 0),
+    strip.text.y.left = element_text(angle = 0),
+    strip.background = element_rect(colour="black", fill="white")
+  ) +
   My_Theme
 
 df_SpatialDE2 <- data.frame(
@@ -720,17 +865,25 @@ df_SpatialDE2_background <- df_SpatialDE2[-indices,] %>%
 
 df_SpatialDE2 <- rbind(df_SpatialDE2_signal, df_SpatialDE2_background)
 
-LobularBreast_SpatialDE2_ridge <- ggplot(df_SpatialDE2, aes(x = rank, y = quantile)) +
-  geom_density_ridges2(aes(fill = grp), rel_min_height = 0.02, alpha = 0.3) +
-  theme_ridges(grid = TRUE) +
+df_SpatialDE2$quantile <- factor(df_SpatialDE2$quantile, levels=c(10,9,8,7,6,5,4,3,2,1))
+
+LobularBreast_SpatialDE2_ridge <- ggplot(df_SpatialDE2, aes(x = rank, fill = grp)) +
+  geom_density(alpha = 0.4, trim=T) +
+  facet_wrap(~ quantile, scales = "free_y", ncol=1, switch = "y") +
+  theme_bw() +
   labs(
     y = "Lobular Breast Deciles",
     x = "Rank",
     title = ""
   ) +
   guides(fill=guide_legend(title="Group")) +
-  coord_cartesian(xlim = c(1, n_genes)) +
-  theme_bw() +
+  theme(
+    axis.text.y=element_blank(),
+    axis.ticks.y=element_blank(),
+    strip.text = element_text(hjust = 0),
+    strip.text.y.left = element_text(angle = 0),
+    strip.background = element_rect(colour="black", fill="white")
+  ) +
   My_Theme
 
 df_SMASH <- data.frame(
@@ -755,17 +908,25 @@ df_SMASH_background <- df_SMASH[-indices,] %>%
 
 df_SMASH <- rbind(df_SMASH_signal, df_SMASH_background)
 
-LobularBreast_SMASH_ridge <- ggplot(df_SMASH, aes(x = rank, y = quantile)) +
-  geom_density_ridges2(aes(fill = grp), rel_min_height = 0.02, alpha = 0.3) +
-  theme_ridges(grid = TRUE) +
+df_SMASH$quantile <- factor(df_SMASH$quantile, levels=c(10,9,8,7,6,5,4,3,2,1))
+
+LobularBreast_SMASH_ridge <- ggplot(df_SMASH, aes(x = rank, fill = grp)) +
+  geom_density(alpha = 0.4, trim=T) +
+  facet_wrap(~ quantile, scales = "free_y", ncol=1, switch = "y") +
+  theme_bw() +
   labs(
     y = "Lobular Breast Deciles",
     x = "Rank",
     title = ""
   ) +
   guides(fill=guide_legend(title="Group")) +
-  coord_cartesian(xlim = c(1, n_genes)) +
-  theme_bw() +
+  theme(
+    axis.text.y=element_blank(),
+    axis.ticks.y=element_blank(),
+    strip.text = element_text(hjust = 0),
+    strip.text.y.left = element_text(angle = 0),
+    strip.background = element_rect(colour="black", fill="white")
+  ) +
   My_Theme
 
 df_HEARTSVG <- data.frame(
@@ -790,17 +951,25 @@ df_HEARTSVG_background <- df_HEARTSVG[-indices,] %>%
 
 df_HEARTSVG <- rbind(df_HEARTSVG_signal, df_HEARTSVG_background)
 
-LobularBreast_HEARTSVG_ridge <- ggplot(df_HEARTSVG, aes(x = rank, y = quantile)) +
-  geom_density_ridges2(aes(fill = grp), rel_min_height = 0.02, alpha = 0.3) +
-  theme_ridges(grid = TRUE) +
+df_HEARTSVG$quantile <- factor(df_HEARTSVG$quantile, levels=c(10,9,8,7,6,5,4,3,2,1))
+
+LobularBreast_HEARTSVG_ridge <- ggplot(df_HEARTSVG, aes(x = rank, fill = grp)) +
+  geom_density(alpha = 0.4, trim=T) +
+  facet_wrap(~ quantile, scales = "free_y", ncol=1, switch = "y") +
+  theme_bw() +
   labs(
     y = "Lobular Breast Deciles",
     x = "Rank",
     title = ""
   ) +
   guides(fill=guide_legend(title="Group")) +
-  coord_cartesian(xlim = c(1, n_genes)) +
-  theme_bw() +
+  theme(
+    axis.text.y=element_blank(),
+    axis.ticks.y=element_blank(),
+    strip.text = element_text(hjust = 0),
+    strip.text.y.left = element_text(angle = 0),
+    strip.background = element_rect(colour="black", fill="white")
+  ) +
   My_Theme
 
 LobularBreast_plotlist <- list(
