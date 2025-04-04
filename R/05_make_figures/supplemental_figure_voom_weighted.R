@@ -41,17 +41,25 @@ df_DLPFC_background <- df_DLPFC[-indices,] %>%
 
 df_DLPFC <- rbind(df_DLPFC_signal, df_DLPFC_background)
 
-DLPFC_ridge <- ggplot(df_DLPFC, aes(x = rank, y = quantile)) +
-  geom_density_ridges2(aes(fill = grp), rel_min_height = 0.02, alpha = 0.3) +
-  theme_ridges(grid = TRUE) +
+df_DLPFC$quantile <- factor(df_DLPFC$quantile, levels=c(10,9,8,7,6,5,4,3,2,1))
+
+DLPFC_ridge <- ggplot(df_DLPFC, aes(x = rank, fill = grp)) +
+  geom_density(alpha = 0.4, trim=T) +
+  facet_wrap(~ quantile, scales = "free_y", ncol=1, switch = "y") +
+  theme_bw() +
   labs(
     y = "DLPFC Deciles",
     x = "Rank",
     title = "voom nnSVG"
   ) +
   guides(fill=guide_legend(title="Group")) +
-  coord_cartesian(xlim = c(1, n_genes)) +
-  theme_bw() +
+  theme(
+    axis.text.y=element_blank(),
+    axis.ticks.y=element_blank(),
+    strip.text = element_text(hjust = 0),
+    strip.text.y.left = element_text(angle = 0),
+    strip.background = element_rect(colour="black", fill="white")
+  ) +
   My_Theme
 
 
@@ -80,17 +88,25 @@ df_DLPFC_background <- df_DLPFC[-indices,] %>%
 
 df_DLPFC <- rbind(df_DLPFC_signal, df_DLPFC_background)
 
-DLPFC_ridge_spoon <- ggplot(df_DLPFC, aes(x = rank, y = quantile)) +
-  geom_density_ridges2(aes(fill = grp), rel_min_height = 0.02, alpha = 0.3) +
-  theme_ridges(grid = TRUE) +
+df_DLPFC$quantile <- factor(df_DLPFC$quantile, levels=c(10,9,8,7,6,5,4,3,2,1))
+
+DLPFC_ridge_spoon <- ggplot(df_DLPFC, aes(x = rank, fill = grp)) +
+  geom_density(alpha = 0.4, trim=T) +
+  facet_wrap(~ quantile, scales = "free_y", ncol=1, switch = "y") +
+  theme_bw() +
   labs(
     y = "DLPFC Deciles",
     x = "Rank",
     title = "spoon nnSVG"
   ) +
   guides(fill=guide_legend(title="Group")) +
-  coord_cartesian(xlim = c(1, n_genes)) +
-  theme_bw() +
+  theme(
+    axis.text.y=element_blank(),
+    axis.ticks.y=element_blank(),
+    strip.text = element_text(hjust = 0),
+    strip.text.y.left = element_text(angle = 0),
+    strip.background = element_rect(colour="black", fill="white")
+  ) +
   My_Theme
 
 
@@ -122,17 +138,25 @@ df_sim_background <- df_sim[-indices,] %>%
 
 df_sim <- rbind(df_sim_signal, df_sim_background)
 
-sim_ridge <- ggplot(df_sim, aes(x = rank, y = quantile)) +
-  geom_density_ridges2(aes(fill = grp), rel_min_height = 0.02, alpha = 0.3) +
-  theme_ridges(grid = TRUE) +
+df_sim$quantile <- factor(df_sim$quantile, levels=c(10,9,8,7,6,5,4,3,2,1))
+
+sim_ridge <- ggplot(df_sim, aes(x = rank, fill = grp)) +
+  geom_density(alpha = 0.4, trim=T) +
+  facet_wrap(~ quantile, scales = "free_y", ncol=1, switch = "y") +
+  theme_bw() +
   labs(
     y = "Simulation Deciles",
     x = "Rank",
     title = "voom nnSVG"
   ) +
   guides(fill=guide_legend(title="Group")) +
-  coord_cartesian(xlim = c(1, n_genes)) +
-  theme_bw() +
+  theme(
+    axis.text.y=element_blank(),
+    axis.ticks.y=element_blank(),
+    strip.text = element_text(hjust = 0),
+    strip.text.y.left = element_text(angle = 0),
+    strip.background = element_rect(colour="black", fill="white")
+  ) +
   My_Theme
 
 file_dir <- here("outputs", "simulations", "reps_968_100_50per_1000_0.2_to_3_0.5_to_9")
@@ -162,17 +186,25 @@ df_sim_background <- df_sim[-indices,] %>%
 
 df_sim <- rbind(df_sim_signal, df_sim_background)
 
-sim_ridge_spoon <- ggplot(df_sim, aes(x = rank, y = quantile)) +
-  geom_density_ridges2(aes(fill = grp), rel_min_height = 0.02, alpha = 0.3) +
-  theme_ridges(grid = TRUE) +
+df_sim$quantile <- factor(df_sim$quantile, levels=c(10,9,8,7,6,5,4,3,2,1))
+
+sim_ridge_spoon <- ggplot(df_sim, aes(x = rank, fill = grp)) +
+  geom_density(alpha = 0.4, trim=T) +
+  facet_wrap(~ quantile, scales = "free_y", ncol=1, switch = "y") +
+  theme_bw() +
   labs(
     y = "Simulation Deciles",
     x = "Rank",
     title = "spoon nnSVG"
   ) +
   guides(fill=guide_legend(title="Group")) +
-  coord_cartesian(xlim = c(1, n_genes)) +
-  theme_bw() +
+  theme(
+    axis.text.y=element_blank(),
+    axis.ticks.y=element_blank(),
+    strip.text = element_text(hjust = 0),
+    strip.text.y.left = element_text(angle = 0),
+    strip.background = element_rect(colour="black", fill="white")
+  ) +
   My_Theme
 
 ggsave(here("plots", "supplementary", "comparing_voom.png"),

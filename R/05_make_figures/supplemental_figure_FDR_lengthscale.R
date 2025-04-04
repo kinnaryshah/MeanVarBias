@@ -132,17 +132,27 @@ create_ridge_plot_weighted <- function(spe_unweighted, spe_weighted) {
     summarize(mean = mean(rank)) %>%
     ungroup()
   
-  ridge_plot <- ggplot(df, aes(x = rank, y = quantile)) +
-    geom_density_ridges2(aes(fill = Group), rel_min_height = 0.02, alpha = 0.3) +
-    theme_ridges(grid = TRUE) +
+  # make quantile a factor
+  df$quantile <- factor(df$quantile, levels=c(10,9,8,7,6,5,4,3,2,1))
+  
+  ridge_plot <- ggplot(df, aes(x = rank, fill = Group)) +
+    geom_density(alpha = 0.4, trim=T) +
+    facet_wrap(~ quantile, scales = "free_y", ncol=1, switch = "y") +
+    theme_bw() +
     labs(
       y = "Weighted Method Deciles",
       x = "Rank",
       title = ""
     ) +
-    coord_cartesian(xlim = c(1, n_genes)) +
-    theme_bw() +
-    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+    theme(
+      axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
+      title = element_text(size = 9),
+      axis.text.y=element_blank(),
+      axis.ticks.y=element_blank(),
+      strip.text = element_text(hjust = 0),
+      strip.text.y.left = element_text(angle = 0),
+      strip.background = element_rect(colour="black", fill="white")
+    )
   
   return(ridge_plot)
   
@@ -183,18 +193,29 @@ create_ridge_plot_unweighted <- function(spe_unweighted) {
     summarize(mean = mean(rank)) %>%
     ungroup()
   
-  ridge_plot <- ggplot(df, aes(x = rank, y = quantile)) +
-    geom_density_ridges2(aes(fill = Group), rel_min_height = 0.02, alpha = 0.3) +
-    theme_ridges(grid = TRUE) +
+  # make quantile a factor
+  df$quantile <- factor(df$quantile, levels=c(10,9,8,7,6,5,4,3,2,1))
+  
+  ridge_plot <- ggplot(df, aes(x = rank, fill = Group)) +
+    geom_density(alpha = 0.4, trim=T) +
+    facet_wrap(~ quantile, scales = "free_y", ncol=1, switch = "y") +
+    theme_bw() +
     labs(
       y = "Unweighted Method Deciles",
       x = "Rank",
       title = ""
     ) +
-    theme_bw() + 
-    coord_cartesian(xlim = c(1, n_genes)) +
-    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) 
+    theme(
+      axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
+      title = element_text(size = 9),
+      axis.text.y=element_blank(),
+      axis.ticks.y=element_blank(),
+      strip.text = element_text(hjust = 0),
+      strip.text.y.left = element_text(angle = 0),
+      strip.background = element_rect(colour="black", fill="white")
+    )
   
+
   return(ridge_plot)
 }
 
